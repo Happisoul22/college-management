@@ -1,0 +1,220 @@
+/* Assign Roles Page */
+.ar-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.ar-tab {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 20px;
+    border: 1.5px solid #dde3f0;
+    border-radius: 10px;
+    background: #fff;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #5b6b8a;
+    transition: all 0.22s;
+    font-family: inherit;
+}
+
+.ar-tab:hover {
+    border-color: #0d2b5e;
+    color: #0d2b5e;
+}
+
+.ar-tab--active {
+    background: linear-gradient(135deg, #0d2b5e, #1a3a6b);
+    border-color: #0d2b5e;
+    color: #fff;
+}
+
+.ar-section {
+    animation: pageEnter 0.3s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.ar-form-card {
+    margin-bottom: 20px;
+}
+
+.ar-form-row {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+}
+
+.ar-field {
+    flex: 1;
+    min-width: 120px;
+}
+
+.ar-field label {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #374151;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.ar-assign-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.ar-remove-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    background: #fff1f2 !important;
+    color: #ef4444 !important;
+    border: 1px solid #fecdd3;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.ar-remove-btn:hover {
+    background: #ef4444 !important;
+    color: #fff !important;
+}
+
+.ar-table thead th {
+    background: #f0f4ff;
+    color: #0d2b5e;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+}
+
+/* Counsellor Student Selection */
+.ar-students-section {
+    margin-bottom: 14px;
+    padding: 14px;
+    background: #f8faff;
+    border-radius: 10px;
+    border: 1px solid #dde3f0;
+}
+
+.ar-students-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.ar-select-all {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #374151;
+    cursor: pointer;
+}
+
+.ar-selected-count {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #e05c1a;
+}
+
+.ar-students-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 8px;
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.ar-student-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 12px;
+    border: 1.5px solid #dde3f0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: #fff;
+    font-size: 0.78rem;
+}
+
+.ar-chip--selected {
+    border-color: #0d2b5e;
+    background: linear-gradient(135deg, #eef3ff, #dbeafe);
+}
+
+.ar-student-chip input {
+    display: none;
+}
+
+.ar-chip-name {
+    font-weight: 600;
+    color: #1a2744;
+}
+
+.ar-chip-roll {
+    font-size: 0.68rem;
+    color: #94a3b8;
+}
+
+/* Counsellor Assignment Cards */
+.ar-counsellor-card {
+    border: 1px solid #dde3f0;
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 12px;
+    background: #f8faff;
+}
+
+.ar-co-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.ar-co-year {
+    margin-left: 10px;
+    padding: 2px 8px;
+    background: #eef3ff;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    color: #0d2b5e;
+    font-weight: 700;
+}
+
+.ar-co-students {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.ar-co-student-chip {
+    padding: 3px 10px;
+    background: #fff;
+    border: 1px solid #dde3f0;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    color: #374151;
+    font-weight: 600;
+}
+
+@media (max-width: 768px) {
+    .ar-form-row {
+        flex-direction: column;
+    }
+
+    .ar-students-grid {
+        grid-template-columns: 1fr;
+    }
+}

@@ -1,0 +1,107 @@
+/* Marks Entry Page */
+.me-filter-card {
+    margin-bottom: 24px;
+}
+
+.me-filter-row {
+    display: flex;
+    gap: 16px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+}
+
+.me-filter-field {
+    flex: 1;
+    min-width: 160px;
+}
+
+.me-filter-field label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #374151;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.me-load-btn {
+    white-space: nowrap;
+    height: fit-content;
+}
+
+.me-marks-card {
+    overflow: hidden;
+}
+
+.me-marks-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.me-marks-header .card-title {
+    margin-bottom: 0;
+}
+
+.me-badge {
+    display: inline-flex;
+    padding: 2px 10px;
+    background: linear-gradient(135deg, #eef3ff, #dbeafe);
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+    border-radius: 10px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    margin-left: 10px;
+    vertical-align: middle;
+}
+
+.me-table thead th {
+    font-size: 0.72rem;
+    white-space: nowrap;
+    background: #f0f4ff;
+    color: #0d2b5e;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.me-input {
+    width: 65px;
+    padding: 6px 8px;
+    border: 1.5px solid #dde3f0;
+    border-radius: 7px;
+    font-size: 0.85rem;
+    text-align: center;
+    background: #f8faff;
+    transition: all 0.2s;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+}
+
+.me-input:focus {
+    border-color: #e05c1a;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(224, 92, 26, 0.1);
+    background: #fff;
+}
+
+.me-total {
+    font-weight: 900;
+    font-size: 1rem;
+    color: #0d2b5e;
+    font-family: 'Playfair Display', serif;
+}
+
+@media (max-width: 768px) {
+    .me-filter-row {
+        flex-direction: column;
+    }
+
+    .me-input {
+        width: 50px;
+    }
+}

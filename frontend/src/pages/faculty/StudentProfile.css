@@ -1,0 +1,335 @@
+/* Student Profile Page */
+.sp-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #5b6b8a;
+    margin-bottom: 14px;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.sp-back-link:hover {
+    color: #e05c1a;
+}
+
+.sp-header-card {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 22px 28px;
+    background: linear-gradient(135deg, #0d2b5e, #1a3a6b);
+    border-radius: 16px;
+    margin-bottom: 18px;
+    color: #fff;
+    animation: pageEnter 0.35s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.sp-avatar {
+    width: 58px;
+    height: 58px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #f4a820, #e05c1a);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: #fff;
+    flex-shrink: 0;
+    box-shadow: 0 4px 14px rgba(224, 92, 26, 0.4);
+}
+
+.sp-header-info {
+    flex: 1;
+}
+
+.sp-name {
+    font-size: 1.3rem;
+    font-weight: 800;
+    margin: 0 0 4px;
+    font-family: 'Playfair Display', serif;
+}
+
+.sp-meta {
+    display: flex;
+    gap: 16px;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.6);
+    flex-wrap: wrap;
+}
+
+.sp-cgpa-badge {
+    text-align: center;
+    padding: 12px 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    flex-shrink: 0;
+}
+
+.sp-cgpa-value {
+    font-size: 1.8rem;
+    font-weight: 900;
+    font-family: 'Playfair Display', serif;
+    color: #f4a820;
+}
+
+.sp-cgpa-label {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.5);
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+/* Tabs */
+.sp-tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 18px;
+    overflow-x: auto;
+}
+
+.sp-tab {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 18px;
+    border: 1.5px solid #dde3f0;
+    border-radius: 10px;
+    background: #fff;
+    cursor: pointer;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #5b6b8a;
+    transition: all 0.2s;
+    white-space: nowrap;
+    font-family: inherit;
+}
+
+.sp-tab:hover {
+    border-color: #0d2b5e;
+    color: #0d2b5e;
+}
+
+.sp-tab--active {
+    background: linear-gradient(135deg, #0d2b5e, #1a3a6b);
+    border-color: #0d2b5e;
+    color: #fff;
+}
+
+.sp-tab-content {
+    animation: pageEnter 0.3s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+/* Overview Grid */
+.sp-overview-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 18px;
+}
+
+.sp-o-card {
+    background: #fff;
+    border-radius: 14px;
+    border: 1px solid #dde3f0;
+    border-top: 4px solid;
+    padding: 18px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(13, 43, 94, 0.05);
+}
+
+.sp-o--attendance {
+    border-top-color: #16a34a;
+}
+
+.sp-o--achievements {
+    border-top-color: #f4a820;
+}
+
+.sp-o--subjects {
+    border-top-color: #0d2b5e;
+}
+
+.sp-o--cgpa {
+    border-top-color: #e05c1a;
+}
+
+.sp-o-icon {
+    font-size: 1.2rem;
+    margin-bottom: 6px;
+    color: #5b6b8a;
+}
+
+.sp-o-value {
+    font-size: 1.7rem;
+    font-weight: 900;
+    font-family: 'Playfair Display', serif;
+    color: #1a2744;
+}
+
+.sp-o-label {
+    font-size: 0.72rem;
+    color: #5b6b8a;
+    font-weight: 600;
+}
+
+/* SGPA Bar */
+.sp-sgpa-card {
+    margin-bottom: 18px;
+}
+
+.sp-sgpa-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.sp-sgpa-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.sp-sgpa-sem {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #374151;
+    min-width: 60px;
+}
+
+.sp-sgpa-bar {
+    flex: 1;
+    height: 10px;
+    background: #eef3ff;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.sp-sgpa-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #0d2b5e, #1a3a6b);
+    border-radius: 5px;
+    transition: width 0.5s;
+}
+
+.sp-sgpa-val {
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: #0d2b5e;
+    min-width: 35px;
+    text-align: right;
+}
+
+/* Marks Grade */
+.sp-total {
+    font-weight: 900;
+    color: #0d2b5e;
+    font-family: 'Playfair Display', serif;
+}
+
+.sp-grade {
+    padding: 2px 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 800;
+}
+
+.sp-grade--O {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+.sp-grade--Aplus {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.sp-grade--A {
+    background: #e0e7ff;
+    color: #4338ca;
+}
+
+.sp-grade--Bplus {
+    background: #fef9c3;
+    color: #ca8a04;
+}
+
+.sp-grade--B {
+    background: #fef0e6;
+    color: #c44d14;
+}
+
+.sp-grade--C {
+    background: #fce7f3;
+    color: #be185d;
+}
+
+.sp-grade--F {
+    background: #fff1f2;
+    color: #ef4444;
+}
+
+/* Attendance bar */
+.sp-att-pct-bar {
+    width: 80px;
+    height: 6px;
+    background: #eef3ff;
+    border-radius: 3px;
+    display: inline-block;
+    overflow: hidden;
+    margin-right: 6px;
+    vertical-align: middle;
+}
+
+.sp-att-pct-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.5s;
+}
+
+.sp-att-pct-val {
+    font-weight: 700;
+    font-size: 0.82rem;
+}
+
+.sp-att-low {
+    color: #ef4444;
+}
+
+.sp-att-total-row {
+    background: #f0f4ff !important;
+    font-weight: 700;
+}
+
+.sp-sem-card {
+    margin-bottom: 16px;
+}
+
+.sp-marks-table thead th,
+.sp-att-table thead th,
+.sp-ach-table thead th {
+    background: #f0f4ff;
+    color: #0d2b5e;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+@media (max-width: 768px) {
+    .sp-overview-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .sp-header-card {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .sp-meta {
+        justify-content: center;
+    }
+}

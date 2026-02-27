@@ -1,0 +1,407 @@
+/* ═══════════════════════════════════════════════════════════
+   FACULTY / HOD DASHBOARD — Modern Premium v4.0
+   Playfair Display × Source Serif 4 × SRIT Brand
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── HOD Department Banner ── */
+.hod-dept-banner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding: 10px 18px;
+    background: linear-gradient(135deg, #0d2b5e, #1a3a6b);
+    border-radius: 10px;
+    color: #fff;
+    animation: pageEnter 0.35s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.hod-dept-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.hod-dept-name {
+    font-size: 1.05rem;
+    font-weight: 800;
+    font-family: 'Playfair Display', serif;
+    color: #f4a820;
+}
+
+/* ── HOD Stats Row ── */
+.hod-stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+    margin-bottom: 24px;
+}
+
+.hod-stat-card {
+    background: #fff;
+    border-radius: 16px;
+    border: 1px solid #dde3f0;
+    border-top: 4px solid #dde3f0;
+    padding: 20px 22px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 2px 10px rgba(13, 43, 94, 0.06), 0 1px 3px rgba(13, 43, 94, 0.04);
+    transition: all 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    animation: pageEnter 0.4s cubic-bezier(0.4, 0, 0.2, 1) both;
+    text-align: left;
+    cursor: default;
+    width: 100%;
+    font-family: inherit;
+}
+
+.hod-stat-card:nth-child(1) {
+    animation-delay: 0.04s;
+}
+
+.hod-stat-card:nth-child(2) {
+    animation-delay: 0.09s;
+}
+
+.hod-stat-card:nth-child(3) {
+    animation-delay: 0.14s;
+}
+
+.hod-stat-card:nth-child(4) {
+    animation-delay: 0.19s;
+}
+
+/* Clickable cards */
+.hod-stat--students,
+.hod-stat--faculty {
+    cursor: pointer;
+    border: 1.5px solid #dde3f0;
+}
+
+.hod-stat--students {
+    border-top: 4px solid #e05c1a;
+}
+
+.hod-stat--faculty {
+    border-top: 4px solid #0d2b5e;
+}
+
+.hod-stat--achievements {
+    border-top: 4px solid #f4a820;
+}
+
+.hod-stat--pending {
+    border-top: 4px solid #ef4444;
+}
+
+.hod-stat--students:hover,
+.hod-stat--faculty:hover {
+    box-shadow: 0 8px 28px rgba(13, 43, 94, 0.14), 0 3px 8px rgba(13, 43, 94, 0.06);
+    transform: translateY(-3px);
+}
+
+.hod-stat--active {
+    box-shadow: 0 8px 28px rgba(13, 43, 94, 0.16) !important;
+    transform: translateY(-2px) !important;
+    border-color: #0d2b5e !important;
+}
+
+.hod-stat--students.hod-stat--active {
+    border-color: #e05c1a !important;
+    background: linear-gradient(135deg, #fff, #fffaf6);
+}
+
+.hod-stat--faculty.hod-stat--active {
+    border-color: #0d2b5e !important;
+    background: linear-gradient(135deg, #fff, #f0f4ff);
+}
+
+/* Stat icons */
+.hod-stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+}
+
+.hod-icon--students {
+    background: linear-gradient(135deg, #e05c1a, #c44d14);
+    color: #fff;
+}
+
+.hod-icon--faculty {
+    background: linear-gradient(135deg, #0d2b5e, #1a3a6b);
+    color: #fff;
+}
+
+.hod-icon--achievements {
+    background: linear-gradient(135deg, #f4a820, #d4901a);
+    color: #fff;
+}
+
+.hod-icon--pending {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: #fff;
+}
+
+.hod-stat-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.hod-stat-value {
+    font-size: 1.9rem;
+    font-weight: 900;
+    line-height: 1;
+    margin-bottom: 3px;
+    font-family: 'Playfair Display', 'Poppins', serif;
+    color: #1a2744;
+}
+
+.hod-stat-label {
+    font-size: 0.75rem;
+    color: #5b6b8a;
+    font-weight: 600;
+    letter-spacing: 0.1px;
+}
+
+.hod-stat-action {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #e05c1a;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+    transition: transform 0.2s;
+}
+
+.hod-stat-card:hover .hod-stat-action {
+    transform: translateX(3px);
+}
+
+/* ── HOD Detail Card (Expanded) ── */
+.hod-detail-card {
+    background: #fff;
+    border-radius: 18px;
+    border: 1px solid #dde3f0;
+    box-shadow: 0 4px 20px rgba(13, 43, 94, 0.1);
+    margin-bottom: 26px;
+    overflow: hidden;
+    animation: hodSlideDown 0.35s cubic-bezier(0.4, 0, 0.2, 1) both;
+    position: relative;
+}
+
+.hod-detail-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #e05c1a, #f4a820, #0d2b5e);
+}
+
+@keyframes hodSlideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-12px);
+        max-height: 0;
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+        max-height: 2000px;
+    }
+}
+
+.hod-detail-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 24px;
+    border-bottom: 1px solid #eef1f8;
+    background: linear-gradient(135deg, #f8faff, #f0f4ff);
+}
+
+.hod-detail-title {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #1a2744;
+    margin: 0;
+    font-family: 'Playfair Display', serif;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.hod-detail-close {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border: 1.5px solid #dde3f0;
+    border-radius: 8px;
+    background: #fff;
+    color: #5b6b8a;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Inter', sans-serif;
+}
+
+.hod-detail-close:hover {
+    border-color: #e05c1a;
+    color: #e05c1a;
+    background: #fffaf6;
+}
+
+.hod-detail-loading {
+    padding: 40px;
+    text-align: center;
+    color: #94a3b8;
+    font-size: 0.9rem;
+}
+
+.hod-detail-empty {
+    padding: 40px;
+    text-align: center;
+    color: #94a3b8;
+    font-size: 0.9rem;
+    background: linear-gradient(135deg, #f8faff, #f0f4ff);
+}
+
+/* Detail table */
+.hod-detail-table thead th {
+    background: #f0f4ff;
+    color: #0d2b5e;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 12px 14px;
+    border-bottom: 2px solid #dde3f0;
+    white-space: nowrap;
+}
+
+.hod-detail-table tbody td {
+    padding: 11px 14px;
+    font-size: 0.84rem;
+    color: #374151;
+    border-bottom: 1px solid #eef1f8;
+}
+
+.hod-detail-table tbody tr:hover {
+    background: #fafbff;
+}
+
+.hod-detail-table tbody tr:nth-child(even) {
+    background: #f8faff;
+}
+
+.hod-detail-table tbody tr:nth-child(even):hover {
+    background: #eef3ff;
+}
+
+/* Role badges */
+.hod-role-badge {
+    display: inline-flex;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+}
+
+.hod-role--faculty {
+    background: linear-gradient(135deg, #eef3ff, #dbeafe);
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+}
+
+.hod-role--hod {
+    background: linear-gradient(135deg, #fef0e6, #fdd8b6);
+    color: #c44d14;
+    border: 1px solid #fbb67a;
+}
+
+.hod-role--classteacher {
+    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+    color: #16a34a;
+    border: 1px solid #bbf7d0;
+}
+
+/* ── Stats (legacy, kept for non-HOD) ── */
+.fd-stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+    margin-bottom: 24px;
+}
+
+.fd-stat-card {
+    background: #fff;
+    border-radius: 16px;
+    border: 1px solid #dde3f0;
+    border-top: 4px solid;
+    padding: 20px 22px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 2px 10px rgba(13, 43, 94, 0.06);
+    transition: all 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fd-stat-card:hover {
+    box-shadow: 0 8px 28px rgba(13, 43, 94, 0.12);
+    transform: translateY(-3px);
+}
+
+.fd-stat-value {
+    font-size: 1.9rem;
+    font-weight: 900;
+    line-height: 1;
+    margin-bottom: 3px;
+    font-family: 'Playfair Display', serif;
+}
+
+.fd-stat-label {
+    font-size: 0.75rem;
+    color: #5b6b8a;
+    font-weight: 600;
+}
+
+/* ── Responsive ── */
+@media (max-width: 1100px) {
+    .hod-stats-row {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 640px) {
+    .hod-stats-row {
+        grid-template-columns: 1fr;
+    }
+
+    .hod-detail-header {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+    }
+}
+
+/* ─── Clickable Faculty Rows ─── */
+.hod-faculty-row:hover {
+    background: #fff8f4 !important;
+    box-shadow: inset 3px 0 0 #e05c1a;
+    transition: background 0.15s, box-shadow 0.15s;
+}

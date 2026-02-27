@@ -1,0 +1,457 @@
+/* ── back link ── */
+.sdet-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--primary-color, #f97316);
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-decoration: none;
+    margin-bottom: 20px;
+    transition: opacity 0.2s;
+}
+
+.sdet-back:hover {
+    opacity: 0.7;
+}
+
+/* ── loading/error ── */
+.sdet-loading,
+.sdet-error {
+    text-align: center;
+    padding: 60px 20px;
+    color: #94a3b8;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+/* ── Header ── */
+.sdet-header {
+    border-radius: 16px;
+    padding: 28px 30px;
+    margin-bottom: 24px;
+    background: linear-gradient(135deg, #1e3a5f 0%, #0f2544 100%);
+    border-left: 6px solid #f97316;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+}
+
+.sdet-type--lab {
+    border-left-color: #22c55e;
+}
+
+.sdet-type--project {
+    border-left-color: #f59e0b;
+}
+
+.sdet-type--seminar {
+    border-left-color: #a855f7;
+}
+
+.sdet-type--theory {
+    border-left-color: #3b82f6;
+}
+
+.sdet-subject-code {
+    font-size: 0.82rem;
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.55);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+}
+
+.sdet-subject-name {
+    font-size: 1.7rem;
+    font-weight: 800;
+    color: #fff;
+    margin: 0 0 14px;
+    line-height: 1.2;
+}
+
+.sdet-subject-meta {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.sdet-subject-meta>span {
+    color: rgba(255, 255, 255, 0.65);
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+
+.sdet-type-badge {
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 3px 10px;
+    border-radius: 10px;
+}
+
+.sdet-badge--theory {
+    background: rgba(59, 130, 246, 0.25);
+    color: #93c5fd;
+}
+
+.sdet-badge--lab {
+    background: rgba(34, 197, 94, 0.25);
+    color: #86efac;
+}
+
+.sdet-badge--project {
+    background: rgba(245, 158, 11, 0.25);
+    color: #fcd34d;
+}
+
+.sdet-badge--seminar {
+    background: rgba(168, 85, 247, 0.25);
+    color: #d8b4fe;
+}
+
+/* ── Body grid ── */
+.sdet-body {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 20px;
+    align-items: start;
+}
+
+@media (max-width: 880px) {
+    .sdet-body {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ── Generic card ── */
+.sdet-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 22px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+    margin-bottom: 20px;
+}
+
+.sdet-card:last-child {
+    margin-bottom: 0;
+}
+
+.sdet-card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #1e3a5f;
+    margin-bottom: 18px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #f1f5f9;
+}
+
+.sdet-unassigned {
+    color: #94a3b8;
+    font-size: 0.88rem;
+    text-align: center;
+    padding: 20px 0;
+}
+
+/* ── Faculty ── */
+.sdet-faculty-block {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+}
+
+.sdet-fac-avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f97316, #1e3a5f);
+    color: #fff;
+    font-size: 1.3rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.sdet-fac-info {
+    flex: 1;
+}
+
+.sdet-fac-name {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 6px;
+}
+
+.sdet-fac-sub {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.82rem;
+    color: #64748b;
+    margin-bottom: 4px;
+}
+
+.sdet-qual {
+    font-style: italic;
+    color: #94a3b8;
+}
+
+/* ── Attendance ring ── */
+.sdet-att-ring-wrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 16px;
+}
+
+.sdet-att-ring {
+    position: relative;
+    width: 120px;
+    height: 120px;
+}
+
+.sdet-att-ring svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(0deg);
+}
+
+.sdet-att-pct {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    font-weight: 800;
+}
+
+.sdet-att-stats {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 10px;
+}
+
+.sdet-att-stat {
+    text-align: center;
+    font-size: 0.75rem;
+    color: #64748b;
+    font-weight: 600;
+}
+
+.sdet-att-stat span {
+    display: block;
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: #1e293b;
+    margin-bottom: 2px;
+}
+
+.sdet-att-warning {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #ef4444;
+    margin-top: 10px;
+}
+
+/* ── Marks ── */
+.sdet-marks-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.sdet-marks-item {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 14px;
+    text-align: center;
+    border: 1px solid #e2e8f0;
+}
+
+.sdet-marks--internal {
+    background: linear-gradient(135deg, #fff4ed, #ffedd5);
+    border-color: #fed7aa;
+}
+
+.sdet-marks-label {
+    font-size: 0.72rem;
+    color: #94a3b8;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+}
+
+.sdet-marks-val {
+    font-size: 1.6rem;
+    font-weight: 900;
+    color: #1e293b;
+    line-height: 1;
+}
+
+.sdet-marks-big {
+    font-size: 2rem;
+    color: #f97316;
+}
+
+.sdet-marks-max {
+    font-size: 0.72rem;
+    color: #94a3b8;
+    margin-top: 2px;
+}
+
+/* ── Progress bar ── */
+.sdet-marks-bar-wrap {
+    margin-bottom: 16px;
+}
+
+.sdet-marks-bar-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #64748b;
+    margin-bottom: 6px;
+}
+
+.sdet-marks-bar {
+    height: 8px;
+    background: #f1f5f9;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.sdet-marks-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #f97316, #ea580c);
+    border-radius: 4px;
+    transition: width 0.6s ease;
+}
+
+/* ── External + Grade ── */
+.sdet-ext-marks {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #f8fafc;
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-bottom: 14px;
+    border: 1px solid #e2e8f0;
+}
+
+.sdet-ext-label {
+    font-size: 0.82rem;
+    color: #64748b;
+    font-weight: 600;
+}
+
+.sdet-ext-val {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #1e293b;
+}
+
+.sdet-ext-val span {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    margin-left: 2px;
+}
+
+.sdet-grade-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-top: 12px;
+    border-top: 1px solid #f1f5f9;
+}
+
+.sdet-grade {
+    font-size: 1.4rem;
+    font-weight: 900;
+    padding: 4px 14px;
+    border-radius: 10px;
+    background: #f1f5f9;
+    color: #1e293b;
+}
+
+.sdet-grade--O {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.sdet-grade--A {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.sdet-grade--Aplus {
+    background: #e0e7ff;
+    color: #4338ca;
+}
+
+.sdet-grade--B {
+    background: #fef9c3;
+    color: #92400e;
+}
+
+.sdet-grade--C {
+    background: #fef3c7;
+    color: #b45309;
+}
+
+.sdet-grade--F {
+    background: #fef2f2;
+    color: #ef4444;
+}
+
+.sdet-total-marks {
+    font-size: 0.85rem;
+    color: #64748b;
+    font-weight: 600;
+    margin-left: auto;
+}
+
+/* ── Subject Info grid ── */
+.sdet-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.sdet-info-item {
+    background: #f8fafc;
+    border-radius: 10px;
+    padding: 12px 14px;
+    border: 1px solid #e2e8f0;
+}
+
+.sdet-info-label {
+    font-size: 0.7rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.sdet-info-val {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #1e293b;
+}
