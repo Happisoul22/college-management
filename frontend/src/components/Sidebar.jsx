@@ -2,7 +2,8 @@ import { Link, useLocation } from 'react-router-dom';
 import {
     FaClipboardList, FaFileAlt, FaChartPie, FaChartBar,
     FaSignOutAlt, FaHome, FaUserGraduate, FaChalkboardTeacher,
-    FaPen, FaCalendarCheck, FaUsers, FaUsersCog, FaBook
+    FaPen, FaCalendarCheck, FaUsers, FaUsersCog, FaBook,
+    FaTrophy, FaChartLine, FaUserTie
 } from 'react-icons/fa';
 import { useContext } from 'react';
 import AuthContext from '../context/AuthContext';
@@ -99,12 +100,23 @@ const Sidebar = () => {
                             <FaBook /> Subjects
                         </Link>
 
+                        <div className="menu-section-label">My Profile</div>
+                        <Link to="/faculty-achievements" className={`menu-item ${isActive('/faculty-achievements')}`}>
+                            <FaTrophy /> My Achievements
+                        </Link>
+                        <Link to="/faculty-analytics" className={`menu-item ${isActive('/faculty-analytics')}`}>
+                            <FaChartLine /> My Analytics
+                        </Link>
+
                         <div className="menu-section-label">Management</div>
                         <Link to="/approvals" className={`menu-item ${isActive('/approvals')}`}>
                             <FaClipboardList /> Verification
                         </Link>
                         <Link to="/leaves" className={`menu-item ${isActive('/leaves')}`}>
                             <FaFileAlt /> Leave Approvals
+                        </Link>
+                        <Link to="/counsellor-dashboard" className={`menu-item ${isActive('/counsellor-dashboard')}`}>
+                            <FaUserTie /> Counsellor Dashboard
                         </Link>
                     </>
                 )}
@@ -128,6 +140,9 @@ const Sidebar = () => {
                         </Link>
                         <Link to="/analytics" className={`menu-item ${isActive('/analytics')}`}>
                             <FaChartPie /> Analytics
+                        </Link>
+                        <Link to="/faculty-analytics" className={`menu-item ${isActive('/faculty-analytics')}`}>
+                            <FaChartLine /> Faculty Analytics
                         </Link>
                     </>
                 )}

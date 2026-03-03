@@ -9,18 +9,23 @@ const AchievementSchema = new mongoose.Schema({
     type: {
         type: String,
         enum: [
-            'Internship',
-            'NPTEL',
-            'Certification',
-            'Mini Project',
-            'Major Project',
-            'Research Paper',
-            'Publication',
-            'Patent',
-            'NCC/NSS',
-            'Placement'
+            // Student types
+            'Internship', 'NPTEL', 'Certification',
+            'Mini Project', 'Major Project',
+            'Research Paper', 'Publication', 'Patent',
+            'NCC/NSS', 'Placement',
+            // Faculty types
+            'Book / Book Chapter', 'NPTEL / MOOC',
+            'FDP / Workshop', 'Conference',
+            'Consultancy / Project', 'Award / Recognition', 'Other'
         ],
         required: true
+    },
+    // Who submitted: Student | Faculty | ClassTeacher | HOD
+    submittedByRole: {
+        type: String,
+        enum: ['Student', 'Faculty', 'ClassTeacher', 'HOD'],
+        default: 'Student'
     },
     title: {
         type: String,
@@ -52,6 +57,7 @@ const AchievementSchema = new mongoose.Schema({
     workType: { type: String, enum: ['Individual', 'Team'] },
     projectRole: { type: String },   // e.g. Team Lead, Team Member, Developer, etc.
     contribution: { type: String },   // Student's own contribution description
+    githubLink: { type: String },    // GitHub repository URL
     teamMembers: [
         {
             name: { type: String },

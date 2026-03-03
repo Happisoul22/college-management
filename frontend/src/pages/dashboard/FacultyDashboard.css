@@ -405,3 +405,76 @@
     box-shadow: inset 3px 0 0 #e05c1a;
     transition: background 0.15s, box-shadow 0.15s;
 }
+
+/* ── Generate Class Report Bar ── */
+.fd-report-bar {
+    margin-top: 22px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 16px 20px;
+    background: linear-gradient(135deg, #f8faff, #f0f4ff);
+    border: 1px solid #dde3f0;
+    border-radius: 14px;
+}
+
+.fd-report-bar .form-control {
+    min-width: 110px;
+    flex: 0 1 auto;
+}
+
+@media (max-width: 600px) {
+    .fd-report-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
+/* ── Achievement Tabs ── */
+.fd-ach-tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 0;
+    border-bottom: 2.5px solid #e2e8f0;
+    position: relative;
+}
+
+.fd-ach-tab {
+    padding: 11px 28px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    font-family: 'Inter', sans-serif;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: #64748b;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2.5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+    border-radius: 8px 8px 0 0;
+}
+
+.fd-ach-tab:hover {
+    background: #f8faff;
+    color: #0d2b5e;
+}
+
+.fd-ach-tab--active {
+    color: #e05c1a;
+    border-bottom-color: #e05c1a;
+    background: linear-gradient(180deg, #fff8f5 0%, #fff 100%);
+}
+
+.fd-ach-tab-count {
+    background: #e05c1a;
+    color: #fff;
+    font-size: 0.68rem;
+    font-weight: 800;
+    border-radius: 10px;
+    padding: 1px 7px;
+    line-height: 1.5;
+}

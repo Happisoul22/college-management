@@ -12,7 +12,7 @@ router.use(protect);
 
 router.route('/')
     .get(getLeaves)
-    .post(authorize('Student'), applyLeave);
+    .post(authorize('Student', 'Faculty', 'ClassTeacher'), applyLeave);
 
 router.route('/:id')
     .put(authorize('Faculty', 'ClassTeacher', 'HOD', 'Principal'), updateLeaveStatus);

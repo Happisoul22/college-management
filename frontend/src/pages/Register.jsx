@@ -1,4 +1,4 @@
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect, useRef } from 'react';
 import AuthContext from '../context/AuthContext';
 import { Link, useSearchParams } from 'react-router-dom';
 import './Register.css';
@@ -32,6 +32,60 @@ const Register = () => {
     const defaultRole = searchParams.get('role') || 'Student';
     const [submitting, setSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [confirmPasswordError, setConfirmPasswordError] = useState('');
+    const [captchaText, setCaptchaText] = useState('');
+    const [captchaInput, setCaptchaInput] = useState('');
+    const [captchaError, setCaptchaError] = useState('');
+    const canvasRef = useRef(null);
+
+    const generateCaptcha = () => {
+        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+        let code = '';
+        for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
+        setCaptchaText(code);
+        setCaptchaInput('');
+        setCaptchaError('');
+    };
+
+    useEffect(() => { generateCaptcha(); }, []);
+
+    useEffect(() => {
+        const canvas = canvasRef.current;
+        if (!canvas || !captchaText) return;
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // Background
+        ctx.fillStyle = '#f0f4ff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        // Noise lines
+        for (let i = 0; i < 5; i++) {
+            ctx.strokeStyle = `hsl(${Math.random() * 360},60%,70%)`;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(Math.random() * canvas.width, Math.random() * canvas.height);
+            ctx.lineTo(Math.random() * canvas.width, Math.random() * canvas.height);
+            ctx.stroke();
+        }
+        // Text
+        ctx.font = 'bold 22px monospace';
+        ctx.textBaseline = 'middle';
+        for (let i = 0; i < captchaText.length; i++) {
+            ctx.save();
+            ctx.fillStyle = `hsl(${Math.random() * 360},60%,30%)`;
+            ctx.translate(14 + i * 22, canvas.height / 2 + (Math.random() * 6 - 3));
+            ctx.rotate((Math.random() - 0.5) * 0.4);
+            ctx.fillText(captchaText[i], 0, 0);
+            ctx.restore();
+        }
+        // Noise dots
+        for (let i = 0; i < 30; i++) {
+            ctx.fillStyle = `hsl(${Math.random() * 360},50%,60%)`;
+            ctx.beginPath();
+            ctx.arc(Math.random() * canvas.width, Math.random() * canvas.height, 1.5, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }, [captchaText]);
 
     const [formData, setFormData] = useState({
         // Common
@@ -39,6 +93,7 @@ const Register = () => {
         email: '',
         alternativeEmail: '',
         password: '',
+        gender: '',
         role: defaultRole,
         // Student specific
         rollNumber: '',
@@ -61,17 +116,32 @@ const Register = () => {
 
     const onSubmit = async e => {
         e.preventDefault();
-        if (submitting) return; // prevent double-submit
+        if (submitting) return;
         setSubmitError('');
 
+        // Confirm password check
+        if (formData.password !== confirmPassword) {
+            setConfirmPasswordError('Passwords do not match.');
+            return;
+        }
+        setConfirmPasswordError('');
+
+        // CAPTCHA check
+        if (captchaInput.trim() !== captchaText) {
+            setCaptchaError('Incorrect CAPTCHA. Please try again.');
+            generateCaptcha();
+            return;
+        }
+        setCaptchaError('');
+
         const {
-            name, email, password, role,
+            name, email, password, gender, role,
             rollNumber, phone, branch, admissionYear, section, dob,
             fatherName, motherName, fatherPhone, motherPhone, alternativeEmail,
             facultyId, department
         } = formData;
 
-        const userData = { name, email, password, role };
+        const userData = { name, email, password, gender, role };
 
         if (role === 'Student') {
             Object.assign(userData, {
@@ -222,6 +292,29 @@ const Register = () => {
                                         placeholder="Min. 6 characters" required className="reg-input"
                                         id="reg-password"
                                     />
+                                </div>
+                                <div className="reg-field">
+                                    <label>Confirm Password <span className="req">*</span></label>
+                                    <input
+                                        type="password" value={confirmPassword}
+                                        onChange={e => { setConfirmPassword(e.target.value); setConfirmPasswordError(''); }}
+                                        placeholder="Re-enter password" required className={`reg-input${confirmPasswordError ? ' reg-input--error' : ''}`}
+                                        id="reg-confirm-password"
+                                    />
+                                    {confirmPasswordError && <span className="reg-field-error">{confirmPasswordError}</span>}
+                                </div>
+                            </div>
+
+                            <div className="reg-row">
+                                <div className="reg-field">
+                                    <label>Gender <span className="req">*</span></label>
+                                    <select name="gender" value={formData.gender} onChange={onChange} className="reg-input" required id="reg-gender">
+                                        <option value="">— Select Gender —</option>
+                                        <option value="Male">Male</option>
+                                        <option value="Female">Female</option>
+                                        <option value="Other">Other</option>
+                                        <option value="Prefer not to say">Prefer not to say</option>
+                                    </select>
                                 </div>
                                 <div className="reg-field">
                                     <label>Phone Number <span className="req">*</span></label>
@@ -380,6 +473,25 @@ const Register = () => {
                                     </div>
                                 </div>
                             )}
+
+                            {/* ── CAPTCHA ── */}
+                            <div className="reg-captcha-section">
+                                <label className="reg-captcha-label">CAPTCHA Verification <span className="req">*</span></label>
+                                <div className="reg-captcha-row">
+                                    <canvas ref={canvasRef} width={160} height={48} className="reg-captcha-canvas" />
+                                    <button type="button" className="reg-captcha-refresh" onClick={generateCaptcha} title="Refresh CAPTCHA">
+                                        🔄
+                                    </button>
+                                </div>
+                                <input
+                                    type="text" value={captchaInput}
+                                    onChange={e => { setCaptchaInput(e.target.value); setCaptchaError(''); }}
+                                    placeholder="Enter the characters above"
+                                    className={`reg-input reg-captcha-input${captchaError ? ' reg-input--error' : ''}`}
+                                    id="reg-captcha" autoComplete="off"
+                                />
+                                {captchaError && <span className="reg-field-error">{captchaError}</span>}
+                            </div>
 
                             {submitError && (
                                 <div className="reg-error-banner">

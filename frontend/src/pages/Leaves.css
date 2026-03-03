@@ -316,3 +316,63 @@
         flex-direction: column;
     }
 }
+
+/* ── Faculty Leave Apply Form ── */
+.lv-apply-card {
+    margin-bottom: 24px;
+}
+
+.lv-apply-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px !important;
+}
+
+.lv-note {
+    font-size: 0.81rem;
+    color: #5b6b8a;
+    background: linear-gradient(135deg, #eff8ff, #dbeafe);
+    border-left: 3px solid #3b82f6;
+    border-radius: 6px;
+    padding: 8px 13px;
+    margin-bottom: 18px;
+}
+
+.lv-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.lv-date-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 14px;
+    align-items: start;
+}
+
+@media (max-width: 700px) {
+    .lv-date-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ── Info chips (Year / Sem / Role) ── */
+.lv-info-chip {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 10px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #f0f4ff, #e6eeff);
+    color: #0d2b5e;
+    border: 1px solid #c7d4f8;
+    white-space: nowrap;
+}
+
+.lv-info-chip--faculty {
+    background: linear-gradient(135deg, #fff8f4, #fde8d8);
+    color: #c44d14;
+    border-color: #fbb67a;
+}

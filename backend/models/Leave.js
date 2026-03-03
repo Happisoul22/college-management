@@ -10,6 +10,16 @@ const LeaveSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Please add a reason']
     },
+    leaveType: {
+        type: String,
+        enum: ['Casual Leave', 'Medical Leave', 'Emergency Leave', 'Personal Leave', 'On-Duty Leave', 'Other'],
+        default: 'Casual Leave'
+    },
+    applicantRole: {
+        type: String,
+        enum: ['Student', 'Faculty', 'ClassTeacher', 'HOD'],
+        default: 'Student'
+    },
     startDate: {
         type: Date,
         required: true

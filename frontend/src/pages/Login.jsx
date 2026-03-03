@@ -135,9 +135,7 @@ const Login = () => {
                                     </button>
                                 </div>
 
-                                <p className="srit-link-txt">
-                                    New user? <Link to="/register">Request Access</Link>
-                                </p>
+
                             </div>
                         )}
 
@@ -203,12 +201,7 @@ const Login = () => {
                                     </button>
                                 </form>
 
-                                <p className="srit-link-txt">
-                                    {selectedRole === 'student'
-                                        ? <>New student? <Link to="/register?role=Student">Register here</Link></>
-                                        : <>New user? <Link to="/faculty-register">Request Access</Link></>
-                                    }
-                                </p>
+
                             </div>
                         )}
 

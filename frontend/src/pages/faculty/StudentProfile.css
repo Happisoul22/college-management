@@ -333,3 +333,21 @@
         justify-content: center;
     }
 }
+
+/* ── Chart layouts ── */
+.sp-chart-card {
+    margin-bottom: 18px;
+}
+
+.sp-charts-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    margin-bottom: 18px;
+}
+
+@media (max-width: 860px) {
+    .sp-charts-row {
+        grid-template-columns: 1fr;
+    }
+}

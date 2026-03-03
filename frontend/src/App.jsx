@@ -17,6 +17,9 @@ import AttendanceMarking from './pages/faculty/AttendanceMarking';
 import MyStudents from './pages/faculty/MyStudents';
 import StudentProfile from './pages/faculty/StudentProfile';
 import SubjectsPage from './pages/faculty/SubjectsPage';
+import FacultyAchievements from './pages/faculty/FacultyAchievements';
+import FacultyAnalytics from './pages/faculty/FacultyAnalytics';
+import CounsellorDashboard from './pages/faculty/CounsellorDashboard';
 // HOD pages
 import AssignRoles from './pages/hod/AssignRoles';
 import FacultyProfile from './pages/hod/FacultyProfile';
@@ -141,6 +144,24 @@ function App() {
             <Route path="/student-profile/:id" element={
                 <ProtectedRoute allowedRoles={FACULTY_ROLES}>
                     <StudentProfile />
+                </ProtectedRoute>
+            } />
+
+            <Route path="/faculty-achievements" element={
+                <ProtectedRoute allowedRoles={FACULTY_ROLES}>
+                    <FacultyAchievements />
+                </ProtectedRoute>
+            } />
+
+            <Route path="/faculty-analytics" element={
+                <ProtectedRoute allowedRoles={FACULTY_ROLES}>
+                    <FacultyAnalytics />
+                </ProtectedRoute>
+            } />
+
+            <Route path="/counsellor-dashboard" element={
+                <ProtectedRoute allowedRoles={FACULTY_ROLES}>
+                    <CounsellorDashboard />
                 </ProtectedRoute>
             } />
 

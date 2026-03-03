@@ -5,7 +5,7 @@ import api from '../api/axios';
 import { toast } from 'react-toastify';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
-    ResponsiveContainer, Cell
+    ResponsiveContainer, Cell, PieChart, Pie, Legend
 } from 'recharts';
 import {
     FaChartBar, FaFilter, FaTrophy, FaCheckCircle,
@@ -223,6 +223,8 @@ const StudentAnalytics = () => {
     const [achievements, setAchievements] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('All');
+    const [selectedYear, setSelectedYear] = useState('All');
+    const [selectedSem, setSelectedSem] = useState('All');
 
     useEffect(() => { fetchAchievements(); }, []);
 
@@ -256,6 +258,30 @@ const StudentAnalytics = () => {
     const filtered = filter === 'All'
         ? achievements
         : achievements.filter(a => a.type === filter);
+
+    // Breakdown chart data (for selected filter type — by Year × Sem label)
+    const filteredBreakdown = filter === 'All' ? [] : (() => {
+        const map = {};
+        filtered.forEach(a => {
+            const key = `Yr ${a.year}${a.semester ? ` Sem ${a.semester}` : ''}`;
+            map[key] = (map[key] || 0) + 1;
+        });
+        return Object.entries(map)
+            .map(([label, count]) => ({ label, count }))
+            .sort((a, b) => a.label.localeCompare(b.label));
+    })();
+
+    // Year / Sem pie chart data
+    const semFiltered = achievements.filter(a => {
+        const yearOk = selectedYear === 'All' || String(a.year) === String(selectedYear);
+        const semOk = selectedSem === 'All' || String(a.semester) === String(selectedSem);
+        return yearOk && semOk;
+    });
+    const semTypeMap = {};
+    semFiltered.forEach(a => {
+        semTypeMap[a.type] = (semTypeMap[a.type] || 0) + 1;
+    });
+    const pieData = Object.entries(semTypeMap).map(([type, value]) => ({ name: type, value }));
 
     /* ── Stats ── */
     const total = achievements.length;
@@ -305,47 +331,136 @@ const StudentAnalytics = () => {
                 </div>
             ) : (
                 <>
-                    {/* ── Bar Chart Card ── */}
-                    <div className="card sa-chart-card">
-                        <div className="sa-chart-header">
-                            <FaChartBar className="sa-chart-icon" />
-                            <div className="card-title" style={{ marginBottom: 0 }}>Achievements by Type</div>
+                    {/* ── Charts Row ── */}
+                    <div className="sa-charts-row">
+
+                        {/* Bar Chart Card */}
+                        <div className="card sa-chart-card sa-chart-card--bar">
+                            <div className="sa-chart-header">
+                                <FaChartBar className="sa-chart-icon" />
+                                <div className="card-title" style={{ marginBottom: 0 }}>Achievements by Type</div>
+                            </div>
+                            <p className="sa-chart-hint">Click any bar to filter achievements below</p>
+                            <ResponsiveContainer width="100%" height={260}>
+                                <BarChart
+                                    data={chartData}
+                                    barSize={38}
+                                    margin={{ top: 10, right: 20, left: -10, bottom: 5 }}
+                                    onClick={(data) => {
+                                        if (data?.activeLabel) setFilter(data.activeLabel);
+                                    }}
+                                >
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                                    <XAxis
+                                        dataKey="type"
+                                        tick={{ fontSize: 11, fontWeight: 600 }}
+                                        tickLine={false}
+                                        axisLine={{ stroke: '#e2e8f0' }}
+                                    />
+                                    <YAxis
+                                        allowDecimals={false}
+                                        tick={{ fontSize: 11 }}
+                                        tickLine={false}
+                                        axisLine={false}
+                                    />
+                                    <Tooltip content={<CustomTooltip />} cursor={{ fill: '#f1f5f9' }} />
+                                    <Bar dataKey="count" radius={[8, 8, 0, 0]} cursor="pointer">
+                                        {chartData.map((entry, i) => (
+                                            <Cell
+                                                key={entry.type}
+                                                fill={typeColor(entry.type)}
+                                                opacity={filter === 'All' || filter === entry.type ? 1 : 0.35}
+                                            />
+                                        ))}
+                                    </Bar>
+                                </BarChart>
+                            </ResponsiveContainer>
                         </div>
-                        <p className="sa-chart-hint">Click any bar to filter achievements below</p>
-                        <ResponsiveContainer width="100%" height={280}>
-                            <BarChart
-                                data={chartData}
-                                barSize={38}
-                                margin={{ top: 10, right: 20, left: -10, bottom: 5 }}
-                                onClick={(data) => {
-                                    if (data?.activeLabel) setFilter(data.activeLabel);
-                                }}
-                            >
-                                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                                <XAxis
-                                    dataKey="type"
-                                    tick={{ fontSize: 11, fontWeight: 600 }}
-                                    tickLine={false}
-                                    axisLine={{ stroke: '#e2e8f0' }}
-                                />
-                                <YAxis
-                                    allowDecimals={false}
-                                    tick={{ fontSize: 11 }}
-                                    tickLine={false}
-                                    axisLine={false}
-                                />
-                                <Tooltip content={<CustomTooltip />} cursor={{ fill: '#f1f5f9' }} />
-                                <Bar dataKey="count" radius={[8, 8, 0, 0]} cursor="pointer">
-                                    {chartData.map((entry, i) => (
-                                        <Cell
-                                            key={entry.type}
-                                            fill={typeColor(entry.type)}
-                                            opacity={filter === 'All' || filter === entry.type ? 1 : 0.35}
-                                        />
-                                    ))}
-                                </Bar>
-                            </BarChart>
-                        </ResponsiveContainer>
+
+                        {/* Pie Chart Card */}
+                        <div className="card sa-chart-card sa-chart-card--pie">
+                            <div className="sa-chart-header">
+                                <span className="sa-pie-icon">🥧</span>
+                                <div className="card-title" style={{ marginBottom: 0 }}>Uploads by Year &amp; Sem</div>
+                            </div>
+
+                            {/* Year + Sem selectors */}
+                            <div className="sa-pie-selectors">
+                                <div className="sa-pie-select-wrap">
+                                    <label className="sa-pie-select-label">Year</label>
+                                    <select
+                                        className="sa-pie-select"
+                                        value={selectedYear}
+                                        onChange={e => setSelectedYear(e.target.value)}
+                                    >
+                                        <option value="All">All Years</option>
+                                        {[1, 2, 3, 4].map(y => (
+                                            <option key={y} value={y}>
+                                                {y === 1 ? '1st' : y === 2 ? '2nd' : y === 3 ? '3rd' : '4th'} Year
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div className="sa-pie-select-wrap">
+                                    <label className="sa-pie-select-label">Semester</label>
+                                    <select
+                                        className="sa-pie-select"
+                                        value={selectedSem}
+                                        onChange={e => setSelectedSem(e.target.value)}
+                                    >
+                                        <option value="All">All Sems</option>
+                                        {[1, 2, 3, 4, 5, 6, 7, 8].map(s => (
+                                            <option key={s} value={s}>Sem {s}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+
+                            {pieData.length === 0 ? (
+                                <div className="sa-pie-empty">
+                                    <span>📭</span>
+                                    <p>No uploads for the selected period</p>
+                                </div>
+                            ) : (
+                                <>
+                                    <p className="sa-chart-hint">
+                                        {semFiltered.length} achievement{semFiltered.length !== 1 ? 's' : ''}
+                                        {selectedYear !== 'All' ? ` · Year ${selectedYear}` : ''}
+                                        {selectedSem !== 'All' ? ` · Sem ${selectedSem}` : ''}
+                                    </p>
+                                    <ResponsiveContainer width="100%" height={220}>
+                                        <PieChart>
+                                            <Pie
+                                                data={pieData}
+                                                dataKey="value"
+                                                nameKey="name"
+                                                cx="50%"
+                                                cy="50%"
+                                                outerRadius={78}
+                                                innerRadius={36}
+                                                paddingAngle={3}
+                                                label={({ name, percent }) =>
+                                                    percent > 0.07 ? `${Math.round(percent * 100)}%` : ''
+                                                }
+                                                labelLine={false}
+                                            >
+                                                {pieData.map(entry => (
+                                                    <Cell key={entry.name} fill={typeColor(entry.name)} />
+                                                ))}
+                                            </Pie>
+                                            <Tooltip
+                                                formatter={(value, name) => [value + ' achievement' + (value !== 1 ? 's' : ''), name]}
+                                            />
+                                            <Legend
+                                                iconType="circle"
+                                                iconSize={9}
+                                                wrapperStyle={{ fontSize: '0.72rem', paddingTop: 8 }}
+                                            />
+                                        </PieChart>
+                                    </ResponsiveContainer>
+                                </>
+                            )}
+                        </div>
                     </div>
 
                     {/* ── Filter Chips ── */}
@@ -375,6 +490,56 @@ const StudentAnalytics = () => {
                             })}
                         </div>
                     </div>
+
+                    {/* ── Type Breakdown Chart (shown when a specific type is filtered) ── */}
+                    {filter !== 'All' && filteredBreakdown.length > 0 && (
+                        <div className="card sa-breakdown-card">
+                            <div className="sa-chart-header">
+                                <span className="sa-breakdown-dot" style={{ background: typeColor(filter) }} />
+                                <div className="card-title" style={{ marginBottom: 0 }}>
+                                    {filter} — by Year &amp; Semester
+                                </div>
+                                <span className="sa-breakdown-total">{filtered.length} total</span>
+                            </div>
+                            <p className="sa-chart-hint">Distribution of your {filter} achievements across semesters</p>
+                            <ResponsiveContainer width="100%" height={180}>
+                                <BarChart
+                                    data={filteredBreakdown}
+                                    barSize={32}
+                                    margin={{ top: 8, right: 16, left: -14, bottom: 4 }}
+                                >
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                                    <XAxis
+                                        dataKey="label"
+                                        tick={{ fontSize: 11, fontWeight: 600 }}
+                                        tickLine={false}
+                                        axisLine={{ stroke: '#e2e8f0' }}
+                                    />
+                                    <YAxis
+                                        allowDecimals={false}
+                                        tick={{ fontSize: 11 }}
+                                        tickLine={false}
+                                        axisLine={false}
+                                    />
+                                    <Tooltip
+                                        formatter={(v) => [v + ` achievement${v !== 1 ? 's' : ''}`, filter]}
+                                        contentStyle={{
+                                            background: '#0d2b5e', color: '#fff',
+                                            border: 'none', borderRadius: 10,
+                                            fontSize: '0.82rem'
+                                        }}
+                                        labelStyle={{ color: '#f4a820', fontWeight: 700 }}
+                                        itemStyle={{ color: '#fff' }}
+                                    />
+                                    <Bar dataKey="count" radius={[7, 7, 0, 0]}>
+                                        {filteredBreakdown.map(entry => (
+                                            <Cell key={entry.label} fill={typeColor(filter)} />
+                                        ))}
+                                    </Bar>
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
+                    )}
 
                     {/* ── Achievement Cards ── */}
                     <div className="sa-section-header">

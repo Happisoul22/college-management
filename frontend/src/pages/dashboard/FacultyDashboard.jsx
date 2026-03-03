@@ -18,6 +18,12 @@ const FacultyDashboard = () => {
         status: '',
         year: '',
     });
+    const [achTab, setAchTab] = useState('student'); // 'student' | 'faculty'
+
+    // Report generation state
+    const [reportBranch, setReportBranch] = useState('CSE');
+    const [reportYear, setReportYear] = useState('2023');
+    const [reportLoading, setReportLoading] = useState(false);
 
     // HOD-specific state
     const [deptStats, setDeptStats] = useState({ studentCount: 0, facultyCount: 0, department: '' });
@@ -28,7 +34,7 @@ const FacultyDashboard = () => {
     useEffect(() => {
         fetchAchievements();
         if (isHOD) fetchDeptStats();
-    }, [filters]);
+    }, [filters, achTab]);
 
     const fetchDeptStats = async () => {
         try {
@@ -60,14 +66,15 @@ const FacultyDashboard = () => {
 
     const fetchAchievements = async () => {
         try {
-            const queryParams = new URLSearchParams(filters).toString();
-            const res = await api.get(`/achievements?${queryParams}`);
+            const params = new URLSearchParams(filters);
+            params.set('ownerRole', achTab === 'student' ? 'Student' : 'Faculty');
+            const res = await api.get(`/achievements?${params.toString()}`);
             setAchievements(res.data.data);
             setLoading(false);
         } catch (err) {
             console.error(err);
             setLoading(false);
-            if (err.response?.status === 401) toast.error("Session expired");
+            if (err.response?.status === 401) toast.error('Session expired');
         }
     };
 
@@ -78,6 +85,29 @@ const FacultyDashboard = () => {
             fetchAchievements();
         } catch (err) {
             toast.error('Failed to update status');
+        }
+    };
+
+    const handleGenerateReport = async () => {
+        setReportLoading(true);
+        try {
+            const res = await api.get('/reports/class', {
+                params: { branch: reportBranch, year: reportYear },
+                responseType: 'blob'
+            });
+            const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `class-report-${reportBranch}-${reportYear}.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+            toast.success('Class report downloaded!');
+        } catch (err) {
+            toast.error(err.response?.data?.error || 'Failed to generate report');
+        } finally {
+            setReportLoading(false);
         }
     };
 
@@ -268,90 +298,185 @@ const FacultyDashboard = () => {
                 </div>
             </div>
 
+            {/* ══════ ACHIEVEMENT TABS ══════ */}
+            <div className="fd-ach-tabs">
+                <button
+                    className={`fd-ach-tab${achTab === 'student' ? ' fd-ach-tab--active' : ''}`}
+                    onClick={() => setAchTab('student')}
+                >
+                    🎓 Student Achievements
+                    {achTab === 'student' && <span className="fd-ach-tab-count">{achievements.length}</span>}
+                </button>
+                <button
+                    className={`fd-ach-tab${achTab === 'faculty' ? ' fd-ach-tab--active' : ''}`}
+                    onClick={() => setAchTab('faculty')}
+                >
+                    👨‍🏫 Faculty Achievements
+                    {achTab === 'faculty' && <span className="fd-ach-tab-count">{achievements.length}</span>}
+                </button>
+            </div>
+
             <div className="card">
                 <div className="card-title">
-                    {filters.status ? `${filters.status} Achievements` : 'All Achievements'}
+                    {achTab === 'student'
+                        ? (filters.status ? `${filters.status} Student Achievements` : 'All Student Achievements')
+                        : (filters.status ? `${filters.status} Faculty Achievements` : 'All Faculty Achievements')
+                    }
                 </div>
                 {loading ? <p>Loading...</p> : (
                     <div className="table-container">
                         <table className="table">
-                            <thead>
-                                <tr>
-                                    <th>Student</th>
-                                    <th>Title</th>
-                                    <th>Type</th>
-                                    <th>Date</th>
-                                    <th>Actions</th>
-                                    <th>Proof</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {achievements.length > 0 ? achievements.map(ach => (
-                                    <tr key={ach._id}>
-                                        <td>
-                                            {ach.user ? (
-                                                <div
-                                                    style={{ cursor: 'pointer' }}
-                                                    onClick={() => navigate(`/student-profile/${ach.user._id}`)}
-                                                >
-                                                    <div style={{ fontWeight: 700, color: 'var(--primary-color, #f97316)' }}>
-                                                        {ach.user.name}
-                                                    </div>
-                                                    <div style={{ fontSize: '0.78rem', color: '#94a3b8' }}>
-                                                        {ach.user.studentProfile?.rollNumber}
-                                                    </div>
-                                                </div>
-                                            ) : (
-                                                <span style={{ color: '#ef4444', fontSize: '0.82rem', fontStyle: 'italic' }}>⚠ Deleted Student</span>
-                                            )}
-                                        </td>
-                                        <td>{ach.title}</td>
-                                        <td>{ach.type}</td>
-                                        <td>{new Date(ach.createdAt).toLocaleDateString()}</td>
-                                        <td>
-                                            {ach.status === 'Pending' && (
-                                                <div style={{ display: 'flex', gap: '10px' }}>
-                                                    <button
-                                                        className="btn status-Approved"
-                                                        style={{ border: 'none', cursor: 'pointer' }}
-                                                        onClick={() => handleStatusUpdate(ach._id, 'Approved')}
-                                                    >
-                                                        <FaCheck /> Approve
-                                                    </button>
-                                                    <button
-                                                        className="btn status-Rejected"
-                                                        style={{ border: 'none', cursor: 'pointer' }}
-                                                        onClick={() => handleStatusUpdate(ach._id, 'Rejected')}
-                                                    >
-                                                        <FaTimes /> Reject
-                                                    </button>
-                                                </div>
-                                            )}
-                                            {ach.status !== 'Pending' && <span className={`status-badge status-${ach.status}`}>{ach.status}</span>}
-                                        </td>
-                                        <td>
-                                            {ach.proofUrl ? (
-                                                <a href={ach.proofUrl} target="_blank" rel="noreferrer" style={{ color: 'var(--primary-color)' }}>
-                                                    View Proof
-                                                </a>
-                                            ) : 'No Proof'}
-                                        </td>
-                                    </tr>
-                                )) : (
-                                    <tr>
-                                        <td colSpan="6" style={{ textAlign: 'center' }}>No achievements found matching filters.</td>
-                                    </tr>
-                                )}
-                            </tbody>
+                            {achTab === 'student' ? (
+                                <>
+                                    <thead>
+                                        <tr>
+                                            <th>Student</th>
+                                            <th>Title</th>
+                                            <th>Type</th>
+                                            <th>Date</th>
+                                            <th>Actions</th>
+                                            <th>Proof</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {achievements.length > 0 ? achievements.map(ach => (
+                                            <tr key={ach._id}>
+                                                <td>
+                                                    {ach.user ? (
+                                                        <div style={{ cursor: 'pointer' }}
+                                                            onClick={() => navigate(`/student-profile/${ach.user._id}`)}>
+                                                            <div style={{ fontWeight: 700, color: 'var(--primary-color, #f97316)' }}>
+                                                                {ach.user.name}
+                                                            </div>
+                                                            <div style={{ fontSize: '0.78rem', color: '#94a3b8' }}>
+                                                                {ach.user.studentProfile?.rollNumber}
+                                                            </div>
+                                                        </div>
+                                                    ) : (
+                                                        <span style={{ color: '#ef4444', fontSize: '0.82rem', fontStyle: 'italic' }}>⚠ Deleted Student</span>
+                                                    )}
+                                                </td>
+                                                <td>{ach.title}</td>
+                                                <td>{ach.type}</td>
+                                                <td>{new Date(ach.createdAt).toLocaleDateString()}</td>
+                                                <td>
+                                                    {ach.status === 'Pending' && (
+                                                        <div style={{ display: 'flex', gap: '10px' }}>
+                                                            <button className="btn status-Approved"
+                                                                style={{ border: 'none', cursor: 'pointer' }}
+                                                                onClick={() => handleStatusUpdate(ach._id, 'Approved')}>
+                                                                <FaCheck /> Approve
+                                                            </button>
+                                                            <button className="btn status-Rejected"
+                                                                style={{ border: 'none', cursor: 'pointer' }}
+                                                                onClick={() => handleStatusUpdate(ach._id, 'Rejected')}>
+                                                                <FaTimes /> Reject
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                    {ach.status !== 'Pending' && <span className={`status-badge status-${ach.status}`}>{ach.status}</span>}
+                                                </td>
+                                                <td>
+                                                    {ach.proofUrl ? (
+                                                        <a href={ach.proofUrl} target="_blank" rel="noreferrer" style={{ color: 'var(--primary-color)' }}>
+                                                            View Proof
+                                                        </a>
+                                                    ) : 'No Proof'}
+                                                </td>
+                                            </tr>
+                                        )) : (
+                                            <tr><td colSpan="6" style={{ textAlign: 'center', padding: '32px', color: '#94a3b8' }}>No student achievements found.</td></tr>
+                                        )}
+                                    </tbody>
+                                </>
+                            ) : (
+                                <>
+                                    <thead>
+                                        <tr>
+                                            <th>Faculty</th>
+                                            <th>Type</th>
+                                            <th>Title</th>
+                                            <th>Organization</th>
+                                            <th>Year</th>
+                                            <th>Status</th>
+                                            <th>Proof</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {achievements.length > 0 ? achievements.map(ach => (
+                                            <tr key={ach._id}>
+                                                <td>
+                                                    {ach.user ? (
+                                                        <div>
+                                                            <div style={{ fontWeight: 700, color: '#0d2b5e' }}>{ach.user.name}</div>
+                                                            <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
+                                                                {ach.user.facultyProfile?.facultyId || ach.user.role}
+                                                            </div>
+                                                        </div>
+                                                    ) : (
+                                                        <span style={{ color: '#ef4444', fontSize: '0.82rem', fontStyle: 'italic' }}>⚠ Unknown</span>
+                                                    )}
+                                                </td>
+                                                <td>
+                                                    <span className="sd-type-chip" style={{ fontSize: '0.72rem', background: '#f0f4ff', color: '#0d2b5e', border: '1px solid #dde3f0', padding: '2px 9px', borderRadius: '10px', fontWeight: 700 }}>
+                                                        {ach.type}
+                                                    </span>
+                                                </td>
+                                                <td style={{ fontWeight: 600 }}>{ach.title}</td>
+                                                <td style={{ color: '#64748b', fontSize: '0.83rem' }}>{ach.organization || '—'}</td>
+                                                <td>{ach.year}</td>
+                                                <td><span className={`status-badge status-${ach.status}`}>{ach.status}</span></td>
+                                                <td>
+                                                    {ach.proofUrl ? (
+                                                        <a href={ach.proofUrl} target="_blank" rel="noreferrer" style={{ color: 'var(--primary-color)' }}>View</a>
+                                                    ) : ach.githubLink ? (
+                                                        <a href={ach.githubLink} target="_blank" rel="noreferrer" style={{ color: '#6366f1' }}>Link</a>
+                                                    ) : '—'}
+                                                </td>
+                                            </tr>
+                                        )) : (
+                                            <tr><td colSpan="7" style={{ textAlign: 'center', padding: '32px', color: '#94a3b8' }}>No faculty achievements found.</td></tr>
+                                        )}
+                                    </tbody>
+                                </>
+                            )}
                         </table>
                     </div>
                 )}
             </div>
 
-            <div style={{ marginTop: '20px' }}>
-                <a href="/api/reports/class?branch=CSE&year=2023" target="_blank" className="btn btn-primary" rel="noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '10px' }}>
-                    <FaFilePdf /> Generate Class Report (Demo: CSE 2023)
-                </a>
+            <div className="fd-report-bar">
+                <select
+                    value={reportBranch}
+                    onChange={e => setReportBranch(e.target.value)}
+                    className="form-control"
+                    style={{ minWidth: 100 }}
+                >
+                    {['CSE', 'CSE-AI', 'CSE-DS', 'IT', 'ECE', 'EEE', 'MECH', 'CIVIL'].map(b =>
+                        <option key={b} value={b}>{b}</option>
+                    )}
+                </select>
+                <select
+                    value={reportYear}
+                    onChange={e => setReportYear(e.target.value)}
+                    className="form-control"
+                    style={{ minWidth: 100 }}
+                >
+                    {['2019', '2020', '2021', '2022', '2023', '2024'].map(y =>
+                        <option key={y} value={y}>{y}</option>
+                    )}
+                </select>
+                <button
+                    className="btn btn-primary"
+                    onClick={handleGenerateReport}
+                    disabled={reportLoading}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}
+                >
+                    {reportLoading
+                        ? <><span className="ach-spinner" /> Generating…</>
+                        : <><FaFilePdf /> Generate Class Report</>
+                    }
+                </button>
             </div>
         </Layout>
     );

@@ -160,6 +160,18 @@ exports.getMyCounsellorAssignment = asyncHandler(async (req, res, next) => {
     res.status(200).json({ success: true, count: assignments.length, data: assignments });
 });
 
+// @desc    Get MY counsellor (for logged-in student)
+// @route   GET /api/assignments/my-counsellor
+// @access  Private (any)
+exports.getMyCounsellor = asyncHandler(async (req, res, next) => {
+    const assignment = await CounsellorAssignment.findOne({
+        students: req.user.id,
+        isActive: true
+    }).populate('faculty', 'name email facultyProfile').sort({ createdAt: -1 });
+
+    res.status(200).json({ success: true, data: assignment ? assignment.faculty : null });
+});
+
 // @desc    Assign counsellor
 // @route   POST /api/assignments/counsellor
 // @access  Private (HOD)

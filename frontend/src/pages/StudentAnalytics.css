@@ -692,8 +692,121 @@
     }
 }
 
+/* ── Type Breakdown Card (appears when a filter chip is active) ── */
+.sa-breakdown-card {
+    margin-bottom: 22px;
+    animation: sa-slide-down 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sa-breakdown-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+.sa-breakdown-total {
+    margin-left: auto;
+    font-size: 0.74rem;
+    font-weight: 800;
+    background: #f1f5f9;
+    color: #475569;
+    border-radius: 10px;
+    padding: 3px 11px;
+    border: 1px solid #e2e8f0;
+}
+
+/* ── Charts Row (side-by-side) ── */
+.sa-charts-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 22px;
+    margin-bottom: 26px;
+}
+
+.sa-chart-card--bar,
+.sa-chart-card--pie {
+    margin-bottom: 0;
+}
+
+/* Pie icon */
+.sa-pie-icon {
+    font-size: 1.2rem;
+    line-height: 1;
+}
+
+/* Pie selectors */
+.sa-pie-selectors {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+
+.sa-pie-select-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    min-width: 100px;
+}
+
+.sa-pie-select-label {
+    font-size: 0.69rem;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+}
+
+.sa-pie-select {
+    padding: 7px 10px;
+    border: 1.5px solid #dde3f0;
+    border-radius: 8px;
+    font-size: 0.83rem;
+    font-family: 'Inter', sans-serif;
+    color: #1a2744;
+    background: #f8faff;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    width: 100%;
+}
+
+.sa-pie-select:focus {
+    border-color: #e05c1a;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(224, 92, 26, 0.1);
+}
+
+/* Pie empty state */
+.sa-pie-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-height: 160px;
+    color: #94a3b8;
+}
+
+.sa-pie-empty span {
+    font-size: 2.2rem;
+}
+
+.sa-pie-empty p {
+    font-size: 0.84rem;
+    margin: 0;
+    text-align: center;
+}
+
 /* ── Responsive ── */
 @media (max-width: 900px) {
+    .sa-charts-row {
+        grid-template-columns: 1fr;
+    }
+
     .sa-cards-grid {
         grid-template-columns: 1fr;
     }

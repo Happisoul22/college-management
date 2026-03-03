@@ -580,6 +580,59 @@
     transform: translateY(-1px);
 }
 
+/* ── GitHub link field ── */
+.ach-github-wrap {
+    display: flex;
+    align-items: center;
+    border: 1.5px solid #dde3f0;
+    border-radius: 9px;
+    overflow: hidden;
+    background: #f8faff;
+    transition: all 0.2s;
+}
+
+.ach-github-wrap:focus-within {
+    border-color: #24292e;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(36, 41, 46, 0.1);
+}
+
+.ach-github-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 11px;
+    background: #24292e;
+    color: #fff;
+    height: 100%;
+    align-self: stretch;
+    flex-shrink: 0;
+}
+
+.ach-github-input {
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    flex: 1;
+}
+
+.ach-github-input:focus {
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* GitHub link chip in table */
+.ach-github-link {
+    color: #24292e !important;
+    background: rgba(36, 41, 46, 0.07) !important;
+}
+
+.ach-github-link:hover {
+    color: #000 !important;
+    background: rgba(36, 41, 46, 0.14) !important;
+}
+
 /* Responsive */
 @media (max-width: 500px) {
     .ach-row {

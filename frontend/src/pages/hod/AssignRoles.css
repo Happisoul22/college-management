@@ -104,6 +104,17 @@
     border: 1px solid #dde3f0;
 }
 
+/* Filter row above student checkboxes */
+.ar-student-filters {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e8edf6;
+}
+
 .ar-students-header {
     display: flex;
     align-items: center;

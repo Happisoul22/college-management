@@ -7,6 +7,7 @@ const {
     removeClassAssignment,
     getCounsellorAssignments,
     getMyCounsellorAssignment,
+    getMyCounsellor,
     assignCounsellor,
     removeCounsellorAssignment
 } = require('../controllers/assignments');
@@ -26,6 +27,7 @@ router.delete('/class/:id', authorize('HOD', 'Admin'), removeClassAssignment);
 // Counsellor assignments
 router.get('/counsellor', authorize('HOD', 'Principal', 'Admin'), getCounsellorAssignments);
 router.get('/counsellor/my', getMyCounsellorAssignment);
+router.get('/my-counsellor', getMyCounsellor);
 router.post('/counsellor', authorize('HOD', 'Admin'), assignCounsellor);
 router.delete('/counsellor/:id', authorize('HOD', 'Admin'), removeCounsellorAssignment);
 

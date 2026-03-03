@@ -1,7 +1,7 @@
 import { useState, useContext, useEffect } from 'react';
 import AuthContext from '../../context/AuthContext';
 import Layout from '../../components/Layout';
-import { FaPlus, FaCheck, FaTimes, FaClock, FaTrophy, FaClipboardList, FaHourglassHalf, FaBan, FaChalkboardTeacher, FaPhone, FaEnvelope } from 'react-icons/fa';
+import { FaPlus, FaCheck, FaTimes, FaClock, FaTrophy, FaClipboardList, FaHourglassHalf, FaBan, FaChalkboardTeacher, FaPhone, FaEnvelope, FaUserTie } from 'react-icons/fa';
 import api from '../../api/axios';
 import {
     PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer,
@@ -43,8 +43,9 @@ const StudentDashboard = () => {
     const [achievements, setAchievements] = useState([]);
     const [loading, setLoading] = useState(true);
     const [classTeacher, setClassTeacher] = useState(null);
+    const [counsellor, setCounsellor] = useState(null);
 
-    useEffect(() => { fetchAchievements(); fetchClassTeacher(); }, []);
+    useEffect(() => { fetchAchievements(); fetchClassTeacher(); fetchCounsellor(); }, []);
 
     const fetchAchievements = async () => {
         try {
@@ -63,6 +64,15 @@ const StudentDashboard = () => {
             setClassTeacher(res.data.data);
         } catch (err) {
             console.error('Class teacher fetch failed:', err);
+        }
+    };
+
+    const fetchCounsellor = async () => {
+        try {
+            const res = await api.get('/assignments/my-counsellor');
+            setCounsellor(res.data.data);
+        } catch (err) {
+            console.error('Counsellor fetch failed:', err);
         }
     };
 
@@ -119,24 +129,17 @@ const StudentDashboard = () => {
             <div className="page-title">My Dashboard</div>
 
             {/* ── Class Teacher Card ── */}
-            <div className="card" style={{ marginBottom: '24px', borderLeft: '4px solid #e05c1a' }}>
+            <div className="card" style={{ marginBottom: '16px', borderLeft: '4px solid #e05c1a' }}>
                 <div className="card-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <FaChalkboardTeacher color="#e05c1a" /> My Class Teacher
                 </div>
                 {classTeacher ? (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
-                        <div style={{
-                            width: 52, height: 52, borderRadius: '50%',
-                            background: 'linear-gradient(135deg, #e05c1a, #0d2b5e)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            color: '#fff', fontSize: 20, fontWeight: 700, flexShrink: 0
-                        }}>
+                        <div style={{ width: 52, height: 52, borderRadius: '50%', background: 'linear-gradient(135deg, #e05c1a, #0d2b5e)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 20, fontWeight: 700, flexShrink: 0 }}>
                             {classTeacher.faculty?.name?.charAt(0)}
                         </div>
                         <div style={{ flex: 1 }}>
-                            <div style={{ fontWeight: 700, fontSize: '1rem', color: '#1e293b' }}>
-                                {classTeacher.faculty?.name}
-                            </div>
+                            <div style={{ fontWeight: 700, fontSize: '1rem', color: '#1e293b' }}>{classTeacher.faculty?.name}</div>
                             <div style={{ color: '#64748b', fontSize: '0.85rem', marginTop: 4, display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
                                 <span><FaEnvelope style={{ marginRight: 4 }} />{classTeacher.faculty?.email}</span>
                                 {classTeacher.faculty?.facultyProfile?.phone && (
@@ -144,17 +147,39 @@ const StudentDashboard = () => {
                                 )}
                             </div>
                         </div>
-                        <div style={{ display: 'flex', gap: '12px' }}>
-                            <span style={{
-                                background: '#fef3e2', color: '#e05c1a', padding: '4px 12px',
-                                borderRadius: 20, fontSize: '0.8rem', fontWeight: 600
-                            }}>Year {classTeacher.year} — Sec {classTeacher.section}</span>
-                        </div>
+                        <span style={{ background: '#fef3e2', color: '#e05c1a', padding: '4px 12px', borderRadius: 20, fontSize: '0.8rem', fontWeight: 600 }}>Year {classTeacher.year} — Sec {classTeacher.section}</span>
                     </div>
                 ) : (
                     <p style={{ color: '#94a3b8', margin: 0 }}>No class teacher has been assigned to your class yet.</p>
                 )}
             </div>
+
+            {/* ── Counsellor Card ── */}
+            {counsellor && (
+                <div className="card" style={{ marginBottom: '16px', borderLeft: '4px solid #6366f1' }}>
+                    <div className="card-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <FaUserTie color="#6366f1" /> My Counsellor / Mentor
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
+                        <div style={{ width: 52, height: 52, borderRadius: '12px', background: 'linear-gradient(135deg, #6366f1, #4338ca)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 20, fontWeight: 900, flexShrink: 0 }}>
+                            {counsellor.name?.charAt(0)}
+                        </div>
+                        <div style={{ flex: 1 }}>
+                            <div style={{ fontWeight: 700, fontSize: '1rem', color: '#1e293b' }}>{counsellor.name}</div>
+                            <div style={{ color: '#64748b', fontSize: '0.85rem', marginTop: 4, display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+                                <span><FaEnvelope style={{ marginRight: 4 }} />{counsellor.email}</span>
+                                {counsellor.facultyProfile?.phone && (
+                                    <span><FaPhone style={{ marginRight: 4 }} />{counsellor.facultyProfile.phone}</span>
+                                )}
+                                {counsellor.facultyProfile?.facultyId && (
+                                    <span style={{ color: '#6366f1', fontWeight: 700 }}>ID: {counsellor.facultyProfile.facultyId}</span>
+                                )}
+                            </div>
+                        </div>
+                        <span style={{ background: '#eef2ff', color: '#4338ca', padding: '4px 12px', borderRadius: 20, fontSize: '0.8rem', fontWeight: 700 }}>Counsellor</span>
+                    </div>
+                </div>
+            )}
 
             {/* ── Stat summary row ── */}
             <div className="sd-stats-row">

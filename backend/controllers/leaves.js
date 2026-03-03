@@ -1,14 +1,16 @@
 const ErrorResponse = require('../utils/errorResponse');
 const asyncHandler = require('../middleware/async');
 const Leave = require('../models/Leave');
+const User = require('../models/User');
 
-// @desc    Apply for leave
+// @desc    Apply for leave (Student or Faculty)
 // @route   POST /api/leaves
-// @access  Private (Student)
+// @access  Private (Student, Faculty, ClassTeacher, HOD)
 exports.applyLeave = asyncHandler(async (req, res, next) => {
     req.body.user = req.user.id;
+    req.body.applicantRole = req.user.role;
 
-    // Validate: end date must be >= start date
+    // Validate dates
     if (req.body.startDate && req.body.endDate) {
         if (new Date(req.body.endDate) < new Date(req.body.startDate)) {
             return next(new ErrorResponse('End date cannot be before start date', 400));
@@ -17,10 +19,7 @@ exports.applyLeave = asyncHandler(async (req, res, next) => {
 
     const leave = await Leave.create(req.body);
 
-    res.status(201).json({
-        success: true,
-        data: leave
-    });
+    res.status(201).json({ success: true, data: leave });
 });
 
 // @desc    Get leaves
@@ -30,22 +29,51 @@ exports.getLeaves = asyncHandler(async (req, res, next) => {
     let query;
 
     if (req.user.role === 'Student') {
+        // Students see only their own leaves
+        query = Leave.find({ user: req.user.id, applicantRole: 'Student' })
+            .populate({ path: 'approvedBy', select: 'name role' });
+
+    } else if (['Faculty', 'ClassTeacher'].includes(req.user.role)) {
+        // Faculty/ClassTeacher see only their own leaves (HOD cannot apply so excluded)
         query = Leave.find({ user: req.user.id })
             .populate({ path: 'approvedBy', select: 'name role' });
+
+    } else if (['HOD', 'Principal', 'Admin'].includes(req.user.role)) {
+        // HOD/Principal sees:
+        //   1. All student leaves (existing behaviour)
+        //   2. Faculty leaves from their own department
+        const hodUser = await User.findById(req.user.id).select('facultyProfile');
+        const hodDept = hodUser?.facultyProfile?.department;
+
+        // Find all faculty in the same department
+        let facultyInDept = [];
+        if (hodDept) {
+            const deptFaculty = await User.find({
+                role: { $in: ['Faculty', 'ClassTeacher', 'HOD'] },
+                'facultyProfile.department': hodDept,
+                _id: { $ne: req.user.id }  // exclude self
+            }).select('_id');
+            facultyInDept = deptFaculty.map(f => f._id);
+        }
+
+        query = Leave.find({
+            $or: [
+                { applicantRole: 'Student' },
+                { user: { $in: facultyInDept } }
+            ]
+        })
+            .populate({ path: 'user', select: 'name email studentProfile facultyProfile role' })
+            .populate({ path: 'approvedBy', select: 'name role' });
     } else {
-        query = Leave.find().populate({
-            path: 'user',
-            select: 'name email studentProfile'
-        }).populate({ path: 'approvedBy', select: 'name role' });
+        // Fallback — show all
+        query = Leave.find()
+            .populate({ path: 'user', select: 'name email studentProfile facultyProfile role' })
+            .populate({ path: 'approvedBy', select: 'name role' });
     }
 
     const leaves = await query.sort('-createdAt');
 
-    res.status(200).json({
-        success: true,
-        count: leaves.length,
-        data: leaves
-    });
+    res.status(200).json({ success: true, count: leaves.length, data: leaves });
 });
 
 // @desc    Update leave status
@@ -62,16 +90,15 @@ exports.updateLeaveStatus = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse(`Students cannot approve leaves`, 403));
     }
 
+    // Faculty can only approve student leaves, not other faculty leaves
+    if (['Faculty', 'ClassTeacher'].includes(req.user.role) && leave.applicantRole !== 'Student') {
+        return next(new ErrorResponse(`Only HOD can approve faculty leaves`, 403));
+    }
+
     leave = await Leave.findByIdAndUpdate(req.params.id, {
         status: req.body.status,
         approvedBy: req.user.id
-    }, {
-        new: true,
-        runValidators: true
-    });
+    }, { new: true, runValidators: true });
 
-    res.status(200).json({
-        success: true,
-        data: leave
-    });
+    res.status(200).json({ success: true, data: leave });
 });

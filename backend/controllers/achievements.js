@@ -9,6 +9,7 @@ const { createNotification } = require('./notifications');
 // @access  Private (Student)
 exports.createAchievement = asyncHandler(async (req, res, next) => {
     req.body.user = req.user.id;
+    req.body.submittedByRole = req.user.role; // stamp the submitter's role
 
     // Check if file uploaded — store as a proper accessible URL
     if (req.file) {
@@ -138,12 +139,17 @@ exports.getAchievements = asyncHandler(async (req, res, next) => {
         }
     }
 
+    // ── ownerRole filter: ?ownerRole=Student|Faculty etc. ──
+    if (req.query.ownerRole && req.query.ownerRole.trim() !== '') {
+        filter.submittedByRole = req.query.ownerRole.trim();
+    }
+
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 50;
     const skip = (page - 1) * limit;
 
     const achievements = await Achievement.find(filter)
-        .populate({ path: 'user', select: 'name email studentProfile' })
+        .populate({ path: 'user', select: 'name email studentProfile facultyProfile role' })
         .sort('-createdAt')
         .skip(skip)
         .limit(limit);
