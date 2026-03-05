@@ -10,3 +10,8 @@ node_modules/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Hardhat / Blockchain
+artifacts/
+cache/
+blockchain/deployment.json
