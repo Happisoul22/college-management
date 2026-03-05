@@ -3,6 +3,7 @@ const ErrorResponse = require('../utils/errorResponse');
 const Marks = require('../models/Marks');
 const Subject = require('../models/Subject');
 const User = require('../models/User');
+const blockchain = require('../services/blockchain');
 
 // ─── Helper: Recalculate & persist CGPA for a student ───────────────────────
 const recalculateCGPA = async (studentId) => {
@@ -90,7 +91,18 @@ exports.enterMarks = asyncHandler(async (req, res, next) => {
     // Recalculate and persist CGPA
     await recalculateCGPA(student);
 
-    res.status(200).json({ success: true, data: marks });
+    // Store hash on blockchain for tamper-proof verification
+    const blockchainResult = await blockchain.storeRecordHash('marks', marks._id, marks);
+
+    res.status(200).json({
+        success: true,
+        data: marks,
+        blockchain: blockchainResult ? {
+            txHash: blockchainResult.txHash,
+            recordKey: blockchainResult.recordKey,
+            blockNumber: blockchainResult.blockNumber
+        } : null
+    });
 });
 
 // @desc    Bulk enter marks for multiple students (same subject)
@@ -138,7 +150,22 @@ exports.bulkEnterMarks = asyncHandler(async (req, res, next) => {
     const uniqueStudents = [...new Set(entries.map(e => e.student))];
     await Promise.all(uniqueStudents.map(recalculateCGPA));
 
-    res.status(200).json({ success: true, count: results.length, data: results });
+    // Store hashes on blockchain for all entries
+    const blockchainResults = [];
+    for (const marks of results) {
+        const bcResult = await blockchain.storeRecordHash('marks', marks._id, marks);
+        if (bcResult) blockchainResults.push(bcResult);
+    }
+
+    res.status(200).json({
+        success: true,
+        count: results.length,
+        data: results,
+        blockchain: {
+            storedCount: blockchainResults.length,
+            transactions: blockchainResults.map(r => r.txHash)
+        }
+    });
 });
 
 // @desc    Get CGPA for a student

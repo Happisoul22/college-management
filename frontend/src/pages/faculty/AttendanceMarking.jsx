@@ -3,6 +3,7 @@ import Layout from '../../components/Layout';
 import api from '../../api/axios';
 import { FaCalendarCheck, FaSave, FaSearch, FaCheckCircle } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import BlockchainBadge from '../../components/BlockchainBadge';
 import './AttendanceMarking.css';
 
 const AttendanceMarking = () => {
@@ -207,6 +208,11 @@ const AttendanceMarking = () => {
                         ))}
                     </div>
                     <p className="att-hint">Click a student card to cycle: Present → Absent → OD → Present</p>
+                    <div style={{ marginTop: '16px', display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+                        <span style={{ fontSize: '0.82rem', color: '#94a3b8' }}>🔗 Blockchain Status:</span>
+                        <BlockchainBadge type="attendance" recordId="status" compact showButton={false} />
+                        <span style={{ fontSize: '0.72rem', color: '#64748b' }}>Records are hashed on-chain after saving</span>
+                    </div>
                 </div>
             )}
 

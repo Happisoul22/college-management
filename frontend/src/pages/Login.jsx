@@ -135,7 +135,35 @@ const Login = () => {
                                     </button>
                                 </div>
 
-
+                                <div style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
+                                    <p style={{ margin: 0, fontSize: '13px', color: '#666' }}>New here? Register as:</p>
+                                    <div style={{ display: 'flex', gap: '12px' }}>
+                                        <Link
+                                            to="/register"
+                                            id="student-register-link"
+                                            style={{
+                                                display: 'inline-flex', alignItems: 'center', gap: '6px',
+                                                padding: '8px 16px', borderRadius: '8px', fontSize: '13px', fontWeight: 600,
+                                                background: '#fff5f0', color: '#e05c1a', border: '1.5px solid #f4c09a',
+                                                textDecoration: 'none', transition: 'all 0.2s'
+                                            }}
+                                        >
+                                            🎓 Student
+                                        </Link>
+                                        <Link
+                                            to="/faculty-register"
+                                            id="faculty-register-link"
+                                            style={{
+                                                display: 'inline-flex', alignItems: 'center', gap: '6px',
+                                                padding: '8px 16px', borderRadius: '8px', fontSize: '13px', fontWeight: 600,
+                                                background: '#f0f4ff', color: '#3b5bdb', border: '1.5px solid #a5b4fc',
+                                                textDecoration: 'none', transition: 'all 0.2s'
+                                            }}
+                                        >
+                                            👨‍🏫 Faculty
+                                        </Link>
+                                    </div>
+                                </div>
                             </div>
                         )}
 
@@ -202,6 +230,16 @@ const Login = () => {
                                 </form>
 
 
+                                <p style={{ textAlign: 'center', marginTop: '16px', fontSize: '13px', color: '#666' }}>
+                                    New here?{' '}
+                                    <Link
+                                        to={selectedRole === 'student' ? '/register?role=Student' : '/faculty-register'}
+                                        style={{ color: '#e05c1a', fontWeight: 600, textDecoration: 'none' }}
+                                        id="register-link"
+                                    >
+                                        {selectedRole === 'student' ? 'Create Student Account' : 'Register as Faculty'}
+                                    </Link>
+                                </p>
                             </div>
                         )}
 

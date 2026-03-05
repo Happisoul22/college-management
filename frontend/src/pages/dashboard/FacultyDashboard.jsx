@@ -31,6 +31,29 @@ const FacultyDashboard = () => {
     const [userList, setUserList] = useState([]);
     const [listLoading, setListLoading] = useState(false);
 
+    // Student list filters
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filterYear, setFilterYear] = useState('');
+    const [filterSection, setFilterSection] = useState('');
+
+    // Derive unique admission years & sections from fetched data
+    const admissionYears = [...new Set(userList.map(u => u.studentProfile?.admissionYear).filter(Boolean))].sort();
+    const sections = [...new Set(userList.map(u => u.studentProfile?.section).filter(Boolean))].sort();
+
+    // Filtered student list
+    const filteredUserList = activeView === 'students'
+        ? userList.filter(u => {
+            const term = searchTerm.toLowerCase();
+            const matchesSearch = !term
+                || u.name?.toLowerCase().includes(term)
+                || u.studentProfile?.rollNumber?.toLowerCase().includes(term)
+                || u.email?.toLowerCase().includes(term);
+            const matchesYear = !filterYear || String(u.studentProfile?.admissionYear) === filterYear;
+            const matchesSection = !filterSection || u.studentProfile?.section === filterSection;
+            return matchesSearch && matchesYear && matchesSection;
+        })
+        : userList;
+
     useEffect(() => {
         fetchAchievements();
         if (isHOD) fetchDeptStats();
@@ -192,16 +215,61 @@ const FacultyDashboard = () => {
                                 <h3 className="hod-detail-title">
                                     {activeView === 'students' ? '🎓 Students' : '👨‍🏫 Faculty'} in {deptStats.department}
                                 </h3>
-                                <button className="hod-detail-close" onClick={() => { setActiveView(null); setUserList([]); }}>
+                                <button className="hod-detail-close" onClick={() => { setActiveView(null); setUserList([]); setSearchTerm(''); setFilterYear(''); setFilterSection(''); }}>
                                     <FaArrowLeft /> Back
                                 </button>
                             </div>
 
+                            {/* ── Student Filters ── */}
+                            {activeView === 'students' && (
+                                <div className="hod-filters-bar">
+                                    <div className="hod-filter-search">
+                                        <FaSearch className="hod-filter-search-icon" />
+                                        <input
+                                            type="text"
+                                            placeholder="Search by name, roll number, or email..."
+                                            value={searchTerm}
+                                            onChange={e => setSearchTerm(e.target.value)}
+                                            className="hod-filter-input"
+                                            id="hod-student-search"
+                                        />
+                                    </div>
+                                    <select
+                                        value={filterYear}
+                                        onChange={e => setFilterYear(e.target.value)}
+                                        className="hod-filter-select"
+                                        id="hod-filter-year"
+                                    >
+                                        <option value="">All Years</option>
+                                        {admissionYears.map(y => (
+                                            <option key={y} value={String(y)}>{y}</option>
+                                        ))}
+                                    </select>
+                                    <select
+                                        value={filterSection}
+                                        onChange={e => setFilterSection(e.target.value)}
+                                        className="hod-filter-select"
+                                        id="hod-filter-section"
+                                    >
+                                        <option value="">All Sections</option>
+                                        {sections.map(s => (
+                                            <option key={s} value={s}>Section {s}</option>
+                                        ))}
+                                    </select>
+                                    <span className="hod-filter-count">
+                                        {filteredUserList.length} of {userList.length} students
+                                    </span>
+                                </div>
+                            )}
+
                             {listLoading ? (
                                 <div className="hod-detail-loading">Loading...</div>
-                            ) : userList.length === 0 ? (
+                            ) : (activeView === 'students' ? filteredUserList : userList).length === 0 ? (
                                 <div className="hod-detail-empty">
-                                    No {activeView} found in this department.
+                                    {activeView === 'students' && userList.length > 0
+                                        ? 'No students match the current filters.'
+                                        : `No ${activeView} found in this department.`
+                                    }
                                 </div>
                             ) : (
                                 <div className="table-container">
@@ -230,15 +298,15 @@ const FacultyDashboard = () => {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {userList.map((u, i) => (
+                                            {(activeView === 'students' ? filteredUserList : userList).map((u, i) => (
                                                 <tr
                                                     key={u._id}
-                                                    style={activeView === 'faculty' ? { cursor: 'pointer' } : {}}
-                                                    onClick={activeView === 'faculty' ? () => navigate(`/faculty-profile/${u._id}`) : undefined}
-                                                    className={activeView === 'faculty' ? 'hod-faculty-row' : ''}
+                                                    style={{ cursor: 'pointer' }}
+                                                    onClick={activeView === 'faculty' ? () => navigate(`/faculty-profile/${u._id}`) : () => navigate(`/student-profile/${u._id}`)}
+                                                    className={activeView === 'faculty' ? 'hod-faculty-row' : 'hod-student-row'}
                                                 >
                                                     <td>{i + 1}</td>
-                                                    <td><strong style={activeView === 'faculty' ? { color: 'var(--primary-color, #f97316)' } : {}}>{u.name}</strong></td>
+                                                    <td><strong style={{ color: 'var(--primary-color, #f97316)', cursor: 'pointer' }}>{u.name}</strong></td>
                                                     {activeView === 'students' ? (
                                                         <>
                                                             <td>{u.studentProfile?.rollNumber || '—'}</td>

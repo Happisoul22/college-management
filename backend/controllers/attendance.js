@@ -1,6 +1,7 @@
 const asyncHandler = require('../middleware/async');
 const ErrorResponse = require('../utils/errorResponse');
 const Attendance = require('../models/Attendance');
+const blockchain = require('../services/blockchain');
 
 // @desc    Mark attendance (single or bulk)
 // @route   POST /api/attendance
@@ -35,7 +36,22 @@ exports.markAttendance = asyncHandler(async (req, res, next) => {
         results.push(doc);
     }
 
-    res.status(200).json({ success: true, count: results.length, data: results });
+    // Store hashes on blockchain for tamper-proof verification
+    const blockchainResults = [];
+    for (const doc of results) {
+        const bcResult = await blockchain.storeRecordHash('attendance', doc._id, doc);
+        if (bcResult) blockchainResults.push(bcResult);
+    }
+
+    res.status(200).json({
+        success: true,
+        count: results.length,
+        data: results,
+        blockchain: {
+            storedCount: blockchainResults.length,
+            transactions: blockchainResults.map(r => r.txHash)
+        }
+    });
 });
 
 // @desc    Get attendance records (with filters)

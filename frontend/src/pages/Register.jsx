@@ -1,6 +1,8 @@
 import { useState, useContext, useEffect, useRef } from 'react';
 import AuthContext from '../context/AuthContext';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import api from '../api/axios';
 import './Register.css';
 
 const ENGINEERING_BRANCHES = [
@@ -27,9 +29,8 @@ const ENGINEERING_BRANCHES = [
 ];
 
 const Register = () => {
-    const [searchParams] = useSearchParams();
-    // Pre-select role from query param (e.g., /register?role=Student)
-    const defaultRole = searchParams.get('role') || 'Student';
+    // Role is always Student on this form
+    const navigate = useNavigate();
     const [submitting, setSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
@@ -38,6 +39,16 @@ const Register = () => {
     const [captchaInput, setCaptchaInput] = useState('');
     const [captchaError, setCaptchaError] = useState('');
     const canvasRef = useRef(null);
+
+    // OTP State
+    const [otpSent, setOtpSent] = useState(false);
+    const [otpVerified, setOtpVerified] = useState(false);
+    const [otpInput, setOtpInput] = useState('');
+    const [otpError, setOtpError] = useState('');
+    const [sendingOtp, setSendingOtp] = useState(false);
+    const [showOtpModal, setShowOtpModal] = useState(false);
+    const [pendingSubmitData, setPendingSubmitData] = useState(null);
+    const [otpCode, setOtpCode] = useState(''); // The OTP returned from backend (stored to pass to register)
 
     const generateCaptcha = () => {
         const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
@@ -88,14 +99,12 @@ const Register = () => {
     }, [captchaText]);
 
     const [formData, setFormData] = useState({
-        // Common
         name: '',
         email: '',
         alternativeEmail: '',
         password: '',
         gender: '',
-        role: defaultRole,
-        // Student specific
+        role: 'Student',
         rollNumber: '',
         phone: '',
         branch: '',
@@ -106,13 +115,62 @@ const Register = () => {
         motherName: '',
         fatherPhone: '',
         motherPhone: '',
-        // Faculty specific
-        facultyId: '',
-        department: '',
     });
 
     const { register } = useContext(AuthContext);
-    const onChange = e => setFormData({ ...formData, [e.target.name]: e.target.value });
+    const onChange = e => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+        // If email changes, reset verification state
+        if (e.target.name === 'email') {
+            setOtpSent(false);
+            setOtpVerified(false);
+            setOtpInput('');
+        }
+    };
+
+    const handleSendOtp = async () => {
+        if (!formData.email) { toast.error('Please enter your email first'); return; }
+        try {
+            setSendingOtp(true);
+            await api.post('/auth/send-registration-otp', { email: formData.email });
+            setOtpSent(true);
+            setShowOtpModal(true);
+            toast.success('OTP sent to your email!');
+        } catch (err) {
+            toast.error(err?.response?.data?.error || 'Failed to send OTP');
+        } finally {
+            setSendingOtp(false);
+        }
+    };
+
+    const handleVerifyOtp = async () => {
+        if (!otpInput || otpInput.length !== 6) { setOtpError('Enter the 6-digit OTP'); return; }
+        // We don't verify separately — OTP is passed with the registration request
+        // Just mark as verified here for UX flow
+        setOtpCode(otpInput);
+        setOtpVerified(true);
+        setShowOtpModal(false);
+        toast.success('Email verified! You can now complete registration.');
+        // If we have pending submit data, submit now
+        if (pendingSubmitData) {
+            doRegister(pendingSubmitData, otpInput);
+            setPendingSubmitData(null);
+        }
+    };
+
+    const doRegister = async (userData, otp) => {
+        try {
+            setSubmitting(true);
+            await register({ ...userData, otp });
+            toast.success('Registration successful! Please login.');
+            navigate('/login');
+        } catch (err) {
+            const msg = err?.response?.data?.error || 'Registration failed. Please try again.';
+            setSubmitError(msg);
+        } finally {
+            setSubmitting(false);
+        }
+    };
 
     const onSubmit = async e => {
         e.preventDefault();
@@ -135,38 +193,35 @@ const Register = () => {
         setCaptchaError('');
 
         const {
-            name, email, password, gender, role,
+            name, email, password, gender,
             rollNumber, phone, branch, admissionYear, section, dob,
             fatherName, motherName, fatherPhone, motherPhone, alternativeEmail,
-            facultyId, department
         } = formData;
 
-        const userData = { name, email, password, gender, role };
+        const userData = {
+            name, email, password, gender,
+            role: 'Student',
+            rollNumber, phone, branch, admissionYear, section,
+            dob: dob || undefined,
+            fatherName, motherName, fatherPhone, motherPhone,
+            alternativeEmail: alternativeEmail || undefined,
+        };
 
-        if (role === 'Student') {
-            Object.assign(userData, {
-                rollNumber, phone, branch, admissionYear, section,
-                dob: dob || undefined,
-                fatherName, motherName, fatherPhone, motherPhone,
-                alternativeEmail: alternativeEmail || undefined,
-            });
-        }
-        if (role === 'Faculty' || role === 'ClassTeacher' || role === 'HOD') {
-            Object.assign(userData, { facultyId, department });
+        // If not yet verified via OTP, trigger OTP flow
+        if (!otpVerified) {
+            setPendingSubmitData(userData);
+            if (!otpSent) {
+                await handleSendOtp();
+            } else {
+                setShowOtpModal(true);
+            }
+            return;
         }
 
-        try {
-            setSubmitting(true);
-            await register(userData);
-        } catch (err) {
-            const msg = err?.response?.data?.error || 'Registration failed. Please try again.';
-            setSubmitError(msg);
-        } finally {
-            setSubmitting(false);
-        }
+        await doRegister(userData, otpCode);
     };
 
-    const isStudent = formData.role === 'Student';
+    // Always student form
 
     return (
         <div className="reg-wrapper">
@@ -195,7 +250,7 @@ const Register = () => {
                         <div className="reg-college-full">Srinivasa Ramanujan<br />Institute of Technology</div>
                         <div className="reg-college-loc">Ananthapuramu, AP</div>
                         <div className="reg-sep"></div>
-                        <p className="reg-portal-lbl">Academic Portal — Registration</p>
+                        <p className="reg-portal-lbl">Student Registration Portal</p>
                         <div className="reg-why">
                             <div className="reg-why-item">
                                 <span className="reg-why-icon">🎓</span>
@@ -233,8 +288,8 @@ const Register = () => {
                         </div>
 
                         <div className="reg-heading">
-                            <h2>Create Account</h2>
-                            <p>Join the SRIT Academic Analytics System</p>
+                            <h2>Student Registration</h2>
+                            <p>Create your SRIT Student Account</p>
                         </div>
 
                         <form onSubmit={onSubmit} className="reg-form">
@@ -254,13 +309,13 @@ const Register = () => {
                                     />
                                 </div>
                                 <div className="reg-field">
-                                    <label>Role <span className="req">*</span></label>
-                                    <select name="role" value={formData.role} onChange={onChange} className="reg-input" id="reg-role">
-                                        <option value="Student">Student</option>
-                                        <option value="Faculty">Faculty</option>
-                                        <option value="ClassTeacher">Class Teacher</option>
-                                        <option value="HOD">HOD</option>
-                                        <option value="Principal">Principal</option>
+                                    <label>Gender <span className="req">*</span></label>
+                                    <select name="gender" value={formData.gender} onChange={onChange} className="reg-input" required id="reg-gender">
+                                        <option value="">— Select Gender —</option>
+                                        <option value="Male">Male</option>
+                                        <option value="Female">Female</option>
+                                        <option value="Other">Other</option>
+                                        <option value="Prefer not to say">Prefer not to say</option>
                                     </select>
                                 </div>
                             </div>
@@ -268,11 +323,28 @@ const Register = () => {
                             <div className="reg-row">
                                 <div className="reg-field">
                                     <label>Email Address <span className="req">*</span></label>
-                                    <input
-                                        type="email" name="email" value={formData.email} onChange={onChange}
-                                        placeholder={isStudent ? 'student@srit.ac.in' : 'faculty@srit.ac.in'}
-                                        required className="reg-input" id="reg-email"
-                                    />
+                                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                        <input
+                                            type="email" name="email" value={formData.email} onChange={onChange}
+                                            placeholder="student@srit.ac.in"
+                                            required className="reg-input" id="reg-email"
+                                            style={{ flex: 1 }}
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={handleSendOtp}
+                                            disabled={sendingOtp || otpVerified}
+                                            id="reg-send-otp-btn"
+                                            style={{
+                                                padding: '8px 12px', borderRadius: '8px', fontSize: '12px', fontWeight: 600,
+                                                border: 'none', cursor: otpVerified ? 'default' : 'pointer', whiteSpace: 'nowrap',
+                                                background: otpVerified ? '#22c55e' : '#1a237e', color: '#fff',
+                                                opacity: sendingOtp ? 0.7 : 1
+                                            }}
+                                        >
+                                            {sendingOtp ? '⏳ Sending...' : otpVerified ? '✓ Verified' : otpSent ? '↻ Resend OTP' : '✉ Send OTP'}
+                                        </button>
+                                    </div>
                                 </div>
                                 <div className="reg-field">
                                     <label>Alternative Email</label>
@@ -307,172 +379,134 @@ const Register = () => {
 
                             <div className="reg-row">
                                 <div className="reg-field">
-                                    <label>Gender <span className="req">*</span></label>
-                                    <select name="gender" value={formData.gender} onChange={onChange} className="reg-input" required id="reg-gender">
-                                        <option value="">— Select Gender —</option>
-                                        <option value="Male">Male</option>
-                                        <option value="Female">Female</option>
-                                        <option value="Other">Other</option>
-                                        <option value="Prefer not to say">Prefer not to say</option>
-                                    </select>
-                                </div>
-                                <div className="reg-field">
                                     <label>Phone Number <span className="req">*</span></label>
                                     <input
                                         type="tel" name="phone" value={formData.phone} onChange={onChange}
                                         placeholder="10-digit mobile number"
-                                        required={isStudent} className="reg-input"
+                                        required className="reg-input"
                                         id="reg-phone"
                                     />
                                 </div>
                             </div>
 
-                            {/* ── Student-specific section ── */}
-                            {isStudent && (
-                                <>
-                                    {/* Academic Details */}
-                                    <div className="reg-section">
-                                        <div className="reg-section-label">
-                                            <span>🎓</span> Academic Details
-                                        </div>
-
-                                        <div className="reg-row">
-                                            <div className="reg-field">
-                                                <label>Roll Number <span className="req">*</span></label>
-                                                <input
-                                                    type="text" name="rollNumber" value={formData.rollNumber} onChange={onChange}
-                                                    placeholder="e.g. 20B01A0501" required className="reg-input"
-                                                    id="reg-rollnumber"
-                                                />
-                                            </div>
-                                            <div className="reg-field">
-                                                <label>Branch <span className="req">*</span></label>
-                                                <select
-                                                    name="branch" value={formData.branch} onChange={onChange}
-                                                    className="reg-input" required id="reg-branch"
-                                                >
-                                                    <option value="">— Select Branch —</option>
-                                                    {ENGINEERING_BRANCHES.map(b => (
-                                                        <option key={b.value} value={b.value}>{b.label}</option>
-                                                    ))}
-                                                </select>
-                                            </div>
-                                        </div>
-
-                                        <div className="reg-row">
-                                            <div className="reg-field">
-                                                <label>Year of Admission <span className="req">*</span></label>
-                                                <input
-                                                    type="number" name="admissionYear" value={formData.admissionYear}
-                                                    onChange={onChange} className="reg-input" required
-                                                    min="2000" max={new Date().getFullYear()}
-                                                    id="reg-admission-year"
-                                                />
-                                            </div>
-                                            <div className="reg-field">
-                                                <label>Section <span className="req">*</span></label>
-                                                <select
-                                                    name="section" value={formData.section} onChange={onChange}
-                                                    className="reg-input" required id="reg-section"
-                                                >
-                                                    <option value="">— Select Section —</option>
-                                                    {['A', 'B', 'C', 'D', 'E', 'F'].map(s => (
-                                                        <option key={s} value={s}>Section {s}</option>
-                                                    ))}
-                                                </select>
-                                            </div>
-                                        </div>
-
-                                        <div className="reg-row">
-                                            <div className="reg-field">
-                                                <label>Date of Birth <span className="req">*</span></label>
-                                                <input
-                                                    type="date" name="dob" value={formData.dob} onChange={onChange}
-                                                    className="reg-input" required id="reg-dob"
-                                                    max={new Date().toISOString().split('T')[0]}
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Parent/Guardian Details */}
-                                    <div className="reg-section">
-                                        <div className="reg-section-label">
-                                            <span>👨‍👩‍👧</span> Parent / Guardian Details
-                                        </div>
-
-                                        <div className="reg-row">
-                                            <div className="reg-field">
-                                                <label>Father's Name <span className="req">*</span></label>
-                                                <input
-                                                    type="text" name="fatherName" value={formData.fatherName} onChange={onChange}
-                                                    placeholder="Father's full name" required className="reg-input"
-                                                    id="reg-father-name"
-                                                />
-                                            </div>
-                                            <div className="reg-field">
-                                                <label>Father's Phone</label>
-                                                <input
-                                                    type="tel" name="fatherPhone" value={formData.fatherPhone} onChange={onChange}
-                                                    placeholder="Father's mobile number"
-                                                    className="reg-input" id="reg-father-phone"
-                                                />
-                                            </div>
-                                        </div>
-
-                                        <div className="reg-row">
-                                            <div className="reg-field">
-                                                <label>Mother's Name <span className="req">*</span></label>
-                                                <input
-                                                    type="text" name="motherName" value={formData.motherName} onChange={onChange}
-                                                    placeholder="Mother's full name" required className="reg-input"
-                                                    id="reg-mother-name"
-                                                />
-                                            </div>
-                                            <div className="reg-field">
-                                                <label>Mother's Phone</label>
-                                                <input
-                                                    type="tel" name="motherPhone" value={formData.motherPhone} onChange={onChange}
-                                                    placeholder="Mother's mobile number"
-                                                    className="reg-input" id="reg-mother-phone"
-                                                />
-                                            </div>
-                                        </div>
-
-                                        <p className="reg-parent-note">
-                                            ℹ️ At least one parent phone number (father or mother) is recommended for emergency contact.
-                                        </p>
-                                    </div>
-                                </>
-                            )}
-
-                            {/* Faculty-specific */}
-                            {(formData.role === 'Faculty' || formData.role === 'ClassTeacher' || formData.role === 'HOD') && (
+                            {/* ── Student Academic Details ── */}
+                            <>
+                                {/* Academic Details */}
                                 <div className="reg-section">
                                     <div className="reg-section-label">
-                                        <span>👨‍🏫</span> Faculty Details
+                                        <span>🎓</span> Academic Details
                                     </div>
+
                                     <div className="reg-row">
                                         <div className="reg-field">
-                                            <label>Faculty ID <span className="req">*</span></label>
+                                            <label>Roll Number <span className="req">*</span></label>
                                             <input
-                                                type="text" name="facultyId" value={formData.facultyId} onChange={onChange}
-                                                placeholder="e.g. FAC001" required className="reg-input"
-                                                id="reg-faculty-id"
+                                                type="text" name="rollNumber" value={formData.rollNumber} onChange={onChange}
+                                                placeholder="e.g. 20B01A0501" required className="reg-input"
+                                                id="reg-rollnumber"
                                             />
                                         </div>
                                         <div className="reg-field">
-                                            <label>Department <span className="req">*</span></label>
-                                            <select name="department" value={formData.department} onChange={onChange} className="reg-input" required id="reg-dept">
-                                                <option value="">— Select Department —</option>
+                                            <label>Branch <span className="req">*</span></label>
+                                            <select
+                                                name="branch" value={formData.branch} onChange={onChange}
+                                                className="reg-input" required id="reg-branch"
+                                            >
+                                                <option value="">— Select Branch —</option>
                                                 {ENGINEERING_BRANCHES.map(b => (
                                                     <option key={b.value} value={b.value}>{b.label}</option>
                                                 ))}
                                             </select>
                                         </div>
                                     </div>
+
+                                    <div className="reg-row">
+                                        <div className="reg-field">
+                                            <label>Year of Admission <span className="req">*</span></label>
+                                            <input
+                                                type="number" name="admissionYear" value={formData.admissionYear}
+                                                onChange={onChange} className="reg-input" required
+                                                min="2000" max={new Date().getFullYear()}
+                                                id="reg-admission-year"
+                                            />
+                                        </div>
+                                        <div className="reg-field">
+                                            <label>Section <span className="req">*</span></label>
+                                            <select
+                                                name="section" value={formData.section} onChange={onChange}
+                                                className="reg-input" required id="reg-section"
+                                            >
+                                                <option value="">— Select Section —</option>
+                                                {['A', 'B', 'C', 'D', 'E', 'F'].map(s => (
+                                                    <option key={s} value={s}>Section {s}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div className="reg-row">
+                                        <div className="reg-field">
+                                            <label>Date of Birth <span className="req">*</span></label>
+                                            <input
+                                                type="date" name="dob" value={formData.dob} onChange={onChange}
+                                                className="reg-input" required id="reg-dob"
+                                                max={new Date().toISOString().split('T')[0]}
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
-                            )}
+
+                                {/* Parent/Guardian Details */}
+                                <div className="reg-section">
+                                    <div className="reg-section-label">
+                                        <span>👨‍👩‍👧</span> Parent / Guardian Details
+                                    </div>
+
+                                    <div className="reg-row">
+                                        <div className="reg-field">
+                                            <label>Father's Name <span className="req">*</span></label>
+                                            <input
+                                                type="text" name="fatherName" value={formData.fatherName} onChange={onChange}
+                                                placeholder="Father's full name" required className="reg-input"
+                                                id="reg-father-name"
+                                            />
+                                        </div>
+                                        <div className="reg-field">
+                                            <label>Father's Phone</label>
+                                            <input
+                                                type="tel" name="fatherPhone" value={formData.fatherPhone} onChange={onChange}
+                                                placeholder="Father's mobile number"
+                                                className="reg-input" id="reg-father-phone"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="reg-row">
+                                        <div className="reg-field">
+                                            <label>Mother's Name <span className="req">*</span></label>
+                                            <input
+                                                type="text" name="motherName" value={formData.motherName} onChange={onChange}
+                                                placeholder="Mother's full name" required className="reg-input"
+                                                id="reg-mother-name"
+                                            />
+                                        </div>
+                                        <div className="reg-field">
+                                            <label>Mother's Phone</label>
+                                            <input
+                                                type="tel" name="motherPhone" value={formData.motherPhone} onChange={onChange}
+                                                placeholder="Mother's mobile number"
+                                                className="reg-input" id="reg-mother-phone"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <p className="reg-parent-note">
+                                        ℹ️ At least one parent phone number (father or mother) is recommended for emergency contact.
+                                    </p>
+                                </div>
+                            </>
+
+
 
                             {/* ── CAPTCHA ── */}
                             <div className="reg-captcha-section">
@@ -514,16 +548,78 @@ const Register = () => {
                                         <span className="reg-spinner"></span>
                                         Registering...
                                     </>
+                                ) : otpVerified ? (
+                                    <>
+                                        <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V8H4v2H2v2h2v2h2v-2h2v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" /></svg>
+                                        Create My Account
+                                    </>
                                 ) : (
                                     <>
-                                        <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
-                                            <path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V8H4v2H2v2h2v2h2v-2h2v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                                        </svg>
-                                        Create My Account
+                                        <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" /></svg>
+                                        Verify Email & Register
                                     </>
                                 )}
                             </button>
                         </form>
+
+                        {/* OTP Modal */}
+                        {showOtpModal && (
+                            <div style={{
+                                position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', display: 'flex',
+                                alignItems: 'center', justifyContent: 'center', zIndex: 9999
+                            }}>
+                                <div style={{
+                                    background: '#fff', borderRadius: '16px', padding: '36px 32px', maxWidth: '380px',
+                                    width: '90%', boxShadow: '0 20px 60px rgba(0,0,0,0.25)', textAlign: 'center'
+                                }}>
+                                    <div style={{ fontSize: '40px', marginBottom: '12px' }}>📧</div>
+                                    <h3 style={{ margin: '0 0 8px', color: '#1a237e', fontSize: '20px' }}>Verify Your Email</h3>
+                                    <p style={{ margin: '0 0 20px', color: '#666', fontSize: '13px' }}>
+                                        A 6-digit OTP was sent to <strong>{formData.email}</strong>. Please check your inbox.
+                                    </p>
+                                    <input
+                                        type="text"
+                                        maxLength={6}
+                                        value={otpInput}
+                                        onChange={e => { setOtpInput(e.target.value); setOtpError(''); }}
+                                        placeholder="Enter 6-digit OTP"
+                                        id="reg-otp-input"
+                                        style={{
+                                            width: '100%', padding: '12px 16px', borderRadius: '10px', fontSize: '22px',
+                                            fontWeight: 700, textAlign: 'center', letterSpacing: '8px',
+                                            border: `2px solid ${otpError ? '#ef4444' : '#c7d2fe'}`,
+                                            outline: 'none', boxSizing: 'border-box', color: '#1a237e',
+                                            fontFamily: 'monospace'
+                                        }}
+                                    />
+                                    {otpError && <p style={{ color: '#ef4444', fontSize: '13px', margin: '8px 0 0' }}>{otpError}</p>}
+                                    <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+                                        <button
+                                            onClick={() => setShowOtpModal(false)}
+                                            style={{
+                                                flex: 1, padding: '10px', borderRadius: '8px', fontSize: '14px',
+                                                border: '2px solid #e0e0e0', background: '#fff', cursor: 'pointer', color: '#666'
+                                            }}
+                                        >Cancel</button>
+                                        <button
+                                            onClick={handleVerifyOtp}
+                                            id="reg-otp-verify-btn"
+                                            style={{
+                                                flex: 2, padding: '10px', borderRadius: '8px', fontSize: '14px',
+                                                border: 'none', background: 'linear-gradient(135deg, #1a237e, #3f51b5)',
+                                                color: '#fff', fontWeight: 700, cursor: 'pointer'
+                                            }}
+                                        >✓ Verify OTP</button>
+                                    </div>
+                                    <p style={{ marginTop: '14px', fontSize: '12px', color: '#999' }}>
+                                        Didn't get it? <span
+                                            style={{ color: '#3f51b5', cursor: 'pointer', fontWeight: 600 }}
+                                            onClick={handleSendOtp}
+                                        >Resend OTP</span>
+                                    </p>
+                                </div>
+                            </div>
+                        )}
 
                         <p className="reg-login-link">
                             Already have an account? <Link to="/login">Sign In</Link>

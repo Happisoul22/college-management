@@ -156,6 +156,22 @@ exports.getDepartmentUsers = asyncHandler(async (req, res, next) => {
         if (department) {
             query['studentProfile.branch'] = department;
         }
+        // Optional section filter
+        if (req.query.section) {
+            query['studentProfile.section'] = req.query.section.toUpperCase();
+        }
+        // Optional year filter (year of study → admission year)
+        if (req.query.year) {
+            const now = new Date();
+            const currentMonth = now.getMonth() + 1;
+            const currentCalYear = now.getFullYear();
+            const yearOfStudy = parseInt(req.query.year);
+            // Calculate admissionYear from year of study
+            const admissionYear = currentMonth >= 7
+                ? currentCalYear - yearOfStudy + 1
+                : currentCalYear - yearOfStudy;
+            query['studentProfile.admissionYear'] = admissionYear;
+        }
         selectFields += ' studentProfile';
     } else if (type === 'Faculty') {
         query.role = { $in: ['Faculty', 'ClassTeacher', 'HOD'] };

@@ -233,18 +233,11 @@ const Leaves = () => {
                                                         )}
                                                     </td>
                                                     <td>
-                                                        {leave.status === 'Pending' ? (
-                                                            <div style={{ display: 'flex', gap: 6 }}>
-                                                                <button onClick={() => handleApprove(leave._id, 'Approved')}
-                                                                    className="btn btn-primary" style={{ fontSize: '0.75rem', padding: '5px 10px' }}>
-                                                                    Approve
-                                                                </button>
-                                                                <button onClick={() => handleApprove(leave._id, 'Rejected')}
-                                                                    className="btn btn-danger" style={{ fontSize: '0.75rem', padding: '5px 10px' }}>
-                                                                    Reject
-                                                                </button>
-                                                            </div>
-                                                        ) : '—'}
+                                                        {leave.status !== 'Pending' ? (
+                                                            <span style={{ fontSize: '0.75rem', color: '#64748b' }}>—</span>
+                                                        ) : (
+                                                            <span style={{ fontSize: '0.72rem', color: '#94a3b8', fontStyle: 'italic' }}>Awaiting Class Teacher</span>
+                                                        )}
                                                     </td>
                                                 </tr>
                                             );

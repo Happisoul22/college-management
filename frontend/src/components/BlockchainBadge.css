@@ -1,0 +1,165 @@
+/* ── Blockchain Badge ──────────────────────────────────────────────────────── */
+
+.bc-badge {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: 10px;
+    font-size: 0.82rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.03);
+    transition: all 0.3s ease;
+}
+
+.bc-badge__content {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
+}
+
+.bc-badge__icon {
+    font-size: 1rem;
+}
+
+.bc-badge__label {
+    letter-spacing: 0.02em;
+}
+
+/* ── Status styles ──────────────────────────────────────────────────────── */
+
+.bc-badge--verified {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(59, 130, 246, 0.08));
+    border-color: rgba(16, 185, 129, 0.3);
+    color: #34d399;
+}
+
+.bc-badge--tampered {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(245, 158, 11, 0.08));
+    border-color: rgba(239, 68, 68, 0.4);
+    color: #f87171;
+    animation: tamper-pulse 1.5s infinite;
+}
+
+.bc-badge--notfound {
+    background: rgba(107, 114, 128, 0.1);
+    border-color: rgba(107, 114, 128, 0.2);
+    color: #9ca3af;
+}
+
+.bc-badge--loading {
+    background: rgba(59, 130, 246, 0.08);
+    border-color: rgba(59, 130, 246, 0.2);
+    color: #60a5fa;
+}
+
+.bc-badge--error {
+    background: rgba(239, 68, 68, 0.08);
+    border-color: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+}
+
+.bc-badge--neutral {
+    color: #94a3b8;
+}
+
+.bc-badge--neutral:hover {
+    border-color: rgba(99, 102, 241, 0.3);
+    background: rgba(99, 102, 241, 0.06);
+}
+
+/* ── Compact mode ───────────────────────────────────────────────────────── */
+
+.bc-badge--compact {
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    cursor: pointer;
+    flex-direction: row;
+    gap: 4px;
+}
+
+.bc-badge--compact:hover {
+    transform: scale(1.05);
+}
+
+/* ── Verify Button ──────────────────────────────────────────────────────── */
+
+.bc-badge__btn {
+    padding: 4px 12px;
+    border-radius: 6px;
+    border: 1px solid rgba(99, 102, 241, 0.4);
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.1));
+    color: #a5b4fc;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.bc-badge__btn:hover {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(139, 92, 246, 0.2));
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.2);
+}
+
+.bc-badge__btn--retry {
+    font-size: 0.7rem;
+    padding: 3px 8px;
+    opacity: 0.7;
+}
+
+.bc-badge__btn--retry:hover {
+    opacity: 1;
+}
+
+/* ── Details ────────────────────────────────────────────────────────────── */
+
+.bc-badge__details {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.bc-badge__detail {
+    font-size: 0.7rem;
+    color: #94a3b8;
+}
+
+.bc-badge__detail--warning {
+    color: #fbbf24;
+    font-weight: 600;
+}
+
+/* ── Spinner ────────────────────────────────────────────────────────────── */
+
+.bc-badge__spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(99, 102, 241, 0.2);
+    border-top-color: #818cf8;
+    border-radius: 50%;
+    animation: bc-spin 0.6s linear infinite;
+}
+
+/* ── Animations ─────────────────────────────────────────────────────────── */
+
+@keyframes bc-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes tamper-pulse {
+
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.3);
+    }
+
+    50% {
+        box-shadow: 0 0 12px 4px rgba(239, 68, 68, 0.15);
+    }
+}

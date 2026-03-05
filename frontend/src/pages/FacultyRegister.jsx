@@ -47,6 +47,17 @@ const FacultyRegister = () => {
     const [submitting, setSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState('');
     const [passwordError, setPasswordError] = useState('');
+    const [selectedRole, setSelectedRole] = useState('Faculty');
+
+    // OTP State
+    const [otpSent, setOtpSent] = useState(false);
+    const [otpVerified, setOtpVerified] = useState(false);
+    const [otpInput, setOtpInput] = useState('');
+    const [otpError, setOtpError] = useState('');
+    const [sendingOtp, setSendingOtp] = useState(false);
+    const [showOtpModal, setShowOtpModal] = useState(false);
+    const [pendingSubmitData, setPendingSubmitData] = useState(null);
+    const [otpCode, setOtpCode] = useState('');
 
     const [formData, setFormData] = useState({
         name: '',
@@ -61,11 +72,6 @@ const FacultyRegister = () => {
         photo: null,
     });
 
-    const [roles, setRoles] = useState({
-        Faculty: true,
-        HOD: false,
-        ClassTeacher: false,
-    });
 
     const [captcha, setCaptcha] = useState(generateCaptcha());
     const [captchaInput, setCaptchaInput] = useState('');
@@ -78,16 +84,67 @@ const FacultyRegister = () => {
         } else {
             setFormData({ ...formData, [name]: value });
         }
-
+        // Reset OTP if email changes
+        if (name === 'email') {
+            setOtpSent(false);
+            setOtpVerified(false);
+            setOtpInput('');
+        }
         // Clear password error when typing
         if (name === 'password' || name === 'confirmPassword') {
             setPasswordError('');
         }
     };
 
-    const onRoleChange = e => {
-        const { name, checked } = e.target;
-        setRoles({ ...roles, [name]: checked });
+    const handleSendOtp = async () => {
+        if (!formData.email) { toast.error('Please enter your email first'); return; }
+        try {
+            setSendingOtp(true);
+            await api.post('/auth/send-registration-otp', { email: formData.email });
+            setOtpSent(true);
+            setShowOtpModal(true);
+            toast.success('OTP sent to your email!');
+        } catch (err) {
+            toast.error(err?.response?.data?.error || 'Failed to send OTP');
+        } finally {
+            setSendingOtp(false);
+        }
+    };
+
+    const handleVerifyOtp = () => {
+        if (!otpInput || otpInput.length !== 6) { setOtpError('Enter the 6-digit OTP'); return; }
+        setOtpCode(otpInput);
+        setOtpVerified(true);
+        setShowOtpModal(false);
+        toast.success('Email verified! You can now complete registration.');
+        if (pendingSubmitData) {
+            doRegister(pendingSubmitData, otpInput);
+            setPendingSubmitData(null);
+        }
+    };
+
+    const doRegister = async (userData, otp) => {
+        try {
+            setSubmitting(true);
+            if (userData._photo) {
+                const fd = new FormData();
+                Object.entries(userData).forEach(([k, v]) => {
+                    if (v !== undefined && k !== '_photo') fd.append(k, v);
+                });
+                fd.append('photo', userData._photo);
+                fd.append('otp', otp);
+                await api.post('/auth/register', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+            } else {
+                await register({ ...userData, otp });
+            }
+            toast.success('Registration successful! Please login.');
+            navigate('/login');
+        } catch (err) {
+            const msg = err?.response?.data?.error || 'Registration failed. Please try again.';
+            setSubmitError(msg);
+        } finally {
+            setSubmitting(false);
+        }
     };
 
     const refreshCaptcha = () => {
@@ -121,18 +178,8 @@ const FacultyRegister = () => {
             return;
         }
 
-        // At least one role must be selected
-        const selectedRoles = Object.entries(roles).filter(([, v]) => v).map(([k]) => k);
-        if (selectedRoles.length === 0) {
-            setSubmitError('Please select at least one role');
-            return;
-        }
-
-        // Use the highest-priority role
-        let role = 'Faculty';
-        if (roles.HOD) role = 'HOD';
-        else if (roles.ClassTeacher) role = 'ClassTeacher';
-        else role = 'Faculty';
+        // Use the role selected via checkboxes
+        const role = selectedRole;
 
         const userData = {
             name: formData.name,
@@ -144,33 +191,21 @@ const FacultyRegister = () => {
             phone: formData.phone,
             dateOfJoining: formData.dateOfJoining || undefined,
             experience: formData.experience ? Number(formData.experience) : undefined,
+            _photo: formData.photo || null,  // carry photo separately for FormData
         };
 
-        try {
-            setSubmitting(true);
-
-            // If photo is provided, upload via FormData
-            if (formData.photo) {
-                const fd = new FormData();
-                Object.entries(userData).forEach(([k, v]) => {
-                    if (v !== undefined) fd.append(k, v);
-                });
-                fd.append('photo', formData.photo);
-                await api.post('/auth/register', fd, {
-                    headers: { 'Content-Type': 'multipart/form-data' }
-                });
+        // If not yet OTP-verified, trigger email verification
+        if (!otpVerified) {
+            setPendingSubmitData(userData);
+            if (!otpSent) {
+                await handleSendOtp();
             } else {
-                await register(userData);
+                setShowOtpModal(true);
             }
-
-            toast.success('Registration successful! Please login.');
-            navigate('/login');
-        } catch (err) {
-            const msg = err?.response?.data?.error || 'Registration failed. Please try again.';
-            setSubmitError(msg);
-        } finally {
-            setSubmitting(false);
+            return;
         }
+
+        await doRegister(userData, otpCode);
     };
 
     return (
@@ -239,7 +274,7 @@ const FacultyRegister = () => {
 
                         <div className="fr-heading">
                             <h2>Faculty Registration</h2>
-                            <p>Request access to the SRIT Academic Analytics System</p>
+                            <p>Create your SRIT Faculty Account</p>
                         </div>
 
                         <form onSubmit={onSubmit} className="fr-form">
@@ -258,13 +293,31 @@ const FacultyRegister = () => {
                                         id="fr-name"
                                     />
                                 </div>
+                            </div>
+                            <div className="fr-row">
                                 <div className="fr-field">
                                     <label>Email Address <span className="req">*</span></label>
-                                    <input
-                                        type="email" name="email" value={formData.email} onChange={onChange}
-                                        placeholder="faculty@srit.ac.in" required className="fr-input"
-                                        id="fr-email"
-                                    />
+                                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                        <input
+                                            type="email" name="email" value={formData.email} onChange={onChange}
+                                            placeholder="faculty@srit.ac.in" required className="fr-input"
+                                            id="fr-email" style={{ flex: 1 }}
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={handleSendOtp}
+                                            disabled={sendingOtp || otpVerified}
+                                            id="fr-send-otp-btn"
+                                            style={{
+                                                padding: '8px 12px', borderRadius: '8px', fontSize: '12px', fontWeight: 600,
+                                                border: 'none', cursor: otpVerified ? 'default' : 'pointer', whiteSpace: 'nowrap',
+                                                background: otpVerified ? '#22c55e' : '#1a237e', color: '#fff',
+                                                opacity: sendingOtp ? 0.7 : 1
+                                            }}
+                                        >
+                                            {sendingOtp ? '⏳ Sending...' : otpVerified ? '✓ Verified' : otpSent ? '↻ Resend' : '✉ Send OTP'}
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
 
@@ -311,6 +364,40 @@ const FacultyRegister = () => {
                             <div className="fr-section">
                                 <div className="fr-section-label">
                                     <span>👨‍🏫</span> Faculty Details
+                                </div>
+
+                                {/* ── Role Selection ── */}
+                                <div className="fr-field">
+                                    <label>Role <span className="req">*</span></label>
+                                    <div className="fr-role-group">
+                                        {[
+                                            { value: 'Faculty', label: 'Faculty', icon: '👨‍🏫', desc: 'Regular faculty member' },
+                                            { value: 'HOD', label: 'HOD', icon: '🏛️', desc: 'Head of Department' },
+                                        ].map(r => (
+                                            <label
+                                                key={r.value}
+                                                className={`fr-role-card${selectedRole === r.value ? ' fr-role-card--active' : ''}`}
+                                                htmlFor={`fr-role-${r.value}`}
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    id={`fr-role-${r.value}`}
+                                                    name="role"
+                                                    checked={selectedRole === r.value}
+                                                    onChange={() => setSelectedRole(r.value)}
+                                                    className="fr-role-checkbox"
+                                                />
+                                                <span className="fr-role-icon">{r.icon}</span>
+                                                <span className="fr-role-info">
+                                                    <span className="fr-role-name">{r.label}</span>
+                                                    <span className="fr-role-desc">{r.desc}</span>
+                                                </span>
+                                                {selectedRole === r.value && (
+                                                    <span className="fr-role-check">✓</span>
+                                                )}
+                                            </label>
+                                        ))}
+                                    </div>
                                 </div>
 
                                 <div className="fr-row">
@@ -373,63 +460,6 @@ const FacultyRegister = () => {
                                 </div>
                             </div>
 
-                            {/* ── Section: Role Selection ── */}
-                            <div className="fr-section fr-section--roles">
-                                <div className="fr-section-label">
-                                    <span>🎯</span> Role Selection
-                                </div>
-                                <p className="fr-roles-hint">Select your designated role(s). Higher roles take priority.</p>
-
-                                <div className="fr-roles-grid">
-                                    <label className={`fr-role-checkbox ${roles.Faculty ? 'fr-role-checkbox--checked' : ''}`} htmlFor="fr-role-faculty">
-                                        <input
-                                            type="checkbox" name="Faculty" checked={roles.Faculty}
-                                            onChange={onRoleChange} id="fr-role-faculty"
-                                        />
-                                        <div className="fr-role-check-icon">
-                                            <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
-                                                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
-                                            </svg>
-                                        </div>
-                                        <div className="fr-role-info">
-                                            <span className="fr-role-name">Faculty</span>
-                                            <span className="fr-role-desc">Standard teaching role</span>
-                                        </div>
-                                    </label>
-
-                                    <label className={`fr-role-checkbox ${roles.HOD ? 'fr-role-checkbox--checked' : ''}`} htmlFor="fr-role-hod">
-                                        <input
-                                            type="checkbox" name="HOD" checked={roles.HOD}
-                                            onChange={onRoleChange} id="fr-role-hod"
-                                        />
-                                        <div className="fr-role-check-icon">
-                                            <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
-                                                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
-                                            </svg>
-                                        </div>
-                                        <div className="fr-role-info">
-                                            <span className="fr-role-name">HOD</span>
-                                            <span className="fr-role-desc">Head of Department</span>
-                                        </div>
-                                    </label>
-
-                                    <label className={`fr-role-checkbox ${roles.ClassTeacher ? 'fr-role-checkbox--checked' : ''}`} htmlFor="fr-role-ct">
-                                        <input
-                                            type="checkbox" name="ClassTeacher" checked={roles.ClassTeacher}
-                                            onChange={onRoleChange} id="fr-role-ct"
-                                        />
-                                        <div className="fr-role-check-icon">
-                                            <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
-                                                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
-                                            </svg>
-                                        </div>
-                                        <div className="fr-role-info">
-                                            <span className="fr-role-name">Class Teacher</span>
-                                            <span className="fr-role-desc">Section in-charge</span>
-                                        </div>
-                                    </label>
-                                </div>
-                            </div>
 
                             {/* ── Section: CAPTCHA ── */}
                             <div className="fr-captcha-section">
@@ -484,16 +514,78 @@ const FacultyRegister = () => {
                                         <span className="fr-spinner"></span>
                                         Registering...
                                     </>
+                                ) : otpVerified ? (
+                                    <>
+                                        <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V8H4v2H2v2h2v2h2v-2h2v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" /></svg>
+                                        Register as Faculty
+                                    </>
                                 ) : (
                                     <>
-                                        <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
-                                            <path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V8H4v2H2v2h2v2h2v-2h2v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                                        </svg>
-                                        Register as Faculty
+                                        <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" /></svg>
+                                        Verify Email & Register
                                     </>
                                 )}
                             </button>
                         </form>
+
+                        {/* OTP Modal */}
+                        {showOtpModal && (
+                            <div style={{
+                                position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', display: 'flex',
+                                alignItems: 'center', justifyContent: 'center', zIndex: 9999
+                            }}>
+                                <div style={{
+                                    background: '#fff', borderRadius: '16px', padding: '36px 32px', maxWidth: '380px',
+                                    width: '90%', boxShadow: '0 20px 60px rgba(0,0,0,0.25)', textAlign: 'center'
+                                }}>
+                                    <div style={{ fontSize: '40px', marginBottom: '12px' }}>📧</div>
+                                    <h3 style={{ margin: '0 0 8px', color: '#1a237e', fontSize: '20px' }}>Verify Your Email</h3>
+                                    <p style={{ margin: '0 0 20px', color: '#666', fontSize: '13px' }}>
+                                        A 6-digit OTP was sent to <strong>{formData.email}</strong>.
+                                    </p>
+                                    <input
+                                        type="text"
+                                        maxLength={6}
+                                        value={otpInput}
+                                        onChange={e => { setOtpInput(e.target.value); setOtpError(''); }}
+                                        placeholder="Enter 6-digit OTP"
+                                        id="fr-otp-input"
+                                        style={{
+                                            width: '100%', padding: '12px 16px', borderRadius: '10px', fontSize: '22px',
+                                            fontWeight: 700, textAlign: 'center', letterSpacing: '8px',
+                                            border: `2px solid ${otpError ? '#ef4444' : '#c7d2fe'}`,
+                                            outline: 'none', boxSizing: 'border-box', color: '#1a237e',
+                                            fontFamily: 'monospace'
+                                        }}
+                                    />
+                                    {otpError && <p style={{ color: '#ef4444', fontSize: '13px', margin: '8px 0 0' }}>{otpError}</p>}
+                                    <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+                                        <button
+                                            onClick={() => setShowOtpModal(false)}
+                                            style={{
+                                                flex: 1, padding: '10px', borderRadius: '8px', fontSize: '14px',
+                                                border: '2px solid #e0e0e0', background: '#fff', cursor: 'pointer', color: '#666'
+                                            }}
+                                        >Cancel</button>
+                                        <button
+                                            onClick={handleVerifyOtp}
+                                            id="fr-otp-verify-btn"
+                                            style={{
+                                                flex: 2, padding: '10px', borderRadius: '8px', fontSize: '14px',
+                                                border: 'none', background: 'linear-gradient(135deg, #1a237e, #3f51b5)',
+                                                color: '#fff', fontWeight: 700, cursor: 'pointer'
+                                            }}
+                                        >✓ Verify OTP</button>
+                                    </div>
+                                    <p style={{ marginTop: '14px', fontSize: '12px', color: '#999' }}>
+                                        Didn't get it? <span
+                                            style={{ color: '#3f51b5', cursor: 'pointer', fontWeight: 600 }}
+                                            onClick={handleSendOtp}
+                                        >Resend OTP</span>
+                                    </p>
+                                </div>
+                            </div>
+                        )}
 
                         <p className="fr-login-link">
                             Already have an account? <Link to="/login">Sign In</Link>

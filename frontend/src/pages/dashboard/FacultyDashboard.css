@@ -380,6 +380,86 @@
     font-weight: 600;
 }
 
+/* ── Student List Filters ── */
+.hod-filters-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 24px;
+    background: linear-gradient(135deg, #f8faff, #eef3ff);
+    border-bottom: 1px solid #dde3f0;
+    flex-wrap: wrap;
+}
+
+.hod-filter-search {
+    position: relative;
+    flex: 1;
+    min-width: 200px;
+}
+
+.hod-filter-search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    font-size: 0.82rem;
+    pointer-events: none;
+}
+
+.hod-filter-input {
+    width: 100%;
+    padding: 9px 12px 9px 34px;
+    border: 1.5px solid #dde3f0;
+    border-radius: 9px;
+    font-size: 0.83rem;
+    font-family: 'Inter', sans-serif;
+    background: #fff;
+    color: #1a2744;
+    outline: none;
+    transition: all 0.25s;
+    box-sizing: border-box;
+}
+
+.hod-filter-input:focus {
+    border-color: #e05c1a;
+    box-shadow: 0 0 0 3px rgba(224, 92, 26, 0.1);
+}
+
+.hod-filter-input::placeholder {
+    color: #b0bac9;
+}
+
+.hod-filter-select {
+    padding: 9px 14px;
+    border: 1.5px solid #dde3f0;
+    border-radius: 9px;
+    font-size: 0.83rem;
+    font-family: 'Inter', sans-serif;
+    background: #fff;
+    color: #1a2744;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.25s;
+    min-width: 120px;
+}
+
+.hod-filter-select:focus {
+    border-color: #e05c1a;
+    box-shadow: 0 0 0 3px rgba(224, 92, 26, 0.1);
+}
+
+.hod-filter-count {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #5b6b8a;
+    white-space: nowrap;
+    background: #fff;
+    padding: 6px 12px;
+    border-radius: 20px;
+    border: 1px solid #dde3f0;
+}
+
 /* ── Responsive ── */
 @media (max-width: 1100px) {
     .hod-stats-row {
@@ -401,6 +481,13 @@
 
 /* ─── Clickable Faculty Rows ─── */
 .hod-faculty-row:hover {
+    background: #fff8f4 !important;
+    box-shadow: inset 3px 0 0 #e05c1a;
+    transition: background 0.15s, box-shadow 0.15s;
+}
+
+/* ─── Clickable Student Rows ─── */
+.hod-student-row:hover {
     background: #fff8f4 !important;
     box-shadow: inset 3px 0 0 #e05c1a;
     transition: background 0.15s, box-shadow 0.15s;

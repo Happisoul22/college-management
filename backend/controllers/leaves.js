@@ -2,6 +2,7 @@ const ErrorResponse = require('../utils/errorResponse');
 const asyncHandler = require('../middleware/async');
 const Leave = require('../models/Leave');
 const User = require('../models/User');
+const blockchain = require('../services/blockchain');
 
 // @desc    Apply for leave (Student or Faculty)
 // @route   POST /api/leaves
@@ -19,6 +20,9 @@ exports.applyLeave = asyncHandler(async (req, res, next) => {
 
     const leave = await Leave.create(req.body);
 
+    // Store leave creation on blockchain
+    await blockchain.storeRecordHash('leave', leave._id, leave);
+
     res.status(201).json({ success: true, data: leave });
 });
 
@@ -34,8 +38,38 @@ exports.getLeaves = asyncHandler(async (req, res, next) => {
             .populate({ path: 'approvedBy', select: 'name role' });
 
     } else if (['Faculty', 'ClassTeacher'].includes(req.user.role)) {
-        // Faculty/ClassTeacher see only their own leaves (HOD cannot apply so excluded)
-        query = Leave.find({ user: req.user.id })
+        // Faculty/ClassTeacher: own leaves + student leaves from their assigned class
+        const ClassAssignment = require('../models/ClassAssignment');
+
+        // Find active class assignments for this faculty
+        const assignments = await ClassAssignment.find({
+            faculty: req.user.id,
+            isActive: true
+        });
+
+        let studentIds = [];
+        if (assignments.length > 0) {
+            // Build queries to find students matching each assignment
+            const orConditions = assignments.map(a => ({
+                role: 'Student',
+                'studentProfile.branch': a.department,
+                'studentProfile.section': a.section
+            }));
+
+            const students = await User.find({ $or: orConditions }).select('_id');
+            studentIds = students.map(s => s._id);
+        }
+
+        // Return: own leaves + student leaves from assigned classes
+        query = Leave.find({
+            $or: [
+                { user: req.user.id },  // own leaves
+                ...(studentIds.length > 0
+                    ? [{ user: { $in: studentIds }, applicantRole: 'Student' }]
+                    : [])
+            ]
+        })
+            .populate({ path: 'user', select: 'name email studentProfile role' })
             .populate({ path: 'approvedBy', select: 'name role' });
 
     } else if (['HOD', 'Principal', 'Admin'].includes(req.user.role)) {
@@ -99,6 +133,9 @@ exports.updateLeaveStatus = asyncHandler(async (req, res, next) => {
         status: req.body.status,
         approvedBy: req.user.id
     }, { new: true, runValidators: true });
+
+    // Store leave approval/rejection on blockchain
+    await blockchain.storeRecordHash('leave', leave._id, leave);
 
     res.status(200).json({ success: true, data: leave });
 });

@@ -9,15 +9,15 @@ const rateLimit = require('express-rate-limit');
 const path = require('path');
 const connectDB = require('./config/db');
 const errorHandler = require('./middleware/errorHandler');
-const initSubjects = require('./utils/initSubjects');
+const { initBlockchain } = require('./services/blockchain');
 
 // Load env vars
 dotenv.config();
 
-// Connect to database
+// Connect to database, then initialize blockchain
 connectDB().then(() => {
-    // Auto-initialize JNTUA R20 subjects on first boot (idempotent)
-    initSubjects();
+    // Initialize blockchain connection (graceful — won't crash if unavailable)
+    initBlockchain();
 });
 
 const app = express();
@@ -47,7 +47,7 @@ app.use(xss());
 // Rate limiting
 const limiter = rateLimit({
     windowMs: 10 * 60 * 1000, // 10 mins
-    max: 100
+    max: 1000 // increased for development
 });
 app.use('/api', limiter);
 
@@ -70,6 +70,7 @@ const attendance = require('./routes/attendance');
 const assignments = require('./routes/assignments');
 
 const notifications = require('./routes/notifications');
+const blockchainRoutes = require('./routes/blockchain');
 
 app.use('/api/auth', auth);
 app.use('/api/achievements', achievements);
@@ -82,6 +83,7 @@ app.use('/api/marks', marks);
 app.use('/api/attendance', attendance);
 app.use('/api/assignments', assignments);
 app.use('/api/notifications', notifications);
+app.use('/api/blockchain', blockchainRoutes);
 
 
 

@@ -5,6 +5,7 @@ import AuthContext from '../context/AuthContext';
 import api from '../api/axios';
 import { toast } from 'react-toastify';
 import { FaPlus, FaTimes, FaFileAlt, FaCheck, FaClock, FaBan, FaUpload, FaMagic } from 'react-icons/fa';
+import BlockchainBadge from '../components/BlockchainBadge';
 import './Achievements.css';
 
 /* ─── Achievement types ─────────────────────────────── */
@@ -628,6 +629,7 @@ const Achievements = () => {
                                 <th>Certificate</th>
                                 <th>Status</th>
                                 <th>Remarks</th>
+                                <th>Blockchain</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -668,10 +670,13 @@ const Achievements = () => {
                                         </span>
                                     </td>
                                     <td style={{ color: '#64748b', fontSize: '0.82rem' }}>{ach.remarks || '—'}</td>
+                                    <td>
+                                        <BlockchainBadge type="achievement" recordId={ach._id} compact showButton={false} />
+                                    </td>
                                 </tr>
                             )) : (
                                 <tr>
-                                    <td colSpan="7" style={{ textAlign: 'center', padding: '40px', color: '#94a3b8' }}>
+                                    <td colSpan="8" style={{ textAlign: 'center', padding: '40px', color: '#94a3b8' }}>
                                         No achievements yet. Click <strong>"Add Achievement"</strong> to get started.
                                     </td>
                                 </tr>

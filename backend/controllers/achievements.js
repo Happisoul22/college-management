@@ -3,6 +3,7 @@ const asyncHandler = require('../middleware/async');
 const Achievement = require('../models/Achievement');
 const User = require('../models/User');
 const { createNotification } = require('./notifications');
+const blockchain = require('../services/blockchain');
 
 // @desc    Create new achievement
 // @route   POST /api/achievements
@@ -43,9 +44,17 @@ exports.createAchievement = asyncHandler(async (req, res, next) => {
         }
     } catch (e) { console.error('Notify faculty error:', e.message); }
 
+    // Store hash on blockchain for tamper-proof verification
+    const blockchainResult = await blockchain.storeRecordHash('achievement', achievement._id, achievement);
+
     res.status(201).json({
         success: true,
-        data: achievement
+        data: achievement,
+        blockchain: blockchainResult ? {
+            txHash: blockchainResult.txHash,
+            recordKey: blockchainResult.recordKey,
+            blockNumber: blockchainResult.blockNumber
+        } : null
     });
 });
 
@@ -233,9 +242,17 @@ exports.updateAchievement = asyncHandler(async (req, res, next) => {
         } catch (e) { console.error('Notify student error:', e.message); }
     }
 
+    // Update blockchain hash after status change
+    const blockchainResult = await blockchain.storeRecordHash('achievement', achievement._id, achievement);
+
     res.status(200).json({
         success: true,
-        data: achievement
+        data: achievement,
+        blockchain: blockchainResult ? {
+            txHash: blockchainResult.txHash,
+            recordKey: blockchainResult.recordKey,
+            blockNumber: blockchainResult.blockNumber
+        } : null
     });
 });
 

@@ -3,6 +3,7 @@ const ErrorResponse = require('../utils/errorResponse');
 const ClassAssignment = require('../models/ClassAssignment');
 const CounsellorAssignment = require('../models/CounsellorAssignment');
 const User = require('../models/User');
+const blockchain = require('../services/blockchain');
 
 // ═══════════ CLASS TEACHER ASSIGNMENTS ═══════════
 
@@ -94,6 +95,9 @@ exports.assignClassTeacher = asyncHandler(async (req, res, next) => {
 
     const populated = await ClassAssignment.findById(assignment._id)
         .populate('faculty', 'name email');
+
+    // Store assignment on blockchain
+    await blockchain.storeRecordHash('assignment', assignment._id, assignment);
 
     res.status(201).json({ success: true, data: populated });
 });
@@ -208,6 +212,9 @@ exports.assignCounsellor = asyncHandler(async (req, res, next) => {
     const populated = await CounsellorAssignment.findById(assignment._id)
         .populate('faculty', 'name email')
         .populate('students', 'name email studentProfile');
+
+    // Store assignment on blockchain
+    await blockchain.storeRecordHash('assignment', assignment._id, assignment);
 
     res.status(201).json({ success: true, data: populated });
 });

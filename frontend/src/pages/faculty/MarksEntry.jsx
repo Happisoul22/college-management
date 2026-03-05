@@ -3,6 +3,7 @@ import Layout from '../../components/Layout';
 import api from '../../api/axios';
 import { FaPen, FaSave, FaSearch } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import BlockchainBadge from '../../components/BlockchainBadge';
 import './MarksEntry.css';
 
 const MarksEntry = () => {
@@ -34,8 +35,12 @@ const MarksEntry = () => {
         try {
             const subj = subjects.find(s => s._id === selectedSubject);
             setSelectedSubjectInfo(subj);
-            // Get students in the department
-            const stuRes = await api.get(`/analytics/department-users?type=Student${subj?.department ? `&department=${subj.department}` : ''}`);
+            // Get students filtered by department, section, and year
+            let stuUrl = `/analytics/department-users?type=Student`;
+            if (subj?.department) stuUrl += `&department=${subj.department}`;
+            if (subj?.section) stuUrl += `&section=${subj.section}`;
+            if (subj?.year) stuUrl += `&year=${subj.year}`;
+            const stuRes = await api.get(stuUrl);
             setStudents(stuRes.data.data || []);
             // Get existing marks
             const marksRes = await api.get(`/marks?subject=${selectedSubject}&academicYear=${academicYear}`);
@@ -162,6 +167,7 @@ const MarksEntry = () => {
                                     <th>Attendance (10)</th>
                                     <th>External (100)</th>
                                     <th>Total</th>
+                                    <th>🔗</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -194,6 +200,16 @@ const MarksEntry = () => {
                                                     value={m.examScore || ''} onChange={e => handleMarkChange(stu._id, 'examScore', e.target.value)} />
                                             </td>
                                             <td className="me-total">{total}</td>
+                                            <td>
+                                                {existingMarks.find(m => (m.student?._id || m.student) === stu._id) && (
+                                                    <BlockchainBadge
+                                                        type="marks"
+                                                        recordId={existingMarks.find(m => (m.student?._id || m.student) === stu._id)._id}
+                                                        compact
+                                                        showButton={false}
+                                                    />
+                                                )}
+                                            </td>
                                         </tr>
                                     );
                                 })}
