@@ -138,7 +138,7 @@ exports.getAchievements = asyncHandler(async (req, res, next) => {
             allUsers.map(r => r.data)
                 .filter(u => 
                     (u.role === 'Student' && u.studentProfile?.branch === dept) ||
-                    (['Faculty', 'ClassTeacher'].includes(u.role) && u.facultyProfile?.department === dept)
+                    (['Faculty', 'ClassTeacher', 'HOD'].includes(u.role) && u.facultyProfile?.department === dept)
                 )
                 .map(u => u.id)
         );
@@ -146,12 +146,13 @@ exports.getAchievements = asyncHandler(async (req, res, next) => {
     }
 
     // ── Query filters ──────────────────────────────────────────────────────────
+    if (req.query.student?.trim()) results = results.filter(a => a.user === req.query.student.trim());
     if (req.query.status?.trim()) results = results.filter(a => a.status === req.query.status.trim());
     if (req.query.type?.trim()) results = results.filter(a => a.type === req.query.type.trim());
     if (req.query.ownerRole?.trim()) {
         const queryRole = req.query.ownerRole.trim();
         if (queryRole === 'Faculty') {
-            results = results.filter(a => ['Faculty', 'ClassTeacher'].includes(a.submittedByRole));
+            results = results.filter(a => ['Faculty', 'ClassTeacher', 'HOD'].includes(a.submittedByRole));
         } else {
             results = results.filter(a => a.submittedByRole === queryRole);
         }

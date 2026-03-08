@@ -3,7 +3,8 @@ const {
     getOverallAnalytics,
     getDepartmentAnalytics,
     getDepartmentUsers,
-    getFacultyProfile
+    getFacultyProfile,
+    getUserProfile
 } = require('../controllers/analytics');
 
 const router = express.Router();
@@ -21,6 +22,9 @@ router.get('/department-users', authorize('Faculty', 'ClassTeacher', 'HOD', 'Pri
 
 // HOD: get detailed faculty profile by ID
 router.get('/faculty/:id', authorize('HOD', 'Principal', 'Admin'), getFacultyProfile);
+
+// Get any user profile
+router.get('/user/:id', authorize('Faculty', 'ClassTeacher', 'HOD', 'Principal', 'Admin'), getUserProfile);
 
 module.exports = router;
 

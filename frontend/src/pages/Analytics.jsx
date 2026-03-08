@@ -230,7 +230,7 @@ const Analytics = () => {
                                                 {ach.user ? (
                                                     <span
                                                         style={{ color: '#f97316', fontWeight: 700, cursor: 'pointer' }}
-                                                        onClick={() => navigate(`/student-profile/${ach.user._id}`)}
+                                                        onClick={() => navigate(`/student-profile/${ach.user.id}`)}
                                                         title="Click to view student profile"
                                                     >
                                                         {ach.user.name}

@@ -13,6 +13,16 @@ import './StudentProfile.css';
 
 const COLORS = ['#6366f1', '#e05c1a', '#10b981', '#f59e0b', '#0d2b5e', '#ec4899', '#14b8a6', '#8b5cf6'];
 
+const computeSemester = (admissionYear) => {
+    if (!admissionYear) return 1;
+    const now = new Date();
+    const currentMonth = now.getMonth() + 1;
+    const currentYear = now.getFullYear();
+    const yearDiff = currentYear - admissionYear;
+    const sem = currentMonth >= 7 ? (yearDiff * 2) + 1 : (yearDiff * 2);
+    return Math.max(sem, 1);
+};
+
 const computeYear = (admissionYear) => {
     if (!admissionYear) return '—';
     const now = new Date();
@@ -40,6 +50,7 @@ const StudentProfile = () => {
     const [cgpaData, setCgpaData] = useState(null);
     const [attendanceSummary, setAttendanceSummary] = useState(null);
     const [achievements, setAchievements] = useState([]);
+    const [enrolledSubjects, setEnrolledSubjects] = useState([]);
     const [activeTab, setActiveTab] = useState('overview');
     const [loading, setLoading] = useState(true);
     const [achievementFilter, setAchievementFilter] = useState('All');
@@ -49,18 +60,26 @@ const StudentProfile = () => {
     const fetchAll = async () => {
         try {
             const [stuRes, marksRes, cgpaRes, achRes] = await Promise.all([
-                api.get(`/analytics/department-users?type=Student`).then(r =>
-                    r.data.data?.find(u => u.id === id) || null
-                ),
+                api.get(`/analytics/user/${id}`).then(r => r.data.data).catch(() => null),
                 api.get(`/marks?student=${id}`),
                 api.get(`/marks/cgpa/${id}`),
                 api.get(`/achievements?student=${id}`)
             ]);
-            setStudent(stuRes);
+            
+            const fetchedStudent = stuRes;
+            setStudent(fetchedStudent);
             setMarks(marksRes?.data?.data || []);
             setCgpaData(cgpaRes?.data?.data || null);
             setAttendanceSummary(null);
             setAchievements(achRes?.data?.data || []);
+
+            // Fetch enrolled subjects based on student details
+            if (fetchedStudent?.studentProfile) {
+                const sem = computeSemester(fetchedStudent.studentProfile.admissionYear);
+                const branch = fetchedStudent.studentProfile.branch;
+                const subjectsRes = await api.get(`/subjects?department=${branch}&semester=${sem}`).catch(() => ({ data: { data: [] } }));
+                setEnrolledSubjects(subjectsRes.data?.data || []);
+            }
         } catch (err) {
             console.error(err);
         } finally {
@@ -173,7 +192,7 @@ const StudentProfile = () => {
                         </div>
                         <div className="sp-o-card sp-o--subjects">
                             <div className="sp-o-icon"><FaBook /></div>
-                            <div className="sp-o-value">{marks.length}</div>
+                            <div className="sp-o-value">{enrolledSubjects.length}</div>
                             <div className="sp-o-label">Subjects</div>
                         </div>
                         <div className="sp-o-card sp-o--cgpa">

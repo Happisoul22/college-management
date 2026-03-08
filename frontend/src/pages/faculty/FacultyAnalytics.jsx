@@ -136,7 +136,8 @@ const FacultyAnalytics = () => {
     const fetchAchievements = async () => {
         try {
             // Always fetch faculty achievements; HOD gets dept-scoped via backend logic
-            const res = await api.get('/achievements?ownerRole=Faculty');
+            const endpoint = `/achievements?ownerRole=Faculty${!isHOD ? '&me=true' : ''}`;
+            const res = await api.get(endpoint);
             setAchievements(res.data.data);
         } catch (err) {
             toast.error('Failed to load achievements');

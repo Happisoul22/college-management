@@ -168,6 +168,23 @@ exports.getDepartmentUsers = asyncHandler(async (req, res, next) => {
     res.status(200).json({ success: true, count: users.length, data: users });
 });
 
+// @desc    Get a single user profile (Student/Faculty) by ID
+// @route   GET /api/analytics/user/:id
+// @access  Private
+exports.getUserProfile = asyncHandler(async (req, res, next) => {
+    const rec = await blockchain.getRecord(blockchain.keys.user(req.params.id));
+    if (!rec) {
+        return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const { passwordHash, ...pubUser } = rec.data;
+
+    res.status(200).json({
+        success: true,
+        data: pubUser
+    });
+});
+
 // @desc    Full faculty profile
 // @route   GET /api/analytics/faculty/:id
 exports.getFacultyProfile = asyncHandler(async (req, res, next) => {

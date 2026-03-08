@@ -62,6 +62,9 @@ const FacultyDashboard = () => {
     const [activeView, setActiveView] = useState(null); // null | 'students' | 'faculty'
     const [userList, setUserList] = useState([]);
     const [listLoading, setListLoading] = useState(false);
+    
+    // Available academic years for the report
+    const [availableYears, setAvailableYears] = useState(['2023']);
 
     // Student list filters
     const [searchTerm, setSearchTerm] = useState('');
@@ -89,6 +92,7 @@ const FacultyDashboard = () => {
     useEffect(() => {
         fetchMyAchievements();
         fetchAchievements();
+        fetchDynamicYears();
         if (isHOD) fetchDeptStats();
     }, [filters, achTab]);
 
@@ -109,6 +113,50 @@ const FacultyDashboard = () => {
             setDeptStats(res.data.data);
         } catch (err) {
             console.error('Dept stats error:', err);
+        }
+    };
+
+    // Calculate academic year from admissionYear (year starts in July)
+    const getYearFromAdmission = (admissionYear) => {
+        if (!admissionYear) return null;
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth() + 1; // 1-12
+        const yearDiff = currentMonth >= 7
+            ? currentYear - admissionYear + 1
+            : currentYear - admissionYear;
+        return Math.min(Math.max(yearDiff, 1), 4);
+    };
+
+    const fetchDynamicYears = async () => {
+        try {
+            const endpoint = isHOD ? '/analytics/department-users?type=Student' : '/assignments/class/my';
+            const res = await api.get(endpoint);
+            const data = res.data.data || [];
+            
+            if (isHOD) {
+                // Determine actual calendar years from student admission years
+                const years = [...new Set(data.map(u => u.studentProfile?.admissionYear).filter(Boolean))].sort((a,b) => a-b);
+                if (years.length) setAvailableYears(years.map(String));
+            } else {
+                // Standard faculty / ClassTeacher derives calendar years from their assigned classes
+                // Example: Currently it's 2024. If assigned to year 2, admission was 2023 (or 2022 if before July).
+                const now = new Date();
+                const currentYear = now.getFullYear();
+                const currentMonth = now.getMonth() + 1; // 1-12
+                
+                const years = [...new Set(data.map(a => {
+                    const assignedYearLevel = Number(a.year);
+                    if (!assignedYearLevel) return null;
+                    return currentMonth >= 7
+                        ? currentYear - assignedYearLevel + 1
+                        : currentYear - assignedYearLevel;
+                }).filter(Boolean))].sort((a,b) => a-b);
+                
+                if (years.length) setAvailableYears(years.map(String));
+            }
+        } catch (err) {
+            console.error('Error fetching dynamic years for report:', err);
         }
     };
 
@@ -667,6 +715,7 @@ const FacultyDashboard = () => {
                                             <th>Organization</th>
                                             <th>Year</th>
                                             <th>Status</th>
+                                            <th>Actions</th>
                                             <th>Proof</th>
                                         </tr>
                                     </thead>
@@ -693,7 +742,34 @@ const FacultyDashboard = () => {
                                                 <td style={{ fontWeight: 600 }}>{ach.title}</td>
                                                 <td style={{ color: '#64748b', fontSize: '0.83rem' }}>{ach.organization || '—'}</td>
                                                 <td>{ach.year}</td>
-                                                <td><span className={`status-badge status-${ach.status}`}>{ach.status}</span></td>
+                                                <td>
+                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                                        <span className={`status-badge status-${ach.status}`}>{ach.status}</span>
+                                                        {ach.reviewer && ach.status !== 'Pending' && (
+                                                            <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '2px' }}>
+                                                                by {ach.reviewer.name}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    {ach.status === 'Pending' && isHOD ? (
+                                                        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                                                            <button className="btn status-Approved"
+                                                                style={{ border: 'none', cursor: 'pointer', padding: '4px 8px', fontSize: '0.8rem' }}
+                                                                onClick={() => handleStatusUpdate(ach.id, 'Approved')}>
+                                                                <FaCheck />
+                                                            </button>
+                                                            <button className="btn status-Rejected"
+                                                                style={{ border: 'none', cursor: 'pointer', padding: '4px 8px', fontSize: '0.8rem' }}
+                                                                onClick={() => handleStatusUpdate(ach.id, 'Rejected')}>
+                                                                <FaTimes />
+                                                            </button>
+                                                        </div>
+                                                    ) : (
+                                                        <span style={{ color: '#94a3b8' }}>—</span>
+                                                    )}
+                                                </td>
                                                 <td>
                                                     {ach.proofUrl ? (
                                                         <a href={ach.proofUrl} target="_blank" rel="noreferrer" style={{ color: 'var(--primary-color)' }}>View</a>
@@ -730,7 +806,7 @@ const FacultyDashboard = () => {
                     className="form-control"
                     style={{ minWidth: 100 }}
                 >
-                    {['2019', '2020', '2021', '2022', '2023', '2024'].map(y =>
+                    {availableYears.map(y =>
                         <option key={y} value={y}>{y}</option>
                     )}
                 </select>

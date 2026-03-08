@@ -140,7 +140,7 @@ const MyStudents = () => {
                             </thead>
                             <tbody>
                                 {filteredStudents.length > 0 ? filteredStudents.map((stu, i) => (
-                                    <tr key={stu._id}>
+                                    <tr key={stu.id}>
                                         <td>{i + 1}</td>
                                         <td><strong>{stu.name}</strong></td>
                                         <td>{stu.studentProfile?.rollNumber || '—'}</td>
@@ -148,7 +148,7 @@ const MyStudents = () => {
                                         <td>{getYearFromAdmission(stu.studentProfile?.admissionYear) || '—'}</td>
                                         <td>{stu.email}</td>
                                         <td>
-                                            <Link to={`/student-profile/${stu._id}`} className="btn ms-view-btn">
+                                            <Link to={`/student-profile/${stu.id}`} className="btn ms-view-btn">
                                                 <FaEye /> View Profile
                                             </Link>
                                         </td>

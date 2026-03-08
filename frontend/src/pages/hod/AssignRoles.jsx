@@ -19,14 +19,20 @@ const AssignRoles = () => {
     const [counsellorAssignments, setCounsellorAssignments] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    const computeActiveAY = () => {
+        const now = new Date();
+        const y = now.getMonth() >= 5 ? now.getFullYear() : now.getFullYear() - 1;
+        return `${y}-${String(y + 1).slice(2)}`;
+    };
+
     // Class Teacher form
     const [ctForm, setCtForm] = useState({
-        faculty: '', year: '', semester: '', section: '', academicYear: '2024-25'
+        faculty: '', year: '', semester: '', section: '', academicYear: computeActiveAY()
     });
 
     // Counsellor form
     const [coForm, setCoForm] = useState({
-        faculty: '', students: [], academicYear: '2024-25'
+        faculty: '', students: [], academicYear: computeActiveAY()
     });
     const [selectAllStudents, setSelectAllStudents] = useState(false);
     // Student filters for counsellor assignment
@@ -62,7 +68,7 @@ const AssignRoles = () => {
         try {
             await api.post('/assignments/class', { ...ctForm, department: dept });
             toast.success('Class Teacher assigned!');
-            setCtForm({ faculty: '', year: '', semester: '', section: '', academicYear: '2024-25' });
+            setCtForm({ faculty: '', year: '', semester: '', section: '', academicYear: computeActiveAY() });
             fetchData();
         } catch (err) {
             toast.error(err?.response?.data?.error || 'Failed to assign');
@@ -91,7 +97,7 @@ const AssignRoles = () => {
                 academicYear: coForm.academicYear
             });
             toast.success('Counsellor assigned!');
-            setCoForm({ faculty: '', students: [], academicYear: '2024-25' });
+            setCoForm({ faculty: '', students: [], academicYear: computeActiveAY() });
             setSelectAllStudents(false);
             fetchData();
         } catch (err) {
@@ -131,6 +137,22 @@ const AssignRoles = () => {
     const coYears = ['All', 1, 2, 3, 4];
     const coSections = ['All', ...new Set(students.map(s => s.studentProfile?.section).filter(Boolean))].sort();
     const coBranches = ['All', ...new Set(students.map(s => s.studentProfile?.branch).filter(Boolean))].sort();
+
+    // Compute dynamic academic years based on students
+    const admissionYears = students
+        .map(s => s.studentProfile?.admissionYear)
+        .filter(y => y && !isNaN(y));
+    
+    const activeAYYear = parseInt(computeActiveAY().split('-')[0]);
+    let minAdmissionYear = admissionYears.length > 0 ? Math.min(...admissionYears) : activeAYYear;
+    // Cap to prevent excessive years if bad data exists
+    if (minAdmissionYear < activeAYYear - 10) minAdmissionYear = activeAYYear - 10;
+    
+    // Generate from (current year + 1) down to the oldest admission year
+    const academicYearsList = [];
+    for (let y = activeAYYear + 1; y >= minAdmissionYear; y--) {
+        academicYearsList.push(`${y}-${String(y + 1).slice(2)}`);
+    }
 
     // Filter students for counsellor selection
     const now = new Date();
@@ -199,9 +221,9 @@ const AssignRoles = () => {
                                 <div className="ar-field">
                                     <label>Academic Year</label>
                                     <select value={ctForm.academicYear} onChange={e => setCtForm({ ...ctForm, academicYear: e.target.value })} className="form-control">
-                                        <option value="2024-25">2024-25</option>
-                                        <option value="2023-24">2023-24</option>
-                                        <option value="2025-26">2025-26</option>
+                                        {academicYearsList.map(ay => (
+                                            <option key={ay} value={ay}>{ay}</option>
+                                        ))}
                                     </select>
                                 </div>
                             </div>
@@ -269,9 +291,9 @@ const AssignRoles = () => {
                                 <div className="ar-field">
                                     <label>Academic Year</label>
                                     <select value={coForm.academicYear} onChange={e => setCoForm({ ...coForm, academicYear: e.target.value })} className="form-control">
-                                        <option value="2024-25">2024-25</option>
-                                        <option value="2023-24">2023-24</option>
-                                        <option value="2025-26">2025-26</option>
+                                        {academicYearsList.map(ay => (
+                                            <option key={ay} value={ay}>{ay}</option>
+                                        ))}
                                     </select>
                                 </div>
                             </div>
