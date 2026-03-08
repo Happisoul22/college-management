@@ -1,0 +1,14 @@
+{
+  "id": "d5bf3539-b632-4862-9e38-1ad9d0c2d761",
+  "code": "CY402",
+  "name": "Ethical Hacking & Penetration Testing",
+  "department": "CSE-CS",
+  "semester": 4,
+  "year": 2,
+  "credits": 4,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:38:43.917Z"
+}

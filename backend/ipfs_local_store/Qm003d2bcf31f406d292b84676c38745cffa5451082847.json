@@ -1,0 +1,14 @@
+{
+  "id": "fff2d846-f292-4390-a8d1-3ff4abed3234",
+  "code": "DS892",
+  "name": "Seminar & Technical Presentation",
+  "department": "CSE-DS",
+  "semester": 8,
+  "year": 4,
+  "credits": 2,
+  "type": "Lab",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:38:28.743Z"
+}

@@ -1,0 +1,14 @@
+{
+  "id": "a241466c-5ec2-4e12-a858-4b984644bbac",
+  "code": "CH201",
+  "name": "Engineering Chemistry",
+  "department": "CIVIL",
+  "semester": 2,
+  "year": 1,
+  "credits": 4,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:36:19.775Z"
+}

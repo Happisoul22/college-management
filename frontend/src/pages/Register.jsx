@@ -145,16 +145,21 @@ const Register = () => {
 
     const handleVerifyOtp = async () => {
         if (!otpInput || otpInput.length !== 6) { setOtpError('Enter the 6-digit OTP'); return; }
-        // We don't verify separately — OTP is passed with the registration request
-        // Just mark as verified here for UX flow
-        setOtpCode(otpInput);
-        setOtpVerified(true);
-        setShowOtpModal(false);
-        toast.success('Email verified! You can now complete registration.');
-        // If we have pending submit data, submit now
-        if (pendingSubmitData) {
-            doRegister(pendingSubmitData, otpInput);
-            setPendingSubmitData(null);
+        try {
+            // Call real backend to verify OTP server-side
+            await api.post('/auth/verify-registration-otp', { email: formData.email, otp: otpInput });
+            setOtpCode(otpInput);
+            setOtpVerified(true);
+            setShowOtpModal(false);
+            toast.success('Email verified! You can now complete registration.');
+            // If we have pending submit data, submit now
+            if (pendingSubmitData) {
+                doRegister(pendingSubmitData, otpInput);
+                setPendingSubmitData(null);
+            }
+        } catch (err) {
+            const msg = err?.response?.data?.error || 'Invalid or expired OTP. Please try again.';
+            setOtpError(msg);
         }
     };
 

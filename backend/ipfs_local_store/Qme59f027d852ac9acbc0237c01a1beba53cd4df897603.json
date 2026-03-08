@@ -1,0 +1,14 @@
+{
+  "id": "3bc7218c-b9f3-46aa-b961-741f36d046af",
+  "code": "ME592",
+  "name": "Metrology Lab",
+  "department": "MECH",
+  "semester": 5,
+  "year": 3,
+  "credits": 1,
+  "type": "Lab",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:35:59.762Z"
+}

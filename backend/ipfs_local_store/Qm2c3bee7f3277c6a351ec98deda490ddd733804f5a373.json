@@ -1,0 +1,14 @@
+{
+  "id": "06797fb8-f0da-49fa-b04b-9edd6238b8e8",
+  "code": "DS391",
+  "name": "Python Lab",
+  "department": "CSE-DS",
+  "semester": 3,
+  "year": 2,
+  "credits": 1,
+  "type": "Lab",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:38:08.640Z"
+}

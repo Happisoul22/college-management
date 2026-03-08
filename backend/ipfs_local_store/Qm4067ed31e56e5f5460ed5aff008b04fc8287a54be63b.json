@@ -1,0 +1,14 @@
+{
+  "id": "c4fc7f1f-97c9-496d-9d03-c61a6074c6a4",
+  "code": "CY392",
+  "name": "OS Security Lab",
+  "department": "CSE-CS",
+  "semester": 3,
+  "year": 2,
+  "credits": 1,
+  "type": "Lab",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:38:42.711Z"
+}

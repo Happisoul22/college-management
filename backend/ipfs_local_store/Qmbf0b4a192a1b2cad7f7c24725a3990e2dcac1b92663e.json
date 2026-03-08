@@ -1,0 +1,14 @@
+{
+  "id": "fdad3376-b4a4-4edb-be4d-9c39235b2032",
+  "code": "DS491",
+  "name": "Machine Learning Lab",
+  "department": "CSE-DS",
+  "semester": 4,
+  "year": 2,
+  "credits": 1,
+  "type": "Lab",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:38:13.153Z"
+}

@@ -18,7 +18,7 @@ router.use(protect);
 router
     .route('/')
     .get(getAchievements)
-    .post(authorize('Student'), upload.single('proof'), createAchievement);
+    .post(authorize('Student', 'Faculty', 'ClassTeacher', 'HOD'), upload.single('proof'), createAchievement);
 
 router
     .route('/:id')

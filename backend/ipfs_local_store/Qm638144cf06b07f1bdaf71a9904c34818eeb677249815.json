@@ -1,0 +1,14 @@
+{
+  "id": "ab161460-bb02-496c-a2c8-fe3241f84cf2",
+  "code": "CE702",
+  "name": "Construction Management",
+  "department": "CIVIL",
+  "semester": 7,
+  "year": 4,
+  "credits": 4,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:36:43.474Z"
+}

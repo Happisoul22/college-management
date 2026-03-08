@@ -1,0 +1,14 @@
+{
+  "id": "e1125219-2ab8-405d-9d9a-b8b6b2f16994",
+  "code": "CH201",
+  "name": "Engineering Chemistry",
+  "department": "CSE-AI",
+  "semester": 2,
+  "year": 1,
+  "credits": 4,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:37:28.082Z"
+}

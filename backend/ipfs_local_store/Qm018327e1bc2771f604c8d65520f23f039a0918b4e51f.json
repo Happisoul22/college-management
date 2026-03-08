@@ -1,0 +1,18 @@
+{
+  "id": "c35c0053-058e-4ca3-9fcb-070b6cf35fd2",
+  "user": "acf8caf3-c83a-402d-b44a-b959b22aef4f",
+  "userName": "arfeen",
+  "userEmail": "alluarfeen9911@gmail.com",
+  "applicantRole": "Student",
+  "type": "",
+  "reason": "bjbn",
+  "startDate": "2026-03-23",
+  "endDate": "2026-03-26",
+  "status": "Rejected",
+  "approvedBy": "2175f917-0506-4309-8073-8330626a8f9a",
+  "approverName": "sumanth",
+  "createdAt": "2026-03-07T19:49:53.459Z",
+  "updatedAt": "2026-03-07T19:50:03.536Z",
+  "branch": "CSE",
+  "section": "A"
+}

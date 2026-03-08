@@ -1,0 +1,14 @@
+{
+  "id": "842aad25-51e6-46f7-b674-51c26b13c0eb",
+  "code": "CS703",
+  "name": "Distributed Systems",
+  "department": "CSE",
+  "semester": 7,
+  "year": 4,
+  "credits": 4,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:34:19.606Z"
+}

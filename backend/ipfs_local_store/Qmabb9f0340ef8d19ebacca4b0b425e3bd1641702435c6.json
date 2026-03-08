@@ -1,0 +1,14 @@
+{
+  "id": "57863d55-8ada-434b-b5a0-915cf6200808",
+  "code": "PH191",
+  "name": "Engineering Physics Lab",
+  "department": "CSE-DS",
+  "semester": 1,
+  "year": 1,
+  "credits": 1,
+  "type": "Lab",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:37:59.031Z"
+}

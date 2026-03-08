@@ -1,0 +1,7 @@
+[
+  {
+    "r": "blockchain",
+    "err": "Route.get() requires a callback function but got a [object Undefined]",
+    "stack": "    at Object.<anonymous> (C:\\Users\\suman\\OneDrive\\Desktop\\academic-analytics-system\\backend\\routes\\blockchain.js:14:8)"
+  }
+]

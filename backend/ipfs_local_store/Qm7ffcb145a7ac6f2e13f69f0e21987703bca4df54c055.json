@@ -1,0 +1,14 @@
+{
+  "id": "50339ed3-2917-4420-9c16-7409be671f39",
+  "code": "DS501",
+  "name": "Deep Learning",
+  "department": "CSE-DS",
+  "semester": 5,
+  "year": 3,
+  "credits": 4,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:38:14.472Z"
+}

@@ -1,0 +1,14 @@
+{
+  "id": "78e16a2b-6d71-431b-af45-caaff491e0cb",
+  "code": "ME101",
+  "name": "Engineering Graphics",
+  "department": "CIVIL",
+  "semester": 1,
+  "year": 1,
+  "credits": 3,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:36:16.398Z"
+}

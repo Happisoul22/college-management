@@ -1,0 +1,14 @@
+{
+  "id": "e7e87be6-73c9-4150-8bd5-b410332bd7e8",
+  "code": "IT504",
+  "name": "Mobile Application Development",
+  "department": "IT",
+  "semester": 5,
+  "year": 3,
+  "credits": 4,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:37:10.564Z"
+}

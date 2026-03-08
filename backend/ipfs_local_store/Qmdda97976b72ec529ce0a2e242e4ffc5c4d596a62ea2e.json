@@ -1,0 +1,14 @@
+{
+  "id": "2d16d0c5-2f40-4d74-9e31-bf84ea3c11f2",
+  "code": "ME201",
+  "name": "Engineering Mechanics",
+  "department": "CSE-DS",
+  "semester": 2,
+  "year": 1,
+  "credits": 3,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:38:02.418Z"
+}

@@ -1,0 +1,14 @@
+{
+  "id": "ef45f29a-3e24-4a1f-a8ae-5877471ea95e",
+  "code": "IT602",
+  "name": "Big Data Analytics",
+  "department": "IT",
+  "semester": 6,
+  "year": 3,
+  "credits": 4,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:37:14.250Z"
+}

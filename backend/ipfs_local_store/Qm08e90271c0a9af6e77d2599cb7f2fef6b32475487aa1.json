@@ -1,0 +1,14 @@
+{
+  "id": "4f9a566f-b710-4464-bf10-c867f001278e",
+  "code": "MA101",
+  "name": "Mathematics – I (Calculus & Linear Algebra)",
+  "department": "ECE",
+  "semester": 1,
+  "year": 1,
+  "credits": 4,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:34:23.712Z"
+}

@@ -1,0 +1,14 @@
+{
+  "id": "c7b0ca62-a6e2-4035-ba08-8f7a61b01a8e",
+  "code": "EE201",
+  "name": "Basic Electrical Engineering",
+  "department": "EEE",
+  "semester": 2,
+  "year": 1,
+  "credits": 4,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:35:06.873Z"
+}

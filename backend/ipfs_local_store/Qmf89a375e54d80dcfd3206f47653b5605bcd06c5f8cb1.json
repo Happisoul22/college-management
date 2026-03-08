@@ -1,0 +1,14 @@
+{
+  "id": "079978b3-6b5f-437a-90ee-536da2131c1e",
+  "code": "CS303",
+  "name": "Discrete Mathematics",
+  "department": "CSE",
+  "semester": 3,
+  "year": 2,
+  "credits": 4,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:34:06.372Z"
+}

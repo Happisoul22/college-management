@@ -1,0 +1,7 @@
+{
+  "ignore": [
+    "ipfs_local_store/*",
+    "logs/*",
+    "*.log"
+  ]
+}

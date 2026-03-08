@@ -1,0 +1,14 @@
+{
+  "id": "5104ad8b-dc54-4df5-b415-0633a0a6bfde",
+  "code": "AI491",
+  "name": "Machine Learning Lab",
+  "department": "CSE-AI",
+  "semester": 4,
+  "year": 2,
+  "credits": 1,
+  "type": "Lab",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:37:40.565Z"
+}

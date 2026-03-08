@@ -1,0 +1,14 @@
+{
+  "id": "ec1cb6c3-dba9-4e98-add6-25fddfed565e",
+  "code": "ME404",
+  "name": "Heat Transfer",
+  "department": "MECH",
+  "semester": 4,
+  "year": 2,
+  "credits": 4,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:35:53.017Z"
+}

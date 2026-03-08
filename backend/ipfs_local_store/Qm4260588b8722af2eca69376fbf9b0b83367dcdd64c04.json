@@ -1,0 +1,14 @@
+{
+  "id": "ac1d9963-7c51-4c99-8a6d-fa39d89eac68",
+  "code": "CE392",
+  "name": "Fluid Mechanics Lab",
+  "department": "CIVIL",
+  "semester": 3,
+  "year": 2,
+  "credits": 1,
+  "type": "Lab",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:36:30.031Z"
+}

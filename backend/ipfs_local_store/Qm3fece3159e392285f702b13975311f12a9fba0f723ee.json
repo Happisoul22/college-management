@@ -1,0 +1,14 @@
+{
+  "id": "c0cb48a8-f8f0-47fd-9add-b2d660eec61b",
+  "code": "AI503",
+  "name": "Computer Vision",
+  "department": "CSE-AI",
+  "semester": 5,
+  "year": 3,
+  "credits": 4,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:37:43.589Z"
+}

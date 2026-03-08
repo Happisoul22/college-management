@@ -1,0 +1,14 @@
+{
+  "id": "c4f014ca-55a4-4fdc-9ecb-b0d5f2683e19",
+  "code": "ME201",
+  "name": "Engineering Mechanics",
+  "department": "CIVIL",
+  "semester": 2,
+  "year": 1,
+  "credits": 3,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:36:21.990Z"
+}

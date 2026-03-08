@@ -1,258 +1,270 @@
-const ErrorResponse = require('../utils/errorResponse');
+/**
+ * controllers/achievements.js  –  Fully decentralised (no MongoDB)
+ *
+ * Achievements stored as JSON on IPFS + indexed on-chain per user.
+ * Key format: ach_<uuid>
+ */
+
+const { v4: uuidv4 } = require('uuid');
 const asyncHandler = require('../middleware/async');
-const Achievement = require('../models/Achievement');
-const User = require('../models/User');
-const { createNotification } = require('./notifications');
+const ErrorResponse = require('../utils/errorResponse');
 const blockchain = require('../services/blockchain');
+const { createNotification } = require('./notifications');
 
 // @desc    Create new achievement
 // @route   POST /api/achievements
 // @access  Private (Student)
 exports.createAchievement = asyncHandler(async (req, res, next) => {
-    req.body.user = req.user.id;
-    req.body.submittedByRole = req.user.role; // stamp the submitter's role
+    const id = uuidv4();
+    const key = blockchain.keys.achievement(id);
 
-    // Check if file uploaded — store as a proper accessible URL
-    if (req.file) {
-        req.body.proofUrl = `/uploads/${req.file.filename}`;
-        req.body.proofFileName = req.file.originalname;
-    }
+    const achievementData = {
+        id,
+        user: req.user.id,
+        userName: req.user.name,
+        submittedByRole: req.user.role,
+        type: req.body.type || '',
+        title: req.body.title || '',
+        description: req.body.description || '',
+        year: req.body.year || new Date().getFullYear(),
+        semester: req.body.semester || '',
+        organization: req.body.organization || '',
+        domain: req.body.domain || '',
+        startDate: req.body.startDate || '',
+        endDate: req.body.endDate || '',
+        weeks: req.body.weeks || '',
+        nptelCourseType: req.body.nptelCourseType || '',
+        nptelDuration: req.body.nptelDuration || '',
+        score: req.body.score || '',
+        instructor: req.body.instructor || '',
+        workType: req.body.workType || '',
+        projectRole: req.body.projectRole || '',
+        contribution: req.body.contribution || '',
+        githubLink: req.body.githubLink || '',
+        teamMembers: req.body.teamMembers || '',
+        proofUrl: req.file ? `/uploads/${req.file.filename}` : (req.body.proofUrl || ''),
+        proofFileName: req.file ? req.file.originalname : (req.body.proofFileName || ''),
+        status: 'Pending',
+        reviewedBy: null,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+    };
 
-    const achievement = await Achievement.create(req.body);
+    const result = await blockchain.storeRecord('achievement', key, achievementData, req.user.id);
 
-    // ── Notify class teacher of new achievement submission ──
+    // Notify class teacher
+    // Notify the correct approver
     try {
-        const ClassAssignment = require('../models/ClassAssignment');
-        const student = await User.findById(req.user.id).select('name studentProfile');
-        const dept = student?.studentProfile?.branch;
-        const section = student?.studentProfile?.section;
-
-        if (dept) {
-            // Find active class teacher for this student's section
-            const assignQuery = { isActive: true, department: dept };
-            if (section) assignQuery.section = section;
-            const assignments = await ClassAssignment.find(assignQuery).select('faculty');
-            for (const a of assignments) {
-                await createNotification({
-                    recipient: a.faculty,
-                    sender: req.user.id,
-                    type: 'achievement_submitted',
-                    message: `${student.name} submitted a new achievement: "${achievement.title}"`,
-                    link: '/approvals'
-                });
+        if (req.user.role === 'Student') {
+            const userRec = await blockchain.getRecord(blockchain.keys.user(req.user.id));
+            const student = userRec?.data;
+            const dept = student?.studentProfile?.branch;
+            if (dept) {
+                const allAssign = await blockchain.getAllRecordsOfType('classassign');
+                for (const a of allAssign.map(r => r.data)) {
+                    if (a.department === dept && a.section === student.studentProfile?.section && a.isActive) {
+                        await createNotification({
+                            recipient: a.faculty,
+                            sender: req.user.id,
+                            type: 'achievement_submitted',
+                            message: `${student.name} submitted a new achievement: "${achievementData.title}"`,
+                            link: '/approvals'
+                        });
+                    }
+                }
+            }
+        } else if (['Faculty', 'ClassTeacher'].includes(req.user.role)) {
+            const userRec = await blockchain.getRecord(blockchain.keys.user(req.user.id));
+            const faculty = userRec?.data;
+            const dept = faculty?.facultyProfile?.department;
+            if (dept) {
+                const allUsers = await blockchain.getAllRecordsOfType('user');
+                const hods = allUsers.map(r => r.data).filter(u => u.role === 'HOD' && u.facultyProfile?.department === dept);
+                for (const hod of hods) {
+                    await createNotification({
+                        recipient: hod.id,
+                        sender: req.user.id,
+                        type: 'achievement_submitted',
+                        message: `${faculty.name} submitted a new achievement: "${achievementData.title}"`,
+                        link: '/approvals'
+                    });
+                }
             }
         }
-    } catch (e) { console.error('Notify faculty error:', e.message); }
-
-    // Store hash on blockchain for tamper-proof verification
-    const blockchainResult = await blockchain.storeRecordHash('achievement', achievement._id, achievement);
+    } catch (e) { console.error('Notify approver error:', e.message); }
 
     res.status(201).json({
         success: true,
-        data: achievement,
-        blockchain: blockchainResult ? {
-            txHash: blockchainResult.txHash,
-            recordKey: blockchainResult.recordKey,
-            blockNumber: blockchainResult.blockNumber
-        } : null
+        data: achievementData,
+        blockchain: result ? { txHash: result.txHash, cid: result.cid } : null
     });
 });
 
-// @desc    Get all achievements (with filters)
+// @desc    Get achievements (with filters & role-based scoping)
 // @route   GET /api/achievements
 // @access  Private
 exports.getAchievements = asyncHandler(async (req, res, next) => {
+    const all = await blockchain.getAllRecordsOfType('achievement');
+    let results = all.map(r => r.data);
 
-    // ── Students: only their own achievements ──────────────────────────
-    if (req.user.role === 'Student') {
-        const query = { user: req.user.id };
-        if (req.query.status) query.status = req.query.status;
-        const achievements = await Achievement.find(query).sort('-createdAt');
-        return res.status(200).json({ success: true, count: achievements.length, data: achievements });
-    }
+    // ── Role-based filter ──────────────────────────────────────────────────────
+    if (req.query.me === 'true' || req.user.role === 'Student') {
+        results = results.filter(a => a.user === req.user.id);
+    } else if (['Faculty', 'ClassTeacher'].includes(req.user.role)) {
+        // Filter to assigned class's students
+        const myAssigns = (await blockchain.getAllRecordsOfType('classassign'))
+            .map(r => r.data)
+            .filter(a => a.faculty === req.user.id && a.isActive);
 
-    // ── Build base filter (strip empty strings so "All" truly = no filter) ──
-    const filter = {};
-    if (req.query.status && req.query.status.trim() !== '') {
-        filter.status = req.query.status.trim();
-    }
-    if (req.query.type && req.query.type.trim() !== '') {
-        filter.type = req.query.type.trim();
-    }
-
-    // ── Scope ClassTeacher / Faculty to their assigned class ──────────
-    // If they have an active ClassAssignment, restrict to students of that class.
-    // HOD / Principal / Admin see the whole department.
-    const isFacultyRole = ['Faculty', 'ClassTeacher'].includes(req.user.role);
-    if (isFacultyRole) {
-        const ClassAssignment = require('../models/ClassAssignment');
-        const assignment = await ClassAssignment.findOne({ faculty: req.user.id, isActive: true });
-
-        if (assignment) {
-            const dept = assignment.department;
-            const section = assignment.section;
-            const year = assignment.year;
-
-            const now = new Date();
-            const currentCalYear = now.getFullYear();
-            const admYear1 = currentCalYear - year;
-            const admYear2 = currentCalYear - year + 1;
-
-            const studentQuery = {
-                role: 'Student',
-                'studentProfile.branch': dept,
-                ...(section ? { 'studentProfile.section': section } : {}),
-                'studentProfile.admissionYear': { $in: [admYear1, admYear2] }
-            };
-
-            const students = await User.find(studentQuery).select('_id');
-            filter.user = { $in: students.map(s => s._id) };
+        if (myAssigns.length) {
+            const a = myAssigns[0];
+            const allUsers = await blockchain.getAllRecordsOfType('user');
+            const classStudentIds = new Set(
+                allUsers
+                    .map(r => r.data)
+                    .filter(u =>
+                        u.role === 'Student' &&
+                        u.studentProfile?.branch === a.department &&
+                        u.studentProfile?.section === a.section
+                    )
+                    .map(u => u.id)
+            );
+            results = results.filter(r => classStudentIds.has(r.user));
         }
-    }
-
-    // ── HOD: scope to their own department ────────────────────────────────
-    if (req.user.role === 'HOD') {
+    } else if (req.user.role === 'HOD') {
         const dept = req.user.facultyProfile?.department;
-        if (dept) {
-            const deptStudents = await User.find({
-                role: 'Student',
-                'studentProfile.branch': dept
-            }).select('_id');
-            filter.user = { $in: deptStudents.map(s => s._id) };
+        const allUsers = await blockchain.getAllRecordsOfType('user');
+        const deptUserIds = new Set(
+            allUsers.map(r => r.data)
+                .filter(u => 
+                    (u.role === 'Student' && u.studentProfile?.branch === dept) ||
+                    (['Faculty', 'ClassTeacher'].includes(u.role) && u.facultyProfile?.department === dept)
+                )
+                .map(u => u.id)
+        );
+        results = results.filter(r => deptUserIds.has(r.user));
+    }
+
+    // ── Query filters ──────────────────────────────────────────────────────────
+    if (req.query.status?.trim()) results = results.filter(a => a.status === req.query.status.trim());
+    if (req.query.type?.trim()) results = results.filter(a => a.type === req.query.type.trim());
+    if (req.query.ownerRole?.trim()) {
+        const queryRole = req.query.ownerRole.trim();
+        if (queryRole === 'Faculty') {
+            results = results.filter(a => ['Faculty', 'ClassTeacher'].includes(a.submittedByRole));
+        } else {
+            results = results.filter(a => a.submittedByRole === queryRole);
         }
     }
 
-    // ── Year filter: derive from student's admissionYear ──────────────
-    // ?year=1|2|3|4  → match students whose computed year equals this
-    if (req.query.year && req.query.year.trim() !== '') {
+    // Year filter (Only applies to student achievements)
+    if (req.query.year?.trim() && req.query.ownerRole !== 'Faculty') {
         const yr = parseInt(req.query.year);
         const now = new Date();
-        const currentMonth = now.getMonth() + 1;
-        const currentCalYear = now.getFullYear();
-        // A student in year Y was admitted (yr-1) or yr years ago
-        const admYear1 = currentCalYear - yr;
-        const admYear2 = currentCalYear - yr + 1;
-        // Find matching students
-        const matchStudents = await User.find({
-            role: 'Student',
-            'studentProfile.admissionYear': { $in: [admYear1, admYear2] }
-        }).select('_id');
-        const matchIds = matchStudents.map(s => s._id);
-        // Merge with any existing user filter
-        if (filter.user && filter.user.$in) {
-            // Intersect
-            const existingSet = new Set(filter.user.$in.map(id => id.toString()));
-            filter.user = { $in: matchIds.filter(id => existingSet.has(id.toString())) };
-        } else {
-            filter.user = { $in: matchIds };
-        }
+        const month = now.getMonth() + 1;
+        const curYear = now.getFullYear();
+        const admYear1 = month >= 7 ? curYear - yr + 1 : curYear - yr;
+        const admYear2 = admYear1 + 1;
+        const allUsers = await blockchain.getAllRecordsOfType('user');
+        const yearIds = new Set(
+            allUsers.map(r => r.data)
+                .filter(u => u.role === 'Student' &&
+                    [admYear1, admYear2].includes(u.studentProfile?.admissionYear))
+                .map(u => u.id)
+        );
+        results = results.filter(r => yearIds.has(r.user));
     }
 
-    // ── ownerRole filter: ?ownerRole=Student|Faculty etc. ──
-    if (req.query.ownerRole && req.query.ownerRole.trim() !== '') {
-        filter.submittedByRole = req.query.ownerRole.trim();
+    // Fetch users for hydration
+    const allUsersList = await blockchain.getAllRecordsOfType('user');
+    const userMap = {};
+    for (const u of allUsersList) {
+        userMap[u.data.id] = u.data;
     }
 
+    // Hydrate
+    results = results.map(r => ({
+        ...r,
+        user: userMap[r.user] || { id: r.user, name: r.userName || 'Unknown User' },
+        reviewer: r.reviewedBy ? {
+            id: r.reviewedBy,
+            name: userMap[r.reviewedBy]?.name || 'Unknown',
+            role: userMap[r.reviewedBy]?.role || 'Unknown'
+        } : null
+    }));
+
+    // Pagination
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 50;
     const skip = (page - 1) * limit;
+    results = results.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(skip, skip + limit);
 
-    const achievements = await Achievement.find(filter)
-        .populate({ path: 'user', select: 'name email studentProfile facultyProfile role' })
-        .sort('-createdAt')
-        .skip(skip)
-        .limit(limit);
-
-    res.status(200).json({
-        success: true,
-        count: achievements.length,
-        data: achievements
-    });
+    res.status(200).json({ success: true, count: results.length, data: results });
 });
-
 
 // @desc    Get single achievement
 // @route   GET /api/achievements/:id
 // @access  Private
 exports.getAchievement = asyncHandler(async (req, res, next) => {
-    const achievement = await Achievement.findById(req.params.id).populate({
-        path: 'user',
-        select: 'name email studentProfile'
-    });
+    const key = blockchain.keys.achievement(req.params.id);
+    const rec = await blockchain.getRecord(key);
+    if (!rec) return next(new ErrorResponse(`Achievement not found`, 404));
 
-    if (!achievement) {
-        return next(new ErrorResponse(`Achievement not found with id of ${req.params.id}`, 404));
+    if (req.user.role === 'Student' && rec.data.user !== req.user.id) {
+        return next(new ErrorResponse('Not authorized', 401));
     }
 
-    // Make sure user is achievement owner or faculty/admin
-    if (req.user.role === 'Student' && achievement.user.id !== req.user.id) {
-        return next(new ErrorResponse(`User not authorized to access this achievement`, 401));
-    }
-
-    res.status(200).json({
-        success: true,
-        data: achievement
-    });
+    res.status(200).json({ success: true, data: rec.data });
 });
 
-// @desc    Update achievement (Student updates details, Faculty updates Status)
+// @desc    Update achievement
 // @route   PUT /api/achievements/:id
 // @access  Private
 exports.updateAchievement = asyncHandler(async (req, res, next) => {
-    let achievement = await Achievement.findById(req.params.id);
+    const key = blockchain.keys.achievement(req.params.id);
+    const rec = await blockchain.getRecord(key);
+    if (!rec) return next(new ErrorResponse('Achievement not found', 404));
 
-    if (!achievement) {
-        return next(new ErrorResponse(`Achievement not found with id of ${req.params.id}`, 404));
-    }
+    const existing = rec.data;
 
-    // If Student, can only update if Pending
     if (req.user.role === 'Student') {
-        if (achievement.user.toString() !== req.user.id) {
-            return next(new ErrorResponse(`User not authorized to update this achievement`, 401));
-        }
-        if (achievement.status !== 'Pending') {
-            return next(new ErrorResponse(`Cannot update achievement after it has been reviewed`, 400));
-        }
+        if (existing.user !== req.user.id) return next(new ErrorResponse('Not authorized', 401));
+        if (existing.status !== 'Pending') return next(new ErrorResponse('Cannot update after review', 400));
     }
 
-    // If Faculty/HOD/Principal, can update status
-    if (['Faculty', 'HOD', 'Principal', 'Admin'].includes(req.user.role)) {
-        // If updating status, ensure it's provided
-        if (req.body.status) {
-            req.body.reviewedBy = req.user.id;
-        }
+    const updated = {
+        ...existing,
+        ...req.body,
+        id: existing.id,
+        user: existing.user,
+        createdAt: existing.createdAt,
+        updatedAt: new Date().toISOString(),
+    };
+
+    if (req.body.status && ['Faculty', 'HOD', 'Principal', 'Admin', 'ClassTeacher'].includes(req.user.role)) {
+        updated.reviewedBy = req.user.id;
     }
 
-    achievement = await Achievement.findByIdAndUpdate(req.params.id, req.body, {
-        new: true,
-        runValidators: true
-    });
+    const result = await blockchain.storeRecord('achievement', key, updated, existing.user);
 
-    // ── Notify student when their achievement is reviewed ──
+    // Notify student if reviewed
     if (req.body.status && ['Approved', 'Rejected'].includes(req.body.status)) {
         try {
             const emoji = req.body.status === 'Approved' ? '✅' : '❌';
             await createNotification({
-                recipient: achievement.user,
+                recipient: existing.user,
                 sender: req.user.id,
                 type: req.body.status === 'Approved' ? 'achievement_approved' : 'achievement_rejected',
-                message: `${emoji} Your achievement "${achievement.title}" has been ${req.body.status.toLowerCase()} by ${req.user.name || 'faculty'}.`,
+                message: `${emoji} Your achievement "${existing.title}" has been ${req.body.status.toLowerCase()}.`,
                 link: '/achievements'
             });
         } catch (e) { console.error('Notify student error:', e.message); }
     }
 
-    // Update blockchain hash after status change
-    const blockchainResult = await blockchain.storeRecordHash('achievement', achievement._id, achievement);
-
     res.status(200).json({
         success: true,
-        data: achievement,
-        blockchain: blockchainResult ? {
-            txHash: blockchainResult.txHash,
-            recordKey: blockchainResult.recordKey,
-            blockNumber: blockchainResult.blockNumber
-        } : null
+        data: updated,
+        blockchain: result ? { txHash: result.txHash, cid: result.cid } : null
     });
 });
 
@@ -260,21 +272,14 @@ exports.updateAchievement = asyncHandler(async (req, res, next) => {
 // @route   DELETE /api/achievements/:id
 // @access  Private
 exports.deleteAchievement = asyncHandler(async (req, res, next) => {
-    const achievement = await Achievement.findById(req.params.id);
+    const key = blockchain.keys.achievement(req.params.id);
+    const rec = await blockchain.getRecord(key);
+    if (!rec) return next(new ErrorResponse('Achievement not found', 404));
 
-    if (!achievement) {
-        return next(new ErrorResponse(`Achievement not found with id of ${req.params.id}`, 404));
+    if (req.user.role !== 'Admin' && rec.data.user !== req.user.id) {
+        return next(new ErrorResponse('Not authorized', 401));
     }
 
-    // Make sure user is achievement owner or Admin
-    if (req.user.role !== 'Admin' && achievement.user.toString() !== req.user.id) {
-        return next(new ErrorResponse(`User not authorized to delete this achievement`, 401));
-    }
-
-    await achievement.deleteOne();
-
-    res.status(200).json({
-        success: true,
-        data: {}
-    });
+    await blockchain.deleteRecord(key);
+    res.status(200).json({ success: true, data: {} });
 });

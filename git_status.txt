@@ -1,0 +1,40 @@
+ M backend/.env.example
+ M backend/.gitignore
+M  backend/controllers/achievements.js
+M  backend/controllers/analytics.js
+M  backend/controllers/assignments.js
+M  backend/controllers/attendance.js
+M  backend/controllers/auth.js
+A  backend/controllers/blockchain.js
+M  backend/controllers/leaves.js
+M  backend/controllers/marks.js
+A  backend/models/Otp.js
+ M backend/package-lock.json
+ M backend/package.json
+M  backend/routes/auth.js
+A  backend/routes/blockchain.js
+A  backend/scripts/deploy.js
+ M backend/server.js
+A  backend/services/blockchain.js
+A  backend/utils/emailService.js
+D  backend/utils/initSubjects.js
+A  frontend/src/components/BlockchainBadge.css
+A  frontend/src/components/BlockchainBadge.jsx
+M  frontend/src/pages/Achievements.jsx
+M  frontend/src/pages/FacultyRegister.css
+M  frontend/src/pages/FacultyRegister.jsx
+M  frontend/src/pages/Leaves.jsx
+M  frontend/src/pages/Login.jsx
+M  frontend/src/pages/Register.jsx
+M  frontend/src/pages/dashboard/FacultyDashboard.css
+M  frontend/src/pages/dashboard/FacultyDashboard.jsx
+M  frontend/src/pages/faculty/AttendanceMarking.jsx
+M  frontend/src/pages/faculty/MarksEntry.jsx
+?? backend/balances.txt
+?? backend/check_balances.js
+?? backend/contracts/
+?? backend/deploy_error.txt
+?? backend/fund_keys.js
+?? backend/hardhat.config.js
+?? backend/test-blockchain.js
+?? backend/test-service.js

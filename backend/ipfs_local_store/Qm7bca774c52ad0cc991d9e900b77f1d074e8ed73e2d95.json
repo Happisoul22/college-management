@@ -1,0 +1,14 @@
+{
+  "id": "a6c4d6fe-3bf9-41b6-b3a4-19c2d23cf766",
+  "code": "EC501",
+  "name": "Digital Communications",
+  "department": "ECE",
+  "semester": 5,
+  "year": 3,
+  "credits": 4,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:34:41.943Z"
+}

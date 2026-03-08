@@ -1,0 +1,14 @@
+{
+  "id": "928ff3de-ad4b-49fe-93ce-f6a877d58e29",
+  "code": "CE391",
+  "name": "Surveying Lab",
+  "department": "CIVIL",
+  "semester": 3,
+  "year": 2,
+  "credits": 1,
+  "type": "Lab",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:36:29.364Z"
+}

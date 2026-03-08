@@ -1,0 +1,14 @@
+{
+  "id": "cbeece34-7c4b-4be1-b569-e86061f32d57",
+  "code": "CY303",
+  "name": "Operating Systems",
+  "department": "CSE-CS",
+  "semester": 3,
+  "year": 2,
+  "credits": 4,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:38:39.957Z"
+}

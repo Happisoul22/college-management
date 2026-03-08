@@ -1,0 +1,14 @@
+{
+  "id": "4141c8bb-5847-438e-a725-a50620946533",
+  "code": "IT402",
+  "name": "Database Management Systems",
+  "department": "IT",
+  "semester": 4,
+  "year": 2,
+  "credits": 4,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:37:03.329Z"
+}

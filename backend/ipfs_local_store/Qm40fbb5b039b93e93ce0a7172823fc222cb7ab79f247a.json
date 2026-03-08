@@ -1,0 +1,14 @@
+{
+  "id": "ec5f5043-97cc-424d-bfb4-bb21f2d4a366",
+  "code": "EE391",
+  "name": "Electrical Machines Lab – I",
+  "department": "EEE",
+  "semester": 3,
+  "year": 2,
+  "credits": 1,
+  "type": "Lab",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:35:13.612Z"
+}

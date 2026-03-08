@@ -1,0 +1,14 @@
+{
+  "id": "5c13f3de-e263-4dc5-8f25-903d1c7e9143",
+  "code": "MA301",
+  "name": "Mathematics – III (Numerical Methods)",
+  "department": "CSE-DS",
+  "semester": 3,
+  "year": 2,
+  "credits": 4,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:38:07.286Z"
+}

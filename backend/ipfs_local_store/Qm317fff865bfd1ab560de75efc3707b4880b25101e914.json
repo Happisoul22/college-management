@@ -1,0 +1,14 @@
+{
+  "id": "cd8b4e58-7d87-45ac-9066-1aa67b421989",
+  "code": "CE403",
+  "name": "Environmental Engineering",
+  "department": "CIVIL",
+  "semester": 4,
+  "year": 2,
+  "credits": 4,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:36:31.916Z"
+}

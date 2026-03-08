@@ -1,0 +1,14 @@
+{
+  "id": "7f36f6ee-c9a5-48f6-bbb7-55536439a199",
+  "code": "CH291",
+  "name": "Engineering Chemistry Lab",
+  "department": "MECH",
+  "semester": 2,
+  "year": 1,
+  "credits": 1,
+  "type": "Lab",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:35:42.049Z"
+}

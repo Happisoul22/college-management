@@ -1,0 +1,14 @@
+{
+  "id": "1325d43d-4f11-4e2c-9b28-85b38534b33b",
+  "code": "CE303",
+  "name": "Engineering Geology",
+  "department": "CIVIL",
+  "semester": 3,
+  "year": 2,
+  "credits": 4,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:36:26.884Z"
+}

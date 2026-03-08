@@ -1,0 +1,14 @@
+{
+  "id": "633c269c-16f5-4083-a86d-179302ef27a2",
+  "code": "PH191",
+  "name": "Engineering Physics Lab",
+  "department": "CIVIL",
+  "semester": 1,
+  "year": 1,
+  "credits": 1,
+  "type": "Lab",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:36:17.035Z"
+}

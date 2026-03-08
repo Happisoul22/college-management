@@ -1,0 +1,14 @@
+{
+  "id": "3c9652b6-f4f7-4b30-94a4-92fad7dfe4a7",
+  "code": "PH101",
+  "name": "Engineering Physics",
+  "department": "CSE-DS",
+  "semester": 1,
+  "year": 1,
+  "credits": 4,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:37:56.213Z"
+}

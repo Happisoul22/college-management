@@ -41,6 +41,7 @@ export const AuthProvider = ({ children }) => {
     // Register
     const register = async (userData) => {
         try {
+            console.log('[FRONTEND DEBUG] Registering with data:', userData);
             await api.post('/auth/register', userData);
             // Do NOT auto-login — redirect to login page with success message
             toast.success('Registration successful! Please sign in to continue.');

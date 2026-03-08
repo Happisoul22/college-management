@@ -59,11 +59,17 @@ const Leaves = () => {
     };
 
     const handleApprove = async (id, status) => {
+        // Optimistic UI Update for instant feedback despite blockchain delays
+        const previousLeaves = [...leaves];
+        setLeaves(prev => prev.map(l => 
+            l.id === id ? { ...l, status, approverName: user?.name || 'You' } : l
+        ));
+
         try {
             await api.put(`/leaves/${id}`, { status });
             toast.success(`Leave ${status}`);
-            fetchLeaves();
         } catch (err) {
+            setLeaves(previousLeaves); // Revert on error
             toast.error(err.response?.data?.error || 'Failed to update leave');
         }
     };
@@ -148,13 +154,13 @@ const Leaves = () => {
                             <tbody>
                                 {leaves.filter(l => l.applicantRole !== 'Student').length > 0
                                     ? leaves.filter(l => l.applicantRole !== 'Student').map(leave => (
-                                        <tr key={leave._id}>
+                                        <tr key={leave.id}>
                                             <td>{leave.leaveType || 'Casual Leave'}</td>
                                             <td>{leave.reason}</td>
                                             <td>{new Date(leave.startDate).toLocaleDateString('en-IN')}</td>
                                             <td>{new Date(leave.endDate).toLocaleDateString('en-IN')}</td>
                                             <td><span className={`status-badge status-${leave.status}`}>{leave.status}</span></td>
-                                            <td style={{ color: '#64748b', fontSize: '0.82rem' }}>{leave.approvedBy?.name || '—'}</td>
+                                            <td style={{ color: '#64748b', fontSize: '0.82rem' }}>{leave.approverName || '—'}</td>
                                         </tr>
                                     ))
                                     : <tr><td colSpan="6" style={{ textAlign: 'center', color: '#94a3b8', padding: '24px' }}>No leave requests yet.</td></tr>
@@ -208,7 +214,7 @@ const Leaves = () => {
                                         {studentLeaves.length > 0 ? studentLeaves.map(leave => {
                                             const { year, sem } = computeYearSem(leave.user?.studentProfile?.admissionYear);
                                             return (
-                                                <tr key={leave._id}>
+                                                <tr key={leave.id}>
                                                     <td>
                                                         <div style={{ fontWeight: 700, color: '#1a2744' }}>{leave.user?.name || '—'}</div>
                                                         <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>{leave.user?.email}</div>
@@ -228,8 +234,8 @@ const Leaves = () => {
                                                     <td>{new Date(leave.endDate).toLocaleDateString('en-IN')}</td>
                                                     <td>
                                                         <span className={`status-badge status-${leave.status}`}>{leave.status}</span>
-                                                        {leave.approvedBy && (
-                                                            <div style={{ fontSize: '0.71rem', color: '#64748b', marginTop: 2 }}>by {leave.approvedBy.name}</div>
+                                                        {leave.approverName && (
+                                                            <div style={{ fontSize: '0.71rem', color: '#64748b', marginTop: 2 }}>by {leave.approverName}</div>
                                                         )}
                                                     </td>
                                                     <td>
@@ -263,7 +269,7 @@ const Leaves = () => {
                                     </thead>
                                     <tbody>
                                         {facultyLeaves.length > 0 ? facultyLeaves.map(leave => (
-                                            <tr key={leave._id}>
+                                            <tr key={leave.id}>
                                                 <td>
                                                     <div style={{ fontWeight: 700, color: '#1a2744' }}>{leave.user?.name || '—'}</div>
                                                     <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>{leave.user?.email}</div>
@@ -282,18 +288,18 @@ const Leaves = () => {
                                                 <td>{new Date(leave.endDate).toLocaleDateString('en-IN')}</td>
                                                 <td>
                                                     <span className={`status-badge status-${leave.status}`}>{leave.status}</span>
-                                                    {leave.approvedBy && (
-                                                        <div style={{ fontSize: '0.71rem', color: '#64748b', marginTop: 2 }}>by {leave.approvedBy.name}</div>
+                                                    {leave.approverName && (
+                                                        <div style={{ fontSize: '0.71rem', color: '#64748b', marginTop: 2 }}>by {leave.approverName}</div>
                                                     )}
                                                 </td>
                                                 <td>
                                                     {leave.status === 'Pending' ? (
                                                         <div style={{ display: 'flex', gap: 6 }}>
-                                                            <button onClick={() => handleApprove(leave._id, 'Approved')}
+                                                            <button onClick={() => handleApprove(leave.id, 'Approved')}
                                                                 className="btn btn-primary" style={{ fontSize: '0.75rem', padding: '5px 10px' }}>
                                                                 Approve
                                                             </button>
-                                                            <button onClick={() => handleApprove(leave._id, 'Rejected')}
+                                                            <button onClick={() => handleApprove(leave.id, 'Rejected')}
                                                                 className="btn btn-danger" style={{ fontSize: '0.75rem', padding: '5px 10px' }}>
                                                                 Reject
                                                             </button>
@@ -336,7 +342,7 @@ const Leaves = () => {
                                 {studentLeaves.length > 0 ? studentLeaves.map(leave => {
                                     const { year, sem } = computeYearSem(leave.user?.studentProfile?.admissionYear);
                                     return (
-                                        <tr key={leave._id}>
+                                        <tr key={leave.id}>
                                             <td>
                                                 <div style={{ fontWeight: 700, color: '#1a2744' }}>{leave.user?.name || '—'}</div>
                                             </td>
@@ -349,18 +355,18 @@ const Leaves = () => {
                                             <td>{new Date(leave.endDate).toLocaleDateString('en-IN')}</td>
                                             <td>
                                                 <span className={`status-badge status-${leave.status}`}>{leave.status}</span>
-                                                {leave.approvedBy && (
-                                                    <div style={{ fontSize: '0.71rem', color: '#64748b', marginTop: 2 }}>by {leave.approvedBy.name}</div>
+                                                {leave.approverName && (
+                                                    <div style={{ fontSize: '0.71rem', color: '#64748b', marginTop: 2 }}>by {leave.approverName}</div>
                                                 )}
                                             </td>
                                             <td>
                                                 {leave.status === 'Pending' ? (
                                                     <div style={{ display: 'flex', gap: 6 }}>
-                                                        <button onClick={() => handleApprove(leave._id, 'Approved')}
+                                                        <button onClick={() => handleApprove(leave.id, 'Approved')}
                                                             className="btn btn-primary" style={{ fontSize: '0.75rem', padding: '5px 10px' }}>
                                                             Approve
                                                         </button>
-                                                        <button onClick={() => handleApprove(leave._id, 'Rejected')}
+                                                        <button onClick={() => handleApprove(leave.id, 'Rejected')}
                                                             className="btn btn-danger" style={{ fontSize: '0.75rem', padding: '5px 10px' }}>
                                                             Reject
                                                         </button>
@@ -394,15 +400,15 @@ const Leaves = () => {
                             </thead>
                             <tbody>
                                 {leaves.length > 0 ? leaves.map(leave => (
-                                    <tr key={leave._id}>
+                                    <tr key={leave.id}>
                                         <td>{leave.reason}</td>
                                         <td>{new Date(leave.startDate).toLocaleDateString('en-IN')}</td>
                                         <td>{new Date(leave.endDate).toLocaleDateString('en-IN')}</td>
                                         <td>
                                             <span className={`status-badge status-${leave.status}`}>{leave.status}</span>
-                                            {leave.approvedBy && (
+                                            {leave.approverName && (
                                                 <div style={{ fontSize: '0.74rem', color: '#64748b', marginTop: 3 }}>
-                                                    by {leave.approvedBy.name}
+                                                    by {leave.approverName}
                                                 </div>
                                             )}
                                         </td>

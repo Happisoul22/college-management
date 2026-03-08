@@ -1,317 +1,432 @@
 /**
  * services/blockchain.js
  *
- * Ethereum blockchain service for tamper-proof academic record verification.
- * Connects to a local Hardhat node, loads the AcademicRecords smart contract,
- * and exposes helpers for storing / verifying record hashes.
+ * Ethereum blockchain service — fully decentralized mode.
+ * Works together with services/ipfs.js:
+ *   • Write: ipfs.uploadJSON(data) → CID → storeRecord(key, cid) on-chain
+ *   • Read : getRecord(key) → CID → ipfs.fetchJSON(cid)
  *
- * Gracefully degrades: if the blockchain is unavailable, operations log a
- * warning and return null instead of crashing the application.
+ * Connects to Hardhat local node (or any EVM-compatible RPC).
+ * Gracefully degrades if blockchain is unavailable.
  */
+
 const { ethers } = require('ethers');
 const fs = require('fs');
 const path = require('path');
+const ipfs = require('./ipfs');
 
-// ── State ────────────────────────────────────────────────────────────────────
+// ── Local IPFS store path (mirrors services/ipfs.js) ─────────────────────────
+const LOCAL_STORE_PATH = path.join(__dirname, '..', 'ipfs_local_store');
+const LOCAL_KEY_INDEX_PATH = path.join(LOCAL_STORE_PATH, 'local_key_index.json');
+
+// Persist a recordKey → CID mapping to disk so getRecord works offline
+const saveKeyIndex = (recordKey, cid) => {
+    try {
+        let index = {};
+        if (fs.existsSync(LOCAL_KEY_INDEX_PATH)) {
+            index = JSON.parse(fs.readFileSync(LOCAL_KEY_INDEX_PATH, 'utf-8'));
+        }
+        index[recordKey] = cid;
+        fs.writeFileSync(LOCAL_KEY_INDEX_PATH, JSON.stringify(index, null, 2), 'utf-8');
+    } catch (e) { /* non-fatal */ }
+};
+
+const getLocalCid = (recordKey) => {
+    try {
+        if (fs.existsSync(LOCAL_KEY_INDEX_PATH)) {
+            const index = JSON.parse(fs.readFileSync(LOCAL_KEY_INDEX_PATH, 'utf-8'));
+            return index[recordKey] || null;
+        }
+    } catch (e) { /* non-fatal */ }
+    return null;
+};
+
+// Scan ALL files in local IPFS store and return records matching a recordType.
+// Each stored JSON file IS the raw data object — we match on the type field
+// OR infer type from the record key prefix in the key index.
+const scanLocalIPFSStore = (recordType) => {
+    const results = [];
+    if (!fs.existsSync(LOCAL_STORE_PATH)) return results;
+
+    // Build reverse map: cid → recordKey (from key index)
+    let cidToKey = {};
+    if (fs.existsSync(LOCAL_KEY_INDEX_PATH)) {
+        try {
+            const keyIndex = JSON.parse(fs.readFileSync(LOCAL_KEY_INDEX_PATH, 'utf-8'));
+            for (const [k, cid] of Object.entries(keyIndex)) {
+                cidToKey[cid] = k;
+            }
+        } catch (e) { /* non-fatal */ }
+    }
+
+    const files = fs.readdirSync(LOCAL_STORE_PATH).filter(f => f.endsWith('.json') && !f.startsWith('local_'));
+    for (const file of files) {
+        try {
+            const cid = file.replace('.json', '');
+            const data = JSON.parse(fs.readFileSync(path.join(LOCAL_STORE_PATH, file), 'utf-8'));
+            const key = cidToKey[cid] || '';
+
+            let typePrefix = recordType + '_';
+            if (recordType === 'subject') typePrefix = 'subj_';
+            else if (recordType === 'user') typePrefix = 'user_';
+            else if (recordType === 'leave') typePrefix = 'leave_';
+            else if (recordType === 'achievement') typePrefix = 'ach_';
+            else if (recordType === 'notification') typePrefix = 'notif_';
+            else if (recordType === 'classassign') typePrefix = 'ca_';
+            else if (recordType === 'counselassign') typePrefix = 'counsel_';
+            else if (recordType === 'attendance') typePrefix = 'att_';
+
+            if (key.startsWith(typePrefix)) {
+                results.push({ key, data, cid, timestamp: 0, storedBy: '' });
+            }
+        } catch (e) { /* skip corrupt file */ }
+    }
+    return results;
+};
+
+// ── State ─────────────────────────────────────────────────────────────────────
+
 let provider = null;
 let signers = [];
 let rawContract = null;
 let isConnected = false;
 
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
 const getContract = () => {
     if (!rawContract || signers.length === 0) return null;
-    const randomSigner = signers[Math.floor(Math.random() * signers.length)];
-    return rawContract.connect(randomSigner);
+    const signer = signers[Math.floor(Math.random() * signers.length)];
+    return rawContract.connect(signer);
 };
 
-// ── Initialization ───────────────────────────────────────────────────────────
+// ── Initialization ────────────────────────────────────────────────────────────
 
-/**
- * Initialize the blockchain connection and load the deployed contract.
- * Called once during server startup.
- */
 const initBlockchain = async () => {
     try {
-        const rpcUrl = process.env.BLOCKCHAIN_RPC_URL || 'http://127.0.0.1:8545';
-
-        // Connect to local Hardhat node
+        const rpcUrl = process.env.BLOCKCHAIN_RPC_URL || 'http://127.0.0.1:7545';
         provider = new ethers.JsonRpcProvider(rpcUrl);
 
-        // Verify connection
         const network = await provider.getNetwork();
         console.log(`⛓  Blockchain connected: chainId ${network.chainId}`);
 
-        let keys = [];
+        // Load private keys or use node signer
         if (process.env.BLOCKCHAIN_KEYS) {
-            keys = process.env.BLOCKCHAIN_KEYS.split(',');
+            const keys = process.env.BLOCKCHAIN_KEYS.split(',').map(k => k.trim());
+            signers = keys.map(k => new ethers.Wallet(k, provider));
         } else if (process.env.BLOCKCHAIN_PRIVATE_KEY) {
-            keys = [process.env.BLOCKCHAIN_PRIVATE_KEY];
+            const keys = [process.env.BLOCKCHAIN_PRIVATE_KEY.trim()];
+            signers = keys.map(k => new ethers.Wallet(k, provider));
         } else {
-            keys = ['0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80'];
+            const signer = await provider.getSigner(0);
+            signers = [signer];
         }
-        signers = keys.map(k => new ethers.Wallet(k.trim(), provider));
 
-        // Load contract ABI and address
+        // Load ABI + deployment
         const deploymentPath = path.join(__dirname, '..', 'blockchain', 'deployment.json');
-        const abiPath = path.join(__dirname, '..', 'blockchain', 'AcademicRecordsABI.json');
+        const abiPath = path.join(__dirname, '..', 'blockchain', 'AcademicSystemABI.json');
 
         if (!fs.existsSync(deploymentPath) || !fs.existsSync(abiPath)) {
-            console.warn('⚠  Blockchain contract not deployed. Run: npx hardhat run scripts/deploy.js --network localhost');
+            console.warn('⚠  Contract not deployed. Run: npx hardhat run scripts/deploy.js --network localhost');
             return;
         }
 
         const deployment = JSON.parse(fs.readFileSync(deploymentPath, 'utf-8'));
         const abi = JSON.parse(fs.readFileSync(abiPath, 'utf-8'));
-
         const contractAddress = process.env.CONTRACT_ADDRESS || deployment.address;
+
         rawContract = new ethers.Contract(contractAddress, abi, provider);
 
-        // Quick sanity check
-        const totalRecords = await rawContract.totalRecords();
-        console.log(`⛓  AcademicRecords contract loaded at ${contractAddress} (${totalRecords} records on-chain)`);
+        const total = await rawContract.totalRecords();
+        console.log(`⛓  AcademicSystem contract at ${contractAddress} (${total} records)`);
+
+        // Also test IPFS
+        const ipfsStatus = await ipfs.testConnection();
+        console.log(`📦 IPFS: ${ipfsStatus.provider} – ${ipfsStatus.ok ? 'OK' : 'FAILED'}`);
 
         isConnected = true;
     } catch (err) {
-        console.warn(`⚠  Blockchain initialization failed: ${err.message}`);
-        console.warn('   The app will continue without blockchain verification.');
+        console.warn(`⚠  Blockchain init failed: ${err.message}`);
+        console.warn('   App will continue – blockchain writes will be skipped.');
         isConnected = false;
     }
 };
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
+// ── Core Write ────────────────────────────────────────────────────────────────
 
 /**
- * Create a deterministic hash of a data object.
- * Sorts keys to ensure the same data always produces the same hash.
+ * Upload data to IPFS then store the CID on-chain.
+ *
+ * @param {string} recordType  - "user" | "marks" | "attendance" | "achievement" | "leave" | "subject" | "assignment" | "notification"
+ * @param {string} recordKey   - Unique composite key for this specific record
+ * @param {Object} data        - Plain JS object to persist
+ * @param {string} [userId]    - Owner's userId string (for per-user index)
+ * @returns {Promise<{cid, txHash, recordKey, blockNumber}|null>}
  */
-const hashData = (dataObject) => {
-    const sorted = JSON.stringify(dataObject, Object.keys(dataObject).sort());
-    return ethers.keccak256(ethers.toUtf8Bytes(sorted));
-};
-
-/**
- * Build a record key from type and MongoDB ID.
- * e.g., "marks_65abc123def456789"
- */
-const buildRecordKey = (type, mongoId) => `${type}_${mongoId.toString()}`;
-
-/**
- * Extract the relevant fields from a record for hashing.
- * We only hash the immutable/critical fields, not metadata like updatedAt.
- */
-const extractHashableData = (type, record) => {
-    switch (type) {
-        case 'marks':
-            return {
-                student: record.student?.toString() || record.student,
-                subject: record.subject?.toString() || record.subject,
-                semester: record.semester,
-                year: record.year,
-                academicYear: record.academicYear || '',
-                internalTotal: record.internalTotal,
-                externalTotal: record.externalTotal,
-                totalMarks: record.totalMarks,
-                grade: record.grade,
-                gradePoint: record.gradePoint
-            };
-        case 'achievement':
-            return {
-                user: record.user?.toString() || record.user,
-                type: record.type,
-                title: record.title,
-                description: record.description,
-                year: record.year,
-                status: record.status
-            };
-        case 'attendance':
-            return {
-                student: record.student?.toString() || record.student,
-                subject: record.subject?.toString() || record.subject,
-                date: record.date?.toISOString?.() || record.date,
-                status: record.status,
-                period: record.period
-            };
-        case 'user':
-            return {
-                name: record.name,
-                email: record.email,
-                role: record.role
-            };
-        case 'login':
-            return {
-                user: record.user?.toString() || record.user,
-                timestamp: record.timestamp?.toISOString?.() || record.timestamp
-            };
-        case 'assignment':
-            return {
-                faculty: record.faculty?.toString() || record.faculty,
-                department: record.department,
-                section: record.section || '',
-                year: record.year || '',
-                studentCounts: record.students ? record.students.length : 0
-            };
-        case 'leave':
-            return {
-                user: record.user?.toString() || record.user,
-                applicantRole: record.applicantRole,
-                type: record.type,
-                startDate: record.startDate?.toISOString?.() || record.startDate,
-                endDate: record.endDate?.toISOString?.() || record.endDate,
-                status: record.status,
-                approvedBy: record.approvedBy?.toString() || record.approvedBy || ''
-            };
-        default:
-            return record;
-    }
-};
-
-// ── Public API ───────────────────────────────────────────────────────────────
-
-/**
- * Store a record hash on the blockchain.
- * @param {string} type - Record type: 'marks', 'achievement', 'attendance'
- * @param {string} mongoId - MongoDB document _id
- * @param {Object} dataObject - The full MongoDB document (will extract hashable fields)
- * @returns {Object|null} - { txHash, recordKey, dataHash } or null if unavailable
- */
-const storeRecordHash = async (type, mongoId, dataObject) => {
-    const contract = getContract();
-    if (!isConnected || !contract) {
-        console.warn(`⚠  Blockchain unavailable, skipping hash storage for ${type}/${mongoId}`);
-        return null;
+const storeRecord = async (recordType, recordKey, data, userId = '') => {
+    if (!isConnected) {
+        console.warn(`⚠  Blockchain unavailable – skipping store for ${recordType}/${recordKey}`);
+        // Still try IPFS-only (useful in tests)
+        try {
+            const cid = await ipfs.uploadJSON(data, `${recordType}-${recordKey}`);
+            console.log(`📦 IPFS-only store: ${recordKey} → ${cid}`);
+            saveKeyIndex(recordKey, cid);  // persist key→CID to disk
+            return { cid, txHash: null, recordKey, blockNumber: null };
+        } catch (e) {
+            console.error('IPFS-only store also failed:', e.message);
+            return null;
+        }
     }
 
     try {
-        const recordKey = buildRecordKey(type, mongoId);
-        const hashableData = extractHashableData(type, dataObject);
-        const dataHash = hashData(hashableData);
+        // 1. Upload data to IPFS
+        const cid = await ipfs.uploadJSON(data, `${recordType}-${recordKey}`);
 
-        const tx = await contract.storeRecord(recordKey, dataHash);
+        // 2. Store CID on-chain
+        const contract = getContract();
+        const tx = await contract.storeRecord(recordKey, cid, recordType, userId);
         const receipt = await tx.wait();
 
-        console.log(`⛓  Stored ${type}/${mongoId} on-chain (tx: ${receipt.hash})`);
+        // 3. Persist the key→CID mapping locally so fallback works
+        saveKeyIndex(recordKey, cid);
+
+        console.log(`⛓  Stored ${recordType}/${recordKey} → CID: ${cid} (tx: ${receipt.hash})`);
+
+        // Invalidate type cache
+        typeCache.delete(`type_${recordType}`);
 
         return {
+            cid,
             txHash: receipt.hash,
             recordKey,
-            dataHash,
             blockNumber: receipt.blockNumber
         };
     } catch (err) {
-        console.error(`⚠  Blockchain store failed for ${type}/${mongoId}:`, err.message);
+        console.error(`⚠  storeRecord failed [${recordType}/${recordKey}]:`, err.message);
         return null;
     }
 };
 
+// ── Core Read ─────────────────────────────────────────────────────────────────
+
 /**
- * Verify a record's integrity against the blockchain.
- * @param {string} type - Record type
- * @param {string} mongoId - MongoDB document _id
- * @param {Object} dataObject - Current MongoDB document data
- * @returns {Object} - { verified, storedAt, currentHash, storedHash }
+ * Read a record: get CID from chain, fetch JSON from IPFS.
+ *
+ * @param {string} recordKey
+ * @returns {Promise<{data, cid, timestamp, storedBy}|null>}
  */
-const verifyRecordHash = async (type, mongoId, dataObject) => {
-    if (!isConnected || !rawContract) {
-        return { verified: false, error: 'Blockchain not connected' };
+const getRecord = async (recordKey) => {
+    // Try blockchain first
+    if (rawContract) {
+        try {
+            const [cid, timestamp, storedBy, exists] = await rawContract.getRecord(recordKey);
+            if (exists && cid) {
+                const data = await ipfs.fetchJSON(cid);
+                return { data, cid, timestamp: Number(timestamp), storedBy };
+            }
+        } catch (err) {
+            console.error(`⚠  getRecord blockchain failed [${recordKey}]:`, err.message);
+        }
     }
 
-    try {
-        const recordKey = buildRecordKey(type, mongoId);
-        const hashableData = extractHashableData(type, dataObject);
-        const currentHash = hashData(hashableData);
-
-        const [storedHash, timestamp, storedBy, exists] = await rawContract.getRecord(recordKey);
-
-        if (!exists) {
-            return {
-                verified: false,
-                error: 'Record not found on blockchain',
-                recordKey
-            };
+    // Fallback: look up CID in local key index then fetch from local IPFS store
+    const localCid = getLocalCid(recordKey);
+    if (localCid) {
+        try {
+            const data = await ipfs.fetchJSON(localCid);
+            return { data, cid: localCid, timestamp: 0, storedBy: '' };
+        } catch (err) {
+            console.error(`⚠  getRecord local fallback failed [${recordKey}]:`, err.message);
         }
+    }
 
-        const verified = storedHash === currentHash;
-        const storedAt = new Date(Number(timestamp) * 1000).toISOString();
+    return null;
+};
 
-        return {
-            verified,
-            recordKey,
-            storedAt,
-            storedBy,
-            currentHash,
-            storedHash,
-            ...(verified ? {} : { warning: 'Data may have been tampered with!' })
-        };
+// ── Enumeration ───────────────────────────────────────────────────────────────
+
+/**
+ * Get all record keys for a user, optionally filtered by record type prefix.
+ */
+const getUserRecordKeys = async (userId, typePrefix = null) => {
+    if (!rawContract) return [];
+    try {
+        const keys = await rawContract.getUserRecordKeys(userId);
+        if (typePrefix) return keys.filter(k => k.startsWith(typePrefix));
+        return [...keys];
     } catch (err) {
-        console.error(`⚠  Blockchain verify failed for ${type}/${mongoId}:`, err.message);
-        return { verified: false, error: err.message };
+        console.error('getUserRecordKeys error:', err.message);
+        return [];
     }
 };
 
 /**
- * Get blockchain record info (without verification).
+ * Fetch multiple records by keys in parallel, chunked to prevent overloading the 
+ * Node HTTP agent or triggering EMFILE on local disks.
  */
-const getRecordInfo = async (type, mongoId) => {
-    if (!isConnected || !rawContract) {
-        return { error: 'Blockchain not connected' };
+const getRecords = async (keys) => {
+    const results = [];
+    const chunkSize = 20;
+    
+    for (let i = 0; i < keys.length; i += chunkSize) {
+        const chunk = keys.slice(i, i + chunkSize);
+        const resolvedChunk = await Promise.all(chunk.map(async k => {
+            const rec = await getRecord(k);
+            return rec ? { key: k, ...rec } : null;
+        }));
+        results.push(...resolvedChunk);
+    }
+    
+    return results.filter(Boolean);
+};
+
+// ── Caching ───────────────────────────────────────────────────────────────────
+const typeCache = new Map();
+const CACHE_TTL = 30 * 1000; // 30 seconds limit
+
+/**
+ * Get all records of a given type. Returns array of {data, cid, key} objects.
+ */
+const getAllRecordsOfType = async (recordType) => {
+    const cacheKey = `type_${recordType}`;
+    const cached = typeCache.get(cacheKey);
+    if (cached && Date.now() < cached.expiresAt) {
+        return cached.data;
     }
 
-    try {
-        const recordKey = buildRecordKey(type, mongoId);
-        const [dataHash, timestamp, storedBy, exists] = await rawContract.getRecord(recordKey);
-
-        if (!exists) {
-            return { exists: false, recordKey };
+    let results = [];
+    // Try blockchain first
+    if (rawContract) {
+        try {
+            const keys = await rawContract.getTypeRecordKeys(recordType);
+            if (keys && keys.length > 0) {
+                results = await getRecords(keys);
+            }
+        } catch (err) {
+            console.error(`getAllRecordsOfType(${recordType}) blockchain error:`, err.message);
         }
+    }
 
-        return {
-            exists: true,
-            recordKey,
-            dataHash,
-            storedAt: new Date(Number(timestamp) * 1000).toISOString(),
-            storedBy
-        };
+    // Fallback: scan local IPFS store files
+    if (results.length === 0) {
+        console.log(`📦 getAllRecordsOfType(${recordType}): using local IPFS store fallback`);
+        results = scanLocalIPFSStore(recordType);
+    }
+
+    if (results.length > 0) {
+        typeCache.set(cacheKey, { data: results, expiresAt: Date.now() + CACHE_TTL });
+    }
+    
+    return results;
+};
+
+// ── Email Index ───────────────────────────────────────────────────────────────
+
+const setEmailIndex = async (email, userId) => {
+    if (!isConnected) return;
+    try {
+        const emailHash = ethers.keccak256(ethers.toUtf8Bytes(email.toLowerCase()));
+        const contract = getContract();
+        const tx = await contract.setEmailIndex(emailHash, userId);
+        await tx.wait();
+        // Invalidate cache for 'user' type, as email index implies user record
+        typeCache.delete('type_user');
     } catch (err) {
-        return { error: err.message };
+        console.error('setEmailIndex error:', err.message);
     }
 };
 
-/**
- * Get the current blockchain connection status.
- */
+const getUserIdByEmail = async (email) => {
+    if (!rawContract) return null;
+    try {
+        const emailHash = ethers.keccak256(ethers.toUtf8Bytes(email.toLowerCase()));
+        const userId = await rawContract.getUserIdByEmail(emailHash);
+        return userId || null;
+    } catch (err) {
+        console.error('getUserIdByEmail error:', err.message);
+        return null;
+    }
+};
+
+const removeEmailIndex = async (email) => {
+    if (!isConnected) return;
+    try {
+        const emailHash = ethers.keccak256(ethers.toUtf8Bytes(email.toLowerCase()));
+        const contract = getContract();
+        const tx = await contract.removeEmailIndex(emailHash);
+        await tx.wait();
+        // Invalidate cache for 'user' type, as email index implies user record
+        typeCache.delete('type_user');
+    } catch (err) {
+        console.error('removeEmailIndex error:', err.message);
+    }
+};
+
+// ── Delete ────────────────────────────────────────────────────────────────────
+
+const deleteRecord = async (recordKey) => {
+    if (!isConnected) return false;
+    try {
+        const contract = getContract();
+        const tx = await contract.deleteRecord(recordKey);
+        await tx.wait();
+        // Invalidate cache for the record's type
+        const recordType = recordKey.split('_')[0]; // Assuming recordKey starts with type_
+        typeCache.delete(`type_${recordType}`);
+        return true;
+    } catch (err) {
+        console.error(`deleteRecord(${recordKey}) error:`, err.message);
+        return false;
+    }
+};
+
+// ── Status ────────────────────────────────────────────────────────────────────
+
 const getStatus = async () => {
-    if (!isConnected) {
-        return { connected: false, message: 'Blockchain not connected' };
-    }
-
+    if (!isConnected) return { connected: false, message: 'Blockchain not initialised' };
     try {
         const network = await provider.getNetwork();
-        const totalRecords = await rawContract.totalRecords();
-        const contractAddress = await rawContract.getAddress();
-
+        const total = await rawContract.totalRecords();
+        const address = await rawContract.getAddress();
+        const ipfsStat = await ipfs.testConnection().catch(() => ({ ok: false }));
         return {
             connected: true,
-            network: {
-                chainId: Number(network.chainId),
-                name: network.name
-            },
-            contractAddress,
-            totalRecords: Number(totalRecords),
-            signerAddress: signers.length > 0 ? signers[0].address : null,
-            availableSigners: signers.length
+            network: { chainId: Number(network.chainId), name: network.name },
+            contractAddress: address,
+            totalRecords: Number(total),
+            signerAddress: signers[0]?.address ?? null,
+            ipfs: ipfsStat
         };
     } catch (err) {
         return { connected: false, error: err.message };
     }
 };
 
+// ── Key Builders (exported for controllers) ───────────────────────────────────
+
+const keys = {
+    user: (id) => `user_${id}`,
+    marks: (studentId, subjectId, year) => `marks_${studentId}_${subjectId}_${year || 'na'}`,
+    attendance: (studentId, subjectId, date, period) => `att_${studentId}_${subjectId}_${date}_${period || 1}`,
+    achievement: (id) => `ach_${id}`,
+    leave: (id) => `leave_${id}`,
+    subject: (id) => `subj_${id}`,
+    classAssign: (dept, year, sem, section, ay) => `ca_${dept}_y${year}_s${sem}_${section}_${ay}`,
+    counselAssign: (id) => `counsel_${id}`,
+    notification: (id) => `notif_${id}`,
+};
+
 module.exports = {
     initBlockchain,
-    storeRecordHash,
-    verifyRecordHash,
-    getRecordInfo,
+    storeRecord,
+    getRecord,
+    getRecords,
+    getUserRecordKeys,
+    getAllRecordsOfType,
+    setEmailIndex,
+    getUserIdByEmail,
+    removeEmailIndex,
+    deleteRecord,
     getStatus,
-    hashData,
-    extractHashableData,
-    buildRecordKey
+    keys,
+    get isConnected() { return isConnected; }
 };

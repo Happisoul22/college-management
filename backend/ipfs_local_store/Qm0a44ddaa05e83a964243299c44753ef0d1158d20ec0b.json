@@ -1,0 +1,14 @@
+{
+  "id": "61b20cea-4053-4d6f-acb6-9ef154856002",
+  "code": "ME201",
+  "name": "Engineering Mechanics",
+  "department": "EEE",
+  "semester": 2,
+  "year": 1,
+  "credits": 3,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:35:07.538Z"
+}

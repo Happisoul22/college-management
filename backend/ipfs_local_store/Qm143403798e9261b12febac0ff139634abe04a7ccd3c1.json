@@ -1,0 +1,14 @@
+{
+  "id": "156088e1-7ac5-4cd8-86db-fcd8aa9e4eff",
+  "code": "EC404",
+  "name": "Electro Magnetic Waves & Transmission Lines",
+  "department": "ECE",
+  "semester": 4,
+  "year": 2,
+  "credits": 4,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:34:38.848Z"
+}

@@ -1,0 +1,14 @@
+{
+  "id": "af46db65-efb7-484c-a1e5-11650066123b",
+  "code": "EC303",
+  "name": "Network Analysis & Synthesis",
+  "department": "ECE",
+  "semester": 3,
+  "year": 2,
+  "credits": 4,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:34:32.865Z"
+}

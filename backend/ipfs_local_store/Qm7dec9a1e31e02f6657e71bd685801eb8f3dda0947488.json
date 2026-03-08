@@ -1,0 +1,14 @@
+{
+  "id": "9851fb69-5c90-4f34-95d4-3f5d40c87c9c",
+  "code": "CS604",
+  "name": "Machine Learning",
+  "department": "CSE",
+  "semester": 6,
+  "year": 3,
+  "credits": 4,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:34:16.595Z"
+}

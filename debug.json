@@ -1,0 +1,17 @@
+[
+  {
+    "id": "1e9922ec-923f-47a3-b691-c3902107b052",
+    "code": "CS403",
+    "name": "Computer Organization & Architecture",
+    "department": "CSE",
+    "semester": 4,
+    "year": 2,
+    "credits": 4,
+    "type": "Theory",
+    "faculty": "2175f917-0506-4309-8073-8330626a8f9a",
+    "section": "",
+    "createdBy": "seed-script",
+    "createdAt": "2026-03-07T17:34:09.708Z",
+    "updatedAt": "2026-03-08T04:35:51.386Z"
+  }
+]

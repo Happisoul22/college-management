@@ -1,0 +1,14 @@
+{
+  "id": "f013d608-18aa-498c-9f0b-a3d60e3bfd3f",
+  "code": "EE592",
+  "name": "Measurements Lab",
+  "department": "EEE",
+  "semester": 5,
+  "year": 3,
+  "credits": 1,
+  "type": "Lab",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:35:23.220Z"
+}

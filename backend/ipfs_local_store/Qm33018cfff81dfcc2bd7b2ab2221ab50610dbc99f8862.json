@@ -1,0 +1,14 @@
+{
+  "id": "f99d5800-233f-455e-b43f-b1e662dd931d",
+  "code": "CS803E",
+  "name": "Edge Computing (Elective)",
+  "department": "CSE",
+  "semester": 8,
+  "year": 4,
+  "credits": 3,
+  "type": "Elective",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:34:22.351Z"
+}

@@ -1,0 +1,14 @@
+{
+  "id": "6dee5db3-3e99-47a3-8f92-2b2bf497b8a4",
+  "code": "DS603",
+  "name": "Graph Analytics",
+  "department": "CSE-DS",
+  "semester": 6,
+  "year": 3,
+  "credits": 4,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:38:21.227Z"
+}

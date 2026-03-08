@@ -1,0 +1,14 @@
+{
+  "id": "481ea98f-f0dc-4cd0-b226-16c6c913a5a6",
+  "code": "EC602",
+  "name": "Satellite Communication",
+  "department": "ECE",
+  "semester": 6,
+  "year": 3,
+  "credits": 4,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:34:48.759Z"
+}

@@ -634,7 +634,7 @@ const Achievements = () => {
                         </thead>
                         <tbody>
                             {achievements.length > 0 ? achievements.map(ach => (
-                                <tr key={ach._id}>
+                                <tr key={ach.id}>
                                     <td>
                                         <div className="ach-title-cell">{ach.title}</div>
                                         {ach.domain && <div className="ach-sub-cell">{ach.domain}</div>}
@@ -662,16 +662,23 @@ const Achievements = () => {
                                         )}
                                     </td>
                                     <td>
-                                        <span className={`status-badge status-${ach.status}`}>
-                                            {ach.status === 'Approved' && <FaCheck style={{ marginRight: 4 }} />}
-                                            {ach.status === 'Rejected' && <FaBan style={{ marginRight: 4 }} />}
-                                            {ach.status === 'Pending' && <FaClock style={{ marginRight: 4 }} />}
-                                            {ach.status}
-                                        </span>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                            <span className={`status-badge status-${ach.status}`}>
+                                                {ach.status === 'Approved' && <FaCheck style={{ marginRight: 4 }} />}
+                                                {ach.status === 'Rejected' && <FaBan style={{ marginRight: 4 }} />}
+                                                {ach.status === 'Pending' && <FaClock style={{ marginRight: 4 }} />}
+                                                {ach.status}
+                                            </span>
+                                            {ach.reviewer && (
+                                                <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '2px' }}>
+                                                    by {ach.reviewer.name}
+                                                </div>
+                                            )}
+                                        </div>
                                     </td>
                                     <td style={{ color: '#64748b', fontSize: '0.82rem' }}>{ach.remarks || '—'}</td>
                                     <td>
-                                        <BlockchainBadge type="achievement" recordId={ach._id} compact showButton={false} />
+                                        <BlockchainBadge type="achievement" recordId={ach.id} compact showButton={false} />
                                     </td>
                                 </tr>
                             )) : (

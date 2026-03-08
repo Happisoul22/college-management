@@ -1,0 +1,14 @@
+{
+  "id": "c7013c39-443f-4df1-a9f2-2d928adb1a7d",
+  "code": "CS602",
+  "name": "Cloud Computing",
+  "department": "CSE",
+  "semester": 6,
+  "year": 3,
+  "credits": 4,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:34:15.601Z"
+}

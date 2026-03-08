@@ -1,0 +1,14 @@
+{
+  "id": "f5fa7901-1db3-43f3-87f0-8c47acc71f6a",
+  "code": "ME303",
+  "name": "Manufacturing Processes – I",
+  "department": "MECH",
+  "semester": 3,
+  "year": 2,
+  "credits": 4,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:35:45.222Z"
+}

@@ -1,0 +1,14 @@
+{
+  "id": "16f59c9d-30d1-47eb-9f8e-2ccb0ee14512",
+  "code": "EC892",
+  "name": "Seminar & Technical Presentation",
+  "department": "ECE",
+  "semester": 8,
+  "year": 4,
+  "credits": 2,
+  "type": "Lab",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:35:00.233Z"
+}

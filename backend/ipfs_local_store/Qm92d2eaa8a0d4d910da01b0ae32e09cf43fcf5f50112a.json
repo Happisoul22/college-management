@@ -1,0 +1,14 @@
+{
+  "id": "45c556ad-8a5b-4ebb-a133-7989ecaabb5e",
+  "code": "ME101",
+  "name": "Engineering Graphics",
+  "department": "CSE-DS",
+  "semester": 1,
+  "year": 1,
+  "credits": 3,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:37:58.122Z"
+}

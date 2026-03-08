@@ -1,0 +1,14 @@
+{
+  "id": "ecdfe005-e9bb-414a-b6f4-e16585c266be",
+  "code": "EE392",
+  "name": "Electronic Circuits Lab",
+  "department": "EEE",
+  "semester": 3,
+  "year": 2,
+  "credits": 1,
+  "type": "Lab",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:35:14.294Z"
+}

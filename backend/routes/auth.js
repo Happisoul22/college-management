@@ -1,5 +1,5 @@
 const express = require('express');
-const { register, login, getMe, logout, updateProfile, sendRegistrationOtp, sendUpdateOtp } = require('../controllers/auth');
+const { register, login, getMe, logout, updateProfile, sendRegistrationOtp, sendUpdateOtp, verifyRegistrationOtp } = require('../controllers/auth');
 
 const router = express.Router();
 
@@ -8,6 +8,7 @@ const { protect } = require('../middleware/auth');
 router.post('/register', register);
 router.post('/login', login);
 router.post('/send-registration-otp', sendRegistrationOtp);
+router.post('/verify-registration-otp', verifyRegistrationOtp);
 router.post('/send-update-otp', protect, sendUpdateOtp);
 router.get('/me', protect, getMe);
 router.put('/updateprofile', protect, updateProfile);

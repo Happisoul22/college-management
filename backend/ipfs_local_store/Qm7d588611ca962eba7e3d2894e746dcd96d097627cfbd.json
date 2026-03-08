@@ -1,0 +1,14 @@
+{
+  "id": "523f1619-4265-469c-aba5-dd4f1db45712",
+  "code": "MA101",
+  "name": "Mathematics – I (Calculus & Linear Algebra)",
+  "department": "CIVIL",
+  "semester": 1,
+  "year": 1,
+  "credits": 4,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:36:13.416Z"
+}

@@ -24,8 +24,8 @@ const SubjectDetail = () => {
             try {
                 const [subjRes, marksRes, attRes] = await Promise.all([
                     api.get(`/subjects/${id}`),
-                    api.get(`/marks?student=${user._id}&subject=${id}`).catch(() => ({ data: { data: [] } })),
-                    api.get(`/attendance/summary/${user._id}`).catch(() => ({ data: { data: null } })),
+                    api.get(`/marks?student=${user.id || user._id}&subject=${id}`).catch(() => ({ data: { data: [] } })),
+                    api.get(`/attendance/summary/${user.id || user._id}`).catch(() => ({ data: { data: null } })),
                 ]);
                 setSubject(subjRes.data.data);
 

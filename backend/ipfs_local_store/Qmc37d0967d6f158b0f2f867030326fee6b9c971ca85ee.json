@@ -1,0 +1,14 @@
+{
+  "id": "4d9cb103-7a17-4878-8fd6-c70b46e2a4d9",
+  "code": "DS591",
+  "name": "Data Analytics Lab",
+  "department": "CSE-DS",
+  "semester": 5,
+  "year": 3,
+  "credits": 1,
+  "type": "Lab",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:38:17.825Z"
+}

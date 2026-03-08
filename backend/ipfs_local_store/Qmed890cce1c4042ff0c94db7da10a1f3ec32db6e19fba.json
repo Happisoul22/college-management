@@ -1,0 +1,14 @@
+{
+  "id": "3d9c86a2-35cb-4b67-99f6-594f65d07409",
+  "code": "ME505",
+  "name": "Operations Research",
+  "department": "MECH",
+  "semester": 5,
+  "year": 3,
+  "credits": 4,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:35:58.427Z"
+}

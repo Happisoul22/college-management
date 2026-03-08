@@ -1,0 +1,14 @@
+{
+  "id": "e0c5a81c-ded1-4c58-937c-9a0d1e701a28",
+  "code": "CS101",
+  "name": "Problem Solving & Programming in C",
+  "department": "CSE-DS",
+  "semester": 1,
+  "year": 1,
+  "credits": 3,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:37:57.552Z"
+}

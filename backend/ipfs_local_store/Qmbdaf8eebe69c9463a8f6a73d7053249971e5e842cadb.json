@@ -1,0 +1,14 @@
+{
+  "id": "8e4f3b18-88e3-4d15-b04a-c335337aba04",
+  "code": "CS392",
+  "name": "Java Programming Lab",
+  "department": "CSE",
+  "semester": 3,
+  "year": 2,
+  "credits": 1,
+  "type": "Lab",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:34:08.334Z"
+}

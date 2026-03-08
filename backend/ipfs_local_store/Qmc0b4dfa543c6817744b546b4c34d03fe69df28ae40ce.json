@@ -1,0 +1,14 @@
+{
+  "id": "b03e6b54-2cb6-4469-9ad7-18700c5ae7c5",
+  "code": "ME603",
+  "name": "Automobile Engineering",
+  "department": "MECH",
+  "semester": 6,
+  "year": 3,
+  "credits": 4,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:36:02.689Z"
+}

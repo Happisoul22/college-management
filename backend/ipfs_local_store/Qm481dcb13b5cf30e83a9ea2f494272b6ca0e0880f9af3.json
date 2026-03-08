@@ -1,0 +1,14 @@
+{
+  "id": "6261502e-7b1c-4705-b8f5-fde9d2b9fc0a",
+  "code": "CS201",
+  "name": "Data Structures",
+  "department": "MECH",
+  "semester": 2,
+  "year": 1,
+  "credits": 3,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:35:41.263Z"
+}

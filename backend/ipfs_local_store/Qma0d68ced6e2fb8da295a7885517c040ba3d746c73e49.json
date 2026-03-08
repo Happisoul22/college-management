@@ -1,0 +1,14 @@
+{
+  "id": "1aa03f95-4391-430e-ba43-de45b23fed45",
+  "code": "CH101",
+  "name": "Engineering Chemistry",
+  "department": "EEE",
+  "semester": 1,
+  "year": 1,
+  "credits": 4,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:35:02.106Z"
+}

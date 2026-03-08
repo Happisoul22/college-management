@@ -1,0 +1,14 @@
+{
+  "id": "72bff577-3ab2-44b5-b5e4-58794877b44a",
+  "code": "IT302",
+  "name": "Digital Logic Design",
+  "department": "IT",
+  "semester": 3,
+  "year": 2,
+  "credits": 4,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:36:58.448Z"
+}

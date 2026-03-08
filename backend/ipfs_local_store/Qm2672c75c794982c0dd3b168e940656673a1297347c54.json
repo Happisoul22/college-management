@@ -1,0 +1,14 @@
+{
+  "id": "d1932f83-5e16-44a6-ac84-096a38a301e7",
+  "code": "AI402",
+  "name": "Database Management Systems",
+  "department": "CSE-AI",
+  "semester": 4,
+  "year": 2,
+  "credits": 4,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:37:37.798Z"
+}

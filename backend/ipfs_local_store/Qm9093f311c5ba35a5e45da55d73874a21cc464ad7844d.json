@@ -1,0 +1,14 @@
+{
+  "id": "8f4ed8df-1b5b-4e91-bdae-00ac6a9a5e8f",
+  "code": "PH191",
+  "name": "Engineering Physics Lab",
+  "department": "EEE",
+  "semester": 1,
+  "year": 1,
+  "credits": 1,
+  "type": "Lab",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:35:04.097Z"
+}

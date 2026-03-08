@@ -1,0 +1,14 @@
+{
+  "id": "3f3d3ee6-e10d-42d4-ad39-466e2df878f1",
+  "code": "AI401",
+  "name": "Machine Learning",
+  "department": "CSE-AI",
+  "semester": 4,
+  "year": 2,
+  "credits": 4,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:37:37.186Z"
+}

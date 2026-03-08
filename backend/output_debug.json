@@ -1,0 +1,27 @@
+{
+  "assigns": [
+    {
+      "key": "ca_CSE_y2_s2_A_2024-25",
+      "data": {
+        "id": "ca_CSE_y2_s2_A_2024-25",
+        "faculty": "2175f917-0506-4309-8073-8330626a8f9a",
+        "facultyName": "sumanth",
+        "department": "CSE",
+        "year": 2,
+        "semester": 2,
+        "section": "A",
+        "academicYear": "2024-25",
+        "assignedBy": "3fe29cac-ea1c-43e3-bfaa-26e03e6b1b3b",
+        "isActive": true,
+        "createdAt": "2026-03-07T19:33:55.606Z",
+        "updatedAt": "2026-03-07T19:33:55.606Z"
+      },
+      "cid": "Qmf580053df6b90c04dd641fac2cae6cafc6d5e5519491",
+      "timestamp": 1772912035,
+      "storedBy": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+    }
+  ],
+  "keys": [
+    "ca_CSE_y2_s2_A_2024-25"
+  ]
+}

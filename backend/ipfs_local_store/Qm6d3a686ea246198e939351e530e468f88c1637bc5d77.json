@@ -1,0 +1,14 @@
+{
+  "id": "e5de793c-f3de-413e-beee-72f593d6aecd",
+  "code": "EC392",
+  "name": "Digital Electronics Lab",
+  "department": "ECE",
+  "semester": 3,
+  "year": 2,
+  "credits": 1,
+  "type": "Lab",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:34:36.129Z"
+}

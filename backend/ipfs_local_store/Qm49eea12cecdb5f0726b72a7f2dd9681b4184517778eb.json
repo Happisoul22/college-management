@@ -1,0 +1,14 @@
+{
+  "id": "8571ae62-03a0-4ddb-a1e1-a2daae773669",
+  "code": "EE291",
+  "name": "Basic Electrical Engineering Lab",
+  "department": "CSE-DS",
+  "semester": 2,
+  "year": 1,
+  "credits": 1,
+  "type": "Lab",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:38:04.633Z"
+}

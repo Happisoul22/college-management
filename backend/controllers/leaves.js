@@ -1,141 +1,163 @@
-const ErrorResponse = require('../utils/errorResponse');
+/**
+ * controllers/leaves.js  –  Fully decentralised (no MongoDB)
+ *
+ * Leave records stored as JSON on IPFS + indexed per user on-chain.
+ * Key format: leave_<uuid>
+ */
+
+const { v4: uuidv4 } = require('uuid');
 const asyncHandler = require('../middleware/async');
-const Leave = require('../models/Leave');
-const User = require('../models/User');
+const ErrorResponse = require('../utils/errorResponse');
 const blockchain = require('../services/blockchain');
 
-// @desc    Apply for leave (Student or Faculty)
+// @desc    Apply for leave
 // @route   POST /api/leaves
-// @access  Private (Student, Faculty, ClassTeacher, HOD)
+// @access  Private
 exports.applyLeave = asyncHandler(async (req, res, next) => {
-    req.body.user = req.user.id;
-    req.body.applicantRole = req.user.role;
-
-    // Validate dates
     if (req.body.startDate && req.body.endDate) {
         if (new Date(req.body.endDate) < new Date(req.body.startDate)) {
             return next(new ErrorResponse('End date cannot be before start date', 400));
         }
     }
 
-    const leave = await Leave.create(req.body);
+    const id = uuidv4();
+    const key = blockchain.keys.leave(id);
 
-    // Store leave creation on blockchain
-    await blockchain.storeRecordHash('leave', leave._id, leave);
+    const leaveData = {
+        id,
+        user: req.user.id,
+        userName: req.user.name,
+        userEmail: req.user.email,
+        applicantRole: req.user.role,
+        type: req.body.type || '',
+        reason: req.body.reason || '',
+        startDate: req.body.startDate || null,
+        endDate: req.body.endDate || null,
+        status: 'Pending',
+        approvedBy: null,
+        approverName: null,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+    };
 
-    res.status(201).json({ success: true, data: leave });
+    // Also store under student/faculty profile info
+    if (req.user.role === 'Student') {
+        leaveData.branch = req.user.studentProfile?.branch || '';
+        leaveData.section = req.user.studentProfile?.section || '';
+    } else {
+        leaveData.department = req.user.facultyProfile?.department || '';
+    }
+
+    const result = await blockchain.storeRecord('leave', key, leaveData, req.user.id);
+
+    res.status(201).json({
+        success: true,
+        data: leaveData,
+        blockchain: result ? { txHash: result.txHash, cid: result.cid } : null
+    });
 });
 
-// @desc    Get leaves
+// @desc    Get leaves (role-scoped)
 // @route   GET /api/leaves
 // @access  Private
 exports.getLeaves = asyncHandler(async (req, res, next) => {
-    let query;
+    const all = await blockchain.getAllRecordsOfType('leave');
+    let results = all.map(r => r.data);
 
     if (req.user.role === 'Student') {
-        // Students see only their own leaves
-        query = Leave.find({ user: req.user.id, applicantRole: 'Student' })
-            .populate({ path: 'approvedBy', select: 'name role' });
+        // Own leaves only
+        results = results.filter(l => l.user === req.user.id && l.applicantRole === 'Student');
 
     } else if (['Faculty', 'ClassTeacher'].includes(req.user.role)) {
-        // Faculty/ClassTeacher: own leaves + student leaves from their assigned class
-        const ClassAssignment = require('../models/ClassAssignment');
+        // Own leaves + student leaves from assigned class
+        const myAssigns = (await blockchain.getAllRecordsOfType('classassign'))
+            .map(r => r.data)
+            .filter(a => a.faculty === req.user.id && a.isActive);
 
-        // Find active class assignments for this faculty
-        const assignments = await ClassAssignment.find({
-            faculty: req.user.id,
-            isActive: true
-        });
-
-        let studentIds = [];
-        if (assignments.length > 0) {
-            // Build queries to find students matching each assignment
-            const orConditions = assignments.map(a => ({
-                role: 'Student',
-                'studentProfile.branch': a.department,
-                'studentProfile.section': a.section
-            }));
-
-            const students = await User.find({ $or: orConditions }).select('_id');
-            studentIds = students.map(s => s._id);
+        let assignedStudentIds = new Set();
+        if (myAssigns.length) {
+            const allUsers = await blockchain.getAllRecordsOfType('user');
+            for (const a of myAssigns) {
+                allUsers
+                    .map(r => r.data)
+                    .filter(u =>
+                        u.role === 'Student' &&
+                        u.studentProfile?.branch === a.department &&
+                        u.studentProfile?.section === a.section
+                    )
+                    .forEach(u => assignedStudentIds.add(u.id));
+            }
         }
 
-        // Return: own leaves + student leaves from assigned classes
-        query = Leave.find({
-            $or: [
-                { user: req.user.id },  // own leaves
-                ...(studentIds.length > 0
-                    ? [{ user: { $in: studentIds }, applicantRole: 'Student' }]
-                    : [])
-            ]
-        })
-            .populate({ path: 'user', select: 'name email studentProfile role' })
-            .populate({ path: 'approvedBy', select: 'name role' });
+        results = results.filter(l =>
+            l.user === req.user.id ||
+            (assignedStudentIds.has(l.user) && l.applicantRole === 'Student')
+        );
 
     } else if (['HOD', 'Principal', 'Admin'].includes(req.user.role)) {
-        // HOD/Principal sees:
-        //   1. All student leaves (existing behaviour)
-        //   2. Faculty leaves from their own department
-        const hodUser = await User.findById(req.user.id).select('facultyProfile');
-        const hodDept = hodUser?.facultyProfile?.department;
+        const dept = req.user.facultyProfile?.department;
+        const allUsers = await blockchain.getAllRecordsOfType('user');
 
-        // Find all faculty in the same department
-        let facultyInDept = [];
-        if (hodDept) {
-            const deptFaculty = await User.find({
-                role: { $in: ['Faculty', 'ClassTeacher', 'HOD'] },
-                'facultyProfile.department': hodDept,
-                _id: { $ne: req.user.id }  // exclude self
-            }).select('_id');
-            facultyInDept = deptFaculty.map(f => f._id);
+        let deptFacultyIds = new Set();
+        if (dept) {
+            allUsers
+                .map(r => r.data)
+                .filter(u => ['Faculty', 'ClassTeacher', 'HOD'].includes(u.role) &&
+                    u.facultyProfile?.department === dept && u.id !== req.user.id)
+                .forEach(u => deptFacultyIds.add(u.id));
         }
 
-        query = Leave.find({
-            $or: [
-                { applicantRole: 'Student' },
-                { user: { $in: facultyInDept } }
-            ]
-        })
-            .populate({ path: 'user', select: 'name email studentProfile facultyProfile role' })
-            .populate({ path: 'approvedBy', select: 'name role' });
-    } else {
-        // Fallback — show all
-        query = Leave.find()
-            .populate({ path: 'user', select: 'name email studentProfile facultyProfile role' })
-            .populate({ path: 'approvedBy', select: 'name role' });
+        results = results.filter(l =>
+            l.applicantRole === 'Student' || deptFacultyIds.has(l.user)
+        );
     }
 
-    const leaves = await query.sort('-createdAt');
+    const allUsersData = (await blockchain.getAllRecordsOfType('user')).map(r => r.data);
+    const userMap = new Map(allUsersData.map(u => [u.id, u]));
 
-    res.status(200).json({ success: true, count: leaves.length, data: leaves });
+    // Attach user profile object correctly
+    results = results.map(l => ({
+        ...l,
+        user: userMap.get(l.user) || { name: l.userName, email: l.userEmail }
+    }));
+
+    results.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    res.status(200).json({ success: true, count: results.length, data: results });
 });
 
 // @desc    Update leave status
 // @route   PUT /api/leaves/:id
 // @access  Private (Faculty, HOD)
 exports.updateLeaveStatus = asyncHandler(async (req, res, next) => {
-    let leave = await Leave.findById(req.params.id);
+    const key = blockchain.keys.leave(req.params.id);
+    const rec = await blockchain.getRecord(key);
+    if (!rec) return next(new ErrorResponse('Leave not found', 404));
 
-    if (!leave) {
-        return next(new ErrorResponse(`Leave not found with id of ${req.params.id}`, 404));
-    }
+    const existing = rec.data;
 
     if (req.user.role === 'Student') {
-        return next(new ErrorResponse(`Students cannot approve leaves`, 403));
+        return next(new ErrorResponse('Students cannot approve leaves', 403));
     }
 
-    // Faculty can only approve student leaves, not other faculty leaves
-    if (['Faculty', 'ClassTeacher'].includes(req.user.role) && leave.applicantRole !== 'Student') {
-        return next(new ErrorResponse(`Only HOD can approve faculty leaves`, 403));
+    if (['Faculty', 'ClassTeacher'].includes(req.user.role) && existing.applicantRole !== 'Student') {
+        return next(new ErrorResponse('Only HOD can approve faculty leaves', 403));
     }
 
-    leave = await Leave.findByIdAndUpdate(req.params.id, {
+    const updated = {
+        ...existing,
         status: req.body.status,
-        approvedBy: req.user.id
-    }, { new: true, runValidators: true });
+        approvedBy: req.user.id,
+        approverName: req.user.name,
+        updatedAt: new Date().toISOString(),
+    };
 
-    // Store leave approval/rejection on blockchain
-    await blockchain.storeRecordHash('leave', leave._id, leave);
+    console.log(`[Leaves] Updating record ${key} to status ${updated.status}`);
+    const result = await blockchain.storeRecord('leave', key, updated, existing.user);
+    console.log(`[Leaves] Store result:`, result);
 
-    res.status(200).json({ success: true, data: leave });
+    res.status(200).json({
+        success: true,
+        data: updated,
+        blockchain: result ? { txHash: result.txHash, cid: result.cid } : null
+    });
 });

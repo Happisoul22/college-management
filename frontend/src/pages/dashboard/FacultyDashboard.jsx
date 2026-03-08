@@ -3,9 +3,39 @@ import { useNavigate } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import AuthContext from '../../context/AuthContext';
 import api from '../../api/axios';
-import { FaCheck, FaTimes, FaSearch, FaFilePdf, FaUserGraduate, FaChalkboardTeacher, FaTrophy, FaClock, FaArrowLeft } from 'react-icons/fa';
+import { FaCheck, FaTimes, FaSearch, FaFilePdf, FaUserGraduate, FaChalkboardTeacher, FaTrophy, FaClock, FaArrowLeft, FaBan, FaHourglassHalf, FaPhone, FaEnvelope, FaUserTie, FaClipboardList } from 'react-icons/fa';
+import {
+    PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer,
+    BarChart, Bar, XAxis, YAxis, CartesianGrid,
+    LineChart, Line
+} from 'recharts';
 import { toast } from 'react-toastify';
 import './FacultyDashboard.css';
+
+const STATUS_COLORS = {
+    Approved: '#22c55e',
+    Pending: '#f59e0b',
+    Rejected: '#ef4444',
+};
+
+const TYPE_COLORS = [
+    '#e05c1a', '#0d2b5e', '#f4a820', '#10b981', '#6366f1',
+    '#ec4899', '#14b8a6', '#8b5cf6', '#f97316', '#06b6d4',
+];
+
+const renderCustomLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
+    if (percent < 0.05) return null;
+    const RADIAN = Math.PI / 180;
+    const r = innerRadius + (outerRadius - innerRadius) * 0.55;
+    const x = cx + r * Math.cos(-midAngle * RADIAN);
+    const y = cy + r * Math.sin(-midAngle * RADIAN);
+    return (
+        <text x={x} y={y} fill="#fff" textAnchor="middle" dominantBaseline="central"
+            fontSize={12} fontWeight={700}>
+            {`${(percent * 100).toFixed(0)}%`}
+        </text>
+    );
+};
 
 const FacultyDashboard = () => {
     const { user } = useContext(AuthContext);
@@ -13,7 +43,9 @@ const FacultyDashboard = () => {
     const isHOD = user?.role === 'HOD' || user?.role === 'Principal' || user?.role === 'Admin';
 
     const [achievements, setAchievements] = useState([]);
+    const [myAchievements, setMyAchievements] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [myLoading, setMyLoading] = useState(true);
     const [filters, setFilters] = useState({
         status: '',
         year: '',
@@ -55,9 +87,21 @@ const FacultyDashboard = () => {
         : userList;
 
     useEffect(() => {
+        fetchMyAchievements();
         fetchAchievements();
         if (isHOD) fetchDeptStats();
     }, [filters, achTab]);
+
+    const fetchMyAchievements = async () => {
+        try {
+            const res = await api.get('/achievements?me=true');
+            setMyAchievements(res.data.data);
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setMyLoading(false);
+        }
+    };
 
     const fetchDeptStats = async () => {
         try {
@@ -140,13 +184,156 @@ const FacultyDashboard = () => {
 
     const pendingCount = achievements.filter(a => a.status === 'Pending').length;
 
+    /* ── Derived analytics for MY achievements ── */
+    const myTotal = myAchievements.length;
+    const myApproved = myAchievements.filter(a => a.status === 'Approved').length;
+    const myPending = myAchievements.filter(a => a.status === 'Pending').length;
+    const myRejected = myAchievements.filter(a => a.status === 'Rejected').length;
+
+    const statusData = [
+        { name: 'Approved', value: myApproved },
+        { name: 'Pending', value: myPending },
+        { name: 'Rejected', value: myRejected },
+    ].filter(d => d.value > 0);
+
+    const typeMap = {};
+    myAchievements.forEach(a => { typeMap[a.type] = (typeMap[a.type] || 0) + 1; });
+    const typeData = Object.entries(typeMap).map(([type, count]) => ({ type, count }));
+
+    const monthlyMap = {};
+    const now = new Date();
+    for (let i = 5; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const key = d.toLocaleString('default', { month: 'short', year: '2-digit' });
+        monthlyMap[key] = 0;
+    }
+    myAchievements.forEach(a => {
+        const d = new Date(a.createdAt);
+        const key = d.toLocaleString('default', { month: 'short', year: '2-digit' });
+        if (key in monthlyMap) monthlyMap[key]++;
+    });
+    const trendData = Object.entries(monthlyMap).map(([month, count]) => ({ month, count }));
+
+    const StatCard = ({ icon, value, label, color }) => (
+        <div className="sd-stat-card" style={{ borderTopColor: color }}>
+            <div className="sd-stat-icon" style={{ background: color + '18', color }}>
+                {icon}
+            </div>
+            <div className="sd-stat-body">
+                <div className="sd-stat-value" style={{ color }}>{value}</div>
+                <div className="sd-stat-label">{label}</div>
+            </div>
+        </div>
+    );
+
     return (
         <Layout>
             <div className="page-title">
                 {isHOD ? 'HOD Dashboard' : 'Faculty Dashboard'}
             </div>
 
-            {/* ══════ HOD STAT CARDS ══════ */}
+            {/* ══════ FACULTY PROFILE CARD ══════ */}
+            <div className="card" style={{ marginBottom: '16px', borderLeft: '4px solid #6366f1' }}>
+                <div className="card-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <FaUserTie color="#6366f1" /> My Profile
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
+                    <div style={{ width: 52, height: 52, borderRadius: '12px', background: 'linear-gradient(135deg, #6366f1, #4338ca)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 20, fontWeight: 900, flexShrink: 0 }}>
+                        {user?.name?.charAt(0)}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 700, fontSize: '1rem', color: '#1e293b' }}>{user?.name}</div>
+                        <div style={{ color: '#64748b', fontSize: '0.85rem', marginTop: 4, display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+                            <span><FaEnvelope style={{ marginRight: 4 }} />{user?.email}</span>
+                            {user?.facultyProfile?.phone && (
+                                <span><FaPhone style={{ marginRight: 4 }} />{user.facultyProfile.phone}</span>
+                            )}
+                            {user?.facultyProfile?.department && (
+                                <span style={{ color: '#6366f1', fontWeight: 700 }}>Dept: {user.facultyProfile.department}</span>
+                            )}
+                            {user?.facultyProfile?.facultyId && (
+                                <span style={{ color: '#64748b', fontWeight: 700 }}>ID: {user.facultyProfile.facultyId}</span>
+                            )}
+                        </div>
+                    </div>
+                    <span style={{ background: '#eef2ff', color: '#4338ca', padding: '4px 12px', borderRadius: 20, fontSize: '0.8rem', fontWeight: 700 }}>{user?.role}</span>
+                </div>
+            </div>
+
+            {/* ══════ MY ACHIEVEMENTS STATS & CHARTS ══════ */}
+            <div className="sd-stats-row">
+                <StatCard icon={<FaTrophy />} value={myTotal} label="My Total Achievements" color="#e05c1a" />
+                <StatCard icon={<FaCheck />} value={myApproved} label="Approved" color="#22c55e" />
+                <StatCard icon={<FaHourglassHalf />} value={myPending} label="Pending" color="#f59e0b" />
+                <StatCard icon={<FaBan />} value={myRejected} label="Rejected" color="#ef4444" />
+            </div>
+
+            {myTotal > 0 ? (
+                <div className="sd-charts-row" style={{ marginTop: '16px', marginBottom: '24px' }}>
+                    <div className="card sd-chart-card">
+                        <div className="card-title">My Achievement Status</div>
+                        <ResponsiveContainer width="100%" height={240}>
+                            <PieChart>
+                                <Pie
+                                    data={statusData} dataKey="value"
+                                    cx="50%" cy="50%" outerRadius={90}
+                                    labelLine={false} label={renderCustomLabel}
+                                >
+                                    {statusData.map(entry => (
+                                        <Cell key={entry.name} fill={STATUS_COLORS[entry.name]} />
+                                    ))}
+                                </Pie>
+                                <Tooltip formatter={(v) => [v, 'Count']} />
+                                <Legend iconType="circle" iconSize={10} />
+                            </PieChart>
+                        </ResponsiveContainer>
+                    </div>
+
+                    {typeData.length > 0 && (
+                        <div className="card sd-chart-card">
+                            <div className="card-title">My Achievements by Type</div>
+                            <ResponsiveContainer width="100%" height={240}>
+                                <BarChart data={typeData} barSize={28} margin={{ left: -10 }}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                                    <XAxis dataKey="type" tick={{ fontSize: 11 }} />
+                                    <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
+                                    <Tooltip />
+                                    <Bar dataKey="count" radius={[5, 5, 0, 0]}>
+                                        {typeData.map((_, i) => (
+                                            <Cell key={i} fill={TYPE_COLORS[i % TYPE_COLORS.length]} />
+                                        ))}
+                                    </Bar>
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
+                    )}
+
+                    <div className="card sd-chart-card">
+                        <div className="card-title">Monthly Trend (6 months)</div>
+                        <ResponsiveContainer width="100%" height={240}>
+                            <LineChart data={trendData} margin={{ left: -10 }}>
+                                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                                <XAxis dataKey="month" tick={{ fontSize: 11 }} />
+                                <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
+                                <Tooltip />
+                                <Line
+                                    type="monotone" dataKey="count"
+                                    stroke="#e05c1a" strokeWidth={2.5}
+                                    dot={{ r: 5, fill: '#e05c1a', stroke: '#fff', strokeWidth: 2 }}
+                                    activeDot={{ r: 7 }}
+                                />
+                            </LineChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+            ) : !myLoading && (
+                <div className="sd-empty-analytics" style={{ marginBottom: '24px' }}>
+                    <FaClipboardList size={36} />
+                    <p>No achievements yet — add your first one to see analytics!</p>
+                </div>
+            )}
+
+            {/* ══════ HOD STAT CARDS (IF HOD) ══════ */}
             {isHOD && (
                 <>
                     {deptStats.department && (
@@ -300,9 +487,9 @@ const FacultyDashboard = () => {
                                         <tbody>
                                             {(activeView === 'students' ? filteredUserList : userList).map((u, i) => (
                                                 <tr
-                                                    key={u._id}
+                                                    key={u.id}
                                                     style={{ cursor: 'pointer' }}
-                                                    onClick={activeView === 'faculty' ? () => navigate(`/faculty-profile/${u._id}`) : () => navigate(`/student-profile/${u._id}`)}
+                                                    onClick={activeView === 'faculty' ? () => navigate(`/faculty-profile/${u.id}`) : () => navigate(`/student-profile/${u.id}`)}
                                                     className={activeView === 'faculty' ? 'hod-faculty-row' : 'hod-student-row'}
                                                 >
                                                     <td>{i + 1}</td>
@@ -375,13 +562,15 @@ const FacultyDashboard = () => {
                     🎓 Student Achievements
                     {achTab === 'student' && <span className="fd-ach-tab-count">{achievements.length}</span>}
                 </button>
-                <button
-                    className={`fd-ach-tab${achTab === 'faculty' ? ' fd-ach-tab--active' : ''}`}
-                    onClick={() => setAchTab('faculty')}
-                >
-                    👨‍🏫 Faculty Achievements
-                    {achTab === 'faculty' && <span className="fd-ach-tab-count">{achievements.length}</span>}
-                </button>
+                {isHOD && (
+                    <button
+                        className={`fd-ach-tab${achTab === 'faculty' ? ' fd-ach-tab--active' : ''}`}
+                        onClick={() => setAchTab('faculty')}
+                    >
+                        👨‍🏫 Faculty Achievements
+                        {achTab === 'faculty' && <span className="fd-ach-tab-count">{achievements.length}</span>}
+                    </button>
+                )}
             </div>
 
             <div className="card">
@@ -408,11 +597,11 @@ const FacultyDashboard = () => {
                                     </thead>
                                     <tbody>
                                         {achievements.length > 0 ? achievements.map(ach => (
-                                            <tr key={ach._id}>
+                                            <tr key={ach.id}>
                                                 <td>
                                                     {ach.user ? (
                                                         <div style={{ cursor: 'pointer' }}
-                                                            onClick={() => navigate(`/student-profile/${ach.user._id}`)}>
+                                                            onClick={() => navigate(`/student-profile/${ach.user.id}`)}>
                                                             <div style={{ fontWeight: 700, color: 'var(--primary-color, #f97316)' }}>
                                                                 {ach.user.name}
                                                             </div>
@@ -432,17 +621,26 @@ const FacultyDashboard = () => {
                                                         <div style={{ display: 'flex', gap: '10px' }}>
                                                             <button className="btn status-Approved"
                                                                 style={{ border: 'none', cursor: 'pointer' }}
-                                                                onClick={() => handleStatusUpdate(ach._id, 'Approved')}>
+                                                                onClick={() => handleStatusUpdate(ach.id, 'Approved')}>
                                                                 <FaCheck /> Approve
                                                             </button>
                                                             <button className="btn status-Rejected"
                                                                 style={{ border: 'none', cursor: 'pointer' }}
-                                                                onClick={() => handleStatusUpdate(ach._id, 'Rejected')}>
+                                                                onClick={() => handleStatusUpdate(ach.id, 'Rejected')}>
                                                                 <FaTimes /> Reject
                                                             </button>
                                                         </div>
                                                     )}
-                                                    {ach.status !== 'Pending' && <span className={`status-badge status-${ach.status}`}>{ach.status}</span>}
+                                                    {ach.status !== 'Pending' && (
+                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                                            <span className={`status-badge status-${ach.status}`}>{ach.status}</span>
+                                                            {ach.reviewer && (
+                                                                <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '2px' }}>
+                                                                    by {ach.reviewer.name}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    )}
                                                 </td>
                                                 <td>
                                                     {ach.proofUrl ? (
@@ -472,7 +670,7 @@ const FacultyDashboard = () => {
                                     </thead>
                                     <tbody>
                                         {achievements.length > 0 ? achievements.map(ach => (
-                                            <tr key={ach._id}>
+                                            <tr key={ach.id}>
                                                 <td>
                                                     {ach.user ? (
                                                         <div>

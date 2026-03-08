@@ -1,50 +1,102 @@
+/**
+ * controllers/marks.js  –  Fully decentralised (no MongoDB)
+ *
+ * Marks are stored as JSON blobs on IPFS; each blob's CID is indexed on-chain.
+ * Key format: marks_<studentId>_<subjectId>_<academicYear>
+ */
+
 const asyncHandler = require('../middleware/async');
 const ErrorResponse = require('../utils/errorResponse');
-const Marks = require('../models/Marks');
-const Subject = require('../models/Subject');
-const User = require('../models/User');
 const blockchain = require('../services/blockchain');
 
-// ─── Helper: Recalculate & persist CGPA for a student ───────────────────────
-const recalculateCGPA = async (studentId) => {
-    const allMarks = await Marks.find({ student: studentId }).populate('subject', 'credits');
-    if (!allMarks.length) return;
+// ── Grade calculation helper ──────────────────────────────────────────────────
+const GRADE_TABLE = [
+    { min: 90, grade: 'O', gp: 10 },
+    { min: 80, grade: 'A+', gp: 9 },
+    { min: 70, grade: 'A', gp: 8 },
+    { min: 60, grade: 'B+', gp: 7 },
+    { min: 50, grade: 'B', gp: 6 },
+    { min: 40, grade: 'C', gp: 5 },
+    { min: 0, grade: 'F', gp: 0 },
+];
 
-    let totalWeightedGP = 0;
-    let totalCredits = 0;
-
-    allMarks.forEach(m => {
-        const credits = m.subject?.credits || 3;
-        totalWeightedGP += (m.gradePoint || 0) * credits;
-        totalCredits += credits;
-    });
-
-    const cgpa = totalCredits > 0 ? parseFloat((totalWeightedGP / totalCredits).toFixed(2)) : 0;
-
-    await User.findByIdAndUpdate(studentId, {
-        'studentProfile.cgpa': cgpa
-    });
+const calcGrade = (total, maxMarks = 100) => {
+    const pct = maxMarks > 0 ? (total / maxMarks) * 100 : 0;
+    const row = GRADE_TABLE.find(r => pct >= r.min) || GRADE_TABLE[GRADE_TABLE.length - 1];
+    return { grade: row.grade, gradePoint: row.gp };
 };
-// ────────────────────────────────────────────────────────────────────────────
 
-// @desc    Get marks for a student (all or by semester)
-// @route   GET /api/marks?student=id&semester=1
+const calcInternalTotal = (internal = {}) =>
+    Object.values(internal).reduce((s, v) => s + (parseFloat(v) || 0), 0);
+
+const calcExternalTotal = (external = {}) =>
+    Object.values(external).reduce((s, v) => s + (parseFloat(v) || 0), 0);
+
+// ── Recalculate CGPA for a student (reads all marks from chain) ───────────────
+const recalculateCGPA = async (studentId) => {
+    try {
+        const keys = await blockchain.getUserRecordKeys(studentId, 'marks_');
+        const recs = await blockchain.getRecords(keys);
+        if (!recs.length) return 0;
+
+        let totalWGP = 0, totalCredits = 0;
+        for (const r of recs) {
+            const credits = r.data.credits || 3;
+            totalWGP += (r.data.gradePoint || 0) * credits;
+            totalCredits += credits;
+        }
+        return totalCredits > 0 ? parseFloat((totalWGP / totalCredits).toFixed(2)) : 0;
+    } catch (e) {
+        console.error('recalculateCGPA error:', e.message);
+        return 0;
+    }
+};
+
+// Update CGPA inside user record
+const updateUserCGPA = async (studentId, cgpa) => {
+    try {
+        const rec = await blockchain.getRecord(blockchain.keys.user(studentId));
+        if (!rec) return;
+        const userData = { ...rec.data };
+        if (userData.studentProfile) {
+            userData.studentProfile.cgpa = cgpa;
+            userData.updatedAt = new Date().toISOString();
+            await blockchain.storeRecord('user', blockchain.keys.user(studentId), userData, studentId);
+        }
+    } catch (e) { console.error('updateUserCGPA error:', e.message); }
+};
+
+// ═══════════════════════ HANDLERS ═════════════════════════════════════════════
+
+// @desc    Get marks (student or by subject/semester)
+// @route   GET /api/marks
 // @access  Private
 exports.getMarks = asyncHandler(async (req, res, next) => {
-    const query = {};
-    if (req.query.student) query.student = req.query.student;
-    else if (req.user.role === 'Student') query.student = req.user.id;
-    if (req.query.semester) query.semester = parseInt(req.query.semester);
-    if (req.query.subject) query.subject = req.query.subject;
-    if (req.query.academicYear) query.academicYear = req.query.academicYear;
+    const studentId = req.query.student || (req.user.role === 'Student' ? req.user.id : null);
 
-    const marks = await Marks.find(query)
-        .populate('subject', 'code name credits type')
-        .populate('student', 'name studentProfile')
-        .populate('enteredBy', 'name')
-        .sort({ semester: 1 });
+    let results = [];
 
-    res.status(200).json({ success: true, count: marks.length, data: marks });
+    if (studentId) {
+        // Get all marks keys for this student
+        const keys = await blockchain.getUserRecordKeys(studentId, 'marks_');
+        const recs = await blockchain.getRecords(keys);
+        results = recs.map(r => r.data);
+    } else {
+        // Faculty/HOD: list all marks of type
+        const all = await blockchain.getAllRecordsOfType('marks');
+        results = all.map(r => r.data);
+    }
+
+    // Apply filters
+    if (req.query.semester) results = results.filter(m => m.semester === parseInt(req.query.semester));
+    if (req.query.subject) results = results.filter(m => m.subjectId === req.query.subject);
+    if (req.query.academicYear) results = results.filter(m => m.academicYear === req.query.academicYear);
+    if (req.query.student && !req.query.student) results = results.filter(m => m.studentId === req.query.student);
+
+    // Sort by semester
+    results.sort((a, b) => (a.semester || 0) - (b.semester || 0));
+
+    res.status(200).json({ success: true, count: results.length, data: results });
 });
 
 // @desc    Enter / update marks for a single student-subject
@@ -57,51 +109,50 @@ exports.enterMarks = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse('Student and Subject are required', 400));
     }
 
-    // Check if marks already exist — update if so
-    let marks = await Marks.findOne({ student, subject, academicYear: academicYear || '' });
+    const recordKey = blockchain.keys.marks(student, subject, academicYear || 'na');
 
-    if (marks) {
-        // Update existing
-        if (internal) Object.assign(marks.internal, internal);
-        if (external) Object.assign(marks.external, external);
-        marks.enteredBy = req.user.id;
-        marks.updatedAt = Date.now();
-        await marks.save(); // triggers pre-save hook for grade calc
+    // Check if marks already exist
+    const existing = await blockchain.getRecord(recordKey);
+    let marksData;
+
+    if (existing) {
+        marksData = { ...existing.data };
+        if (internal) Object.assign(marksData.internal, internal);
+        if (external) Object.assign(marksData.external, external);
     } else {
-        // Create new
-        marks = await Marks.create({
-            student,
-            subject,
+        marksData = {
+            id: recordKey,
+            studentId: student,
+            subjectId: subject,
             semester: semester || 1,
             year: year || 1,
             academicYear: academicYear || '',
             internal: internal || {},
             external: external || {},
-            enteredBy: req.user.id
-        });
-        // Re-save to trigger pre-save hook
-        await marks.save();
+            enteredBy: req.user.id,
+            createdAt: new Date().toISOString(),
+        };
     }
 
-    // Populate for response
-    marks = await Marks.findById(marks._id)
-        .populate('subject', 'code name credits type')
-        .populate('student', 'name');
+    // Recalculate totals & grade
+    marksData.internalTotal = calcInternalTotal(marksData.internal);
+    marksData.externalTotal = calcExternalTotal(marksData.external);
+    marksData.totalMarks = marksData.internalTotal + marksData.externalTotal;
+    const { grade, gradePoint } = calcGrade(marksData.totalMarks, 100);
+    marksData.grade = grade;
+    marksData.gradePoint = gradePoint;
+    marksData.updatedAt = new Date().toISOString();
 
-    // Recalculate and persist CGPA
-    await recalculateCGPA(student);
+    const result = await blockchain.storeRecord('marks', recordKey, marksData, student);
 
-    // Store hash on blockchain for tamper-proof verification
-    const blockchainResult = await blockchain.storeRecordHash('marks', marks._id, marks);
+    // Recalculate & persist CGPA
+    const cgpa = await recalculateCGPA(student);
+    await updateUserCGPA(student, cgpa);
 
     res.status(200).json({
         success: true,
-        data: marks,
-        blockchain: blockchainResult ? {
-            txHash: blockchainResult.txHash,
-            recordKey: blockchainResult.recordKey,
-            blockNumber: blockchainResult.blockNumber
-        } : null
+        data: marksData,
+        blockchain: result ? { txHash: result.txHash, cid: result.cid, recordKey } : null
     });
 });
 
@@ -110,61 +161,63 @@ exports.enterMarks = asyncHandler(async (req, res, next) => {
 // @access  Private (Faculty, HOD)
 exports.bulkEnterMarks = asyncHandler(async (req, res, next) => {
     const { subject, semester, year, academicYear, entries } = req.body;
-    // entries = [{ student, internal, external }, ...]
 
-    if (!subject || !entries || !entries.length) {
+    if (!subject || !entries?.length) {
         return next(new ErrorResponse('Subject and entries are required', 400));
     }
 
     const results = [];
-    for (const entry of entries) {
-        let marks = await Marks.findOne({
-            student: entry.student,
-            subject,
-            academicYear: academicYear || ''
-        });
+    const bcResults = [];
 
-        if (marks) {
-            if (entry.internal) Object.assign(marks.internal, entry.internal);
-            if (entry.external) Object.assign(marks.external, entry.external);
-            marks.enteredBy = req.user.id;
-            marks.updatedAt = Date.now();
-            await marks.save();
+    for (const entry of entries) {
+        const recordKey = blockchain.keys.marks(entry.student, subject, academicYear || 'na');
+        const existing = await blockchain.getRecord(recordKey);
+        let marksData;
+
+        if (existing) {
+            marksData = { ...existing.data };
+            if (entry.internal) Object.assign(marksData.internal, entry.internal);
+            if (entry.external) Object.assign(marksData.external, entry.external);
         } else {
-            marks = await Marks.create({
-                student: entry.student,
-                subject,
+            marksData = {
+                id: recordKey,
+                studentId: entry.student,
+                subjectId: subject,
                 semester: semester || 1,
                 year: year || 1,
                 academicYear: academicYear || '',
                 internal: entry.internal || {},
                 external: entry.external || {},
-                enteredBy: req.user.id
-            });
-            await marks.save();
+                enteredBy: req.user.id,
+                createdAt: new Date().toISOString(),
+            };
         }
-        results.push(marks);
+
+        marksData.internalTotal = calcInternalTotal(marksData.internal);
+        marksData.externalTotal = calcExternalTotal(marksData.external);
+        marksData.totalMarks = marksData.internalTotal + marksData.externalTotal;
+        const { grade, gradePoint } = calcGrade(marksData.totalMarks, 100);
+        marksData.grade = grade;
+        marksData.gradePoint = gradePoint;
+        marksData.updatedAt = new Date().toISOString();
+
+        const r = await blockchain.storeRecord('marks', recordKey, marksData, entry.student);
+        results.push(marksData);
+        if (r) bcResults.push(r);
     }
 
-    // Recalculate CGPA for each unique student in the bulk entry
+    // Recalculate CGPA for each unique student
     const uniqueStudents = [...new Set(entries.map(e => e.student))];
-    await Promise.all(uniqueStudents.map(recalculateCGPA));
-
-    // Store hashes on blockchain for all entries
-    const blockchainResults = [];
-    for (const marks of results) {
-        const bcResult = await blockchain.storeRecordHash('marks', marks._id, marks);
-        if (bcResult) blockchainResults.push(bcResult);
+    for (const sid of uniqueStudents) {
+        const cgpa = await recalculateCGPA(sid);
+        await updateUserCGPA(sid, cgpa);
     }
 
     res.status(200).json({
         success: true,
         count: results.length,
         data: results,
-        blockchain: {
-            storedCount: blockchainResults.length,
-            transactions: blockchainResults.map(r => r.txHash)
-        }
+        blockchain: { storedCount: bcResults.length, cids: bcResults.map(r => r.cid) }
     });
 });
 
@@ -173,50 +226,41 @@ exports.bulkEnterMarks = asyncHandler(async (req, res, next) => {
 // @access  Private
 exports.getStudentCGPA = asyncHandler(async (req, res, next) => {
     const studentId = req.params.studentId || req.user.id;
+    const keys = await blockchain.getUserRecordKeys(studentId, 'marks_');
+    const recs = await blockchain.getRecords(keys);
 
-    const allMarks = await Marks.find({ student: studentId })
-        .populate('subject', 'credits');
-
-    if (!allMarks.length) {
+    if (!recs.length) {
         return res.status(200).json({
-            success: true,
-            data: { cgpa: 0, sgpa: {}, totalCredits: 0 }
+            success: true, data: { cgpa: 0, sgpa: {}, totalCredits: 0, totalSubjects: 0 }
         });
     }
 
-    // Group by semester
-    const bySemester = {};
-    allMarks.forEach(m => {
-        const sem = m.semester;
-        if (!bySemester[sem]) bySemester[sem] = [];
-        bySemester[sem].push(m);
+    const bySem = {};
+    recs.forEach(r => {
+        const sem = r.data.semester || 1;
+        if (!bySem[sem]) bySem[sem] = [];
+        bySem[sem].push(r.data);
     });
 
-    // Calculate SGPA per semester
     const sgpa = {};
-    let totalWeightedGP = 0;
-    let totalCredits = 0;
+    let totalWGP = 0, totalCredits = 0;
 
-    Object.keys(bySemester).sort().forEach(sem => {
-        const semMarks = bySemester[sem];
-        let semWeighted = 0;
-        let semCredits = 0;
-
-        semMarks.forEach(m => {
-            const credits = m.subject?.credits || 3;
-            semWeighted += m.gradePoint * credits;
-            semCredits += credits;
+    Object.keys(bySem).sort().forEach(sem => {
+        let sw = 0, sc = 0;
+        bySem[sem].forEach(m => {
+            const c = m.credits || 3;
+            sw += (m.gradePoint || 0) * c;
+            sc += c;
         });
-
-        sgpa[sem] = semCredits > 0 ? parseFloat((semWeighted / semCredits).toFixed(2)) : 0;
-        totalWeightedGP += semWeighted;
-        totalCredits += semCredits;
+        sgpa[sem] = sc > 0 ? parseFloat((sw / sc).toFixed(2)) : 0;
+        totalWGP += sw;
+        totalCredits += sc;
     });
 
-    const cgpa = totalCredits > 0 ? parseFloat((totalWeightedGP / totalCredits).toFixed(2)) : 0;
+    const cgpa = totalCredits > 0 ? parseFloat((totalWGP / totalCredits).toFixed(2)) : 0;
 
     res.status(200).json({
         success: true,
-        data: { cgpa, sgpa, totalCredits, totalSubjects: allMarks.length }
+        data: { cgpa, sgpa, totalCredits, totalSubjects: recs.length }
     });
 });

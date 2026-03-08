@@ -1,0 +1,14 @@
+{
+  "id": "ca55fc86-5f63-4148-8478-d2693713ec8e",
+  "code": "CS491",
+  "name": "Operating Systems Lab",
+  "department": "CSE",
+  "semester": 4,
+  "year": 2,
+  "credits": 1,
+  "type": "Lab",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:34:11.048Z"
+}

@@ -1,0 +1,5 @@
+[
+  "Undefined handler for GET /status at index 0",
+  "Route.get() requires a callback function but got a [object Undefined]",
+  "    at express.Router.<computed> [as get] (C:\\Users\\suman\\OneDrive\\Desktop\\academic-analytics-system\\backend\\test-routes.js:13:21)\n    at Object.<anonymous> (C:\\Users\\suman\\OneDrive\\Desktop\\academic-analytics-system\\backend\\routes\\blockchain.js:14:8)"
+]

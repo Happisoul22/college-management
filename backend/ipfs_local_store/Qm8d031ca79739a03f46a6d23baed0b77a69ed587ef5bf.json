@@ -1,0 +1,14 @@
+{
+  "id": "9c88fb41-24a9-4690-83af-357d513e7776",
+  "code": "DS503",
+  "name": "Time Series Analysis & Forecasting",
+  "department": "CSE-DS",
+  "semester": 5,
+  "year": 3,
+  "credits": 4,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:38:15.883Z"
+}

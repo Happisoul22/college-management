@@ -1,0 +1,14 @@
+{
+  "id": "f0a333af-d06e-413a-b080-ca81318323c1",
+  "code": "CS591",
+  "name": "Computer Networks Lab",
+  "department": "CSE",
+  "semester": 5,
+  "year": 3,
+  "credits": 1,
+  "type": "Lab",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:34:14.194Z"
+}

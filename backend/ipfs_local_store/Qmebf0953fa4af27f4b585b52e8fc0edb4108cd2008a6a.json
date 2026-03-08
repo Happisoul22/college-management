@@ -1,0 +1,14 @@
+{
+  "id": "71cbe9dd-5241-40c2-9636-c7a09d1c78aa",
+  "code": "IT691",
+  "name": "Machine Learning Lab",
+  "department": "IT",
+  "semester": 6,
+  "year": 3,
+  "credits": 1,
+  "type": "Lab",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:37:16.306Z"
+}

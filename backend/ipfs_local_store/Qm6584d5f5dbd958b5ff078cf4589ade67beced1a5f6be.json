@@ -1,0 +1,14 @@
+{
+  "id": "864608f3-dbb6-40c9-8cfa-42b6a17857b5",
+  "code": "EE291",
+  "name": "Basic Electrical Engineering Lab",
+  "department": "EEE",
+  "semester": 2,
+  "year": 1,
+  "credits": 1,
+  "type": "Lab",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:35:09.547Z"
+}

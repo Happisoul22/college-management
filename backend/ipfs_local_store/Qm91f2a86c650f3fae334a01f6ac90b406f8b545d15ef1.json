@@ -1,0 +1,14 @@
+{
+  "id": "75e3cf86-39e2-4855-8611-74e293686642",
+  "code": "PH191",
+  "name": "Engineering Physics Lab",
+  "department": "MECH",
+  "semester": 1,
+  "year": 1,
+  "credits": 1,
+  "type": "Lab",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:35:36.887Z"
+}

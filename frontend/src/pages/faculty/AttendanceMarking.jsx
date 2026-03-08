@@ -36,7 +36,7 @@ const AttendanceMarking = () => {
         if (!selectedSubject) return toast.warn('Please select a subject');
         setLoading(true);
         try {
-            const subj = subjects.find(s => s._id === selectedSubject);
+            const subj = subjects.find(s => (s.id || s._id) === selectedSubject);
             setSelectedSubjectInfo(subj);
             const dept = subj?.department || department;
             const stuRes = await api.get(`/analytics/department-users?type=Student${dept ? `&department=${dept}` : ''}`);
@@ -71,12 +71,12 @@ const AttendanceMarking = () => {
             setStudents(stuList);
             // Default all to Present
             const data = {};
-            stuList.forEach(s => { data[s._id] = 'Present'; });
+            stuList.forEach(s => { data[s.id || s._id] = 'Present'; });
             // Check existing attendance
             try {
                 const attRes = await api.get(`/attendance?subject=${selectedSubject}&date=${date}`);
                 (attRes.data.data || []).forEach(a => {
-                    const sid = a.student?._id || a.student;
+                    const sid = a.student?.id || a.student?._id || a.student;
                     if (data[sid] !== undefined) data[sid] = a.status;
                 });
             } catch (e) { /* no existing attendance */ }
@@ -101,7 +101,7 @@ const AttendanceMarking = () => {
 
     const markAllPresent = () => {
         const data = {};
-        students.forEach(s => { data[s._id] = 'Present'; });
+        students.forEach(s => { data[s.id || s._id] = 'Present'; });
         setAttendanceData(data);
     };
 
@@ -145,7 +145,7 @@ const AttendanceMarking = () => {
                             <option value="">— Select —</option>
                             {subjects.length === 0
                                 ? <option disabled>No subjects assigned to you yet</option>
-                                : subjects.map(s => <option key={s._id} value={s._id}>{s.code} — {s.name}</option>)
+                                : subjects.map(s => <option key={s.id || s._id} value={s.id || s._id}>{s.code} — {s.name}</option>)
                             }
                         </select>
                     </div>
@@ -192,17 +192,17 @@ const AttendanceMarking = () => {
                     <div className="att-grid">
                         {students.map((stu, i) => (
                             <div
-                                key={stu._id}
-                                className={`att-student-card att-status--${(attendanceData[stu._id] || 'Present').toLowerCase()}`}
-                                onClick={() => toggleStatus(stu._id)}
+                                key={stu.id || stu._id}
+                                className={`att-student-card att-status--${(attendanceData[stu.id || stu._id] || 'Present').toLowerCase()}`}
+                                onClick={() => toggleStatus(stu.id || stu._id)}
                             >
                                 <div className="att-student-num">{i + 1}</div>
                                 <div className="att-student-info">
                                     <div className="att-student-name">{stu.name}</div>
                                     <div className="att-student-roll">{stu.studentProfile?.rollNumber || '—'}</div>
                                 </div>
-                                <div className={`att-status-badge att-badge--${(attendanceData[stu._id] || 'Present').toLowerCase()}`}>
-                                    {attendanceData[stu._id] || 'Present'}
+                                <div className={`att-status-badge att-badge--${(attendanceData[stu.id || stu._id] || 'Present').toLowerCase()}`}>
+                                    {attendanceData[stu.id || stu._id] || 'Present'}
                                 </div>
                             </div>
                         ))}

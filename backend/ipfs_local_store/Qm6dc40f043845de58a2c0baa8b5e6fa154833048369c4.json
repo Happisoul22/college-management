@@ -1,0 +1,14 @@
+{
+  "id": "60bad352-667d-476e-a7e0-91b381a09da7",
+  "code": "EE502",
+  "name": "Power Electronics",
+  "department": "EEE",
+  "semester": 5,
+  "year": 3,
+  "credits": 4,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:35:20.113Z"
+}

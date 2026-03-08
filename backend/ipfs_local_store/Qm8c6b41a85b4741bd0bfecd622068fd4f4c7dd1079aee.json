@@ -1,0 +1,14 @@
+{
+  "id": "3fa36568-7428-4742-b417-b0b5d9b7b06d",
+  "code": "DS601",
+  "name": "Computer Vision",
+  "department": "CSE-DS",
+  "semester": 6,
+  "year": 3,
+  "credits": 4,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:38:19.282Z"
+}

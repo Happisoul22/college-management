@@ -1,0 +1,14 @@
+{
+  "id": "33aef48c-8c29-4ef8-a5a7-191247a156c7",
+  "code": "CE405",
+  "name": "Concrete Technology",
+  "department": "CIVIL",
+  "semester": 4,
+  "year": 2,
+  "credits": 4,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:36:33.142Z"
+}

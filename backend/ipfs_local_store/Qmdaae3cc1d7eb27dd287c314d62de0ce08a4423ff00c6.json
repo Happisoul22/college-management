@@ -1,0 +1,14 @@
+{
+  "id": "5ce4eac9-db25-4146-95a8-41d2bda035fc",
+  "code": "DS403",
+  "name": "Data Warehousing & Mining",
+  "department": "CSE-DS",
+  "semester": 4,
+  "year": 2,
+  "credits": 4,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:38:11.009Z"
+}

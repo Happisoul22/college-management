@@ -1,0 +1,14 @@
+{
+  "id": "b66e34ea-730a-4b43-a3f2-fb82bd0c5ce5",
+  "code": "DS801",
+  "name": "Data Science Capstone Seminar",
+  "department": "CSE-DS",
+  "semester": 8,
+  "year": 4,
+  "credits": 4,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:38:26.810Z"
+}

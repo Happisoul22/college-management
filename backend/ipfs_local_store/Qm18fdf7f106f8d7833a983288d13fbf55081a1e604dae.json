@@ -1,0 +1,14 @@
+{
+  "id": "f891b7e5-818f-4365-96ec-0ccb69ba160f",
+  "code": "EE603",
+  "name": "Flexible AC Transmission Systems",
+  "department": "EEE",
+  "semester": 6,
+  "year": 3,
+  "credits": 4,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:35:25.083Z"
+}

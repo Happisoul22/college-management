@@ -1,0 +1,14 @@
+{
+  "id": "2bd3dd18-2695-4d52-bd2b-cb9da723229f",
+  "code": "CS503",
+  "name": "Design & Analysis of Algorithms",
+  "department": "CSE",
+  "semester": 5,
+  "year": 3,
+  "credits": 4,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:34:12.887Z"
+}

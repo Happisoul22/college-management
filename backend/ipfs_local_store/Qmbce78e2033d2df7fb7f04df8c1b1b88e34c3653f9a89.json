@@ -1,0 +1,14 @@
+{
+  "id": "2c963965-6ea3-4860-aa29-b9ba52d4dc3e",
+  "code": "CS601",
+  "name": "Artificial Intelligence",
+  "department": "CSE",
+  "semester": 6,
+  "year": 3,
+  "credits": 4,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:34:15.148Z"
+}

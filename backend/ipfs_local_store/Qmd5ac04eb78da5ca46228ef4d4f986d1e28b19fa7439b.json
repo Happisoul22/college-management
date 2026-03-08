@@ -1,0 +1,14 @@
+{
+  "id": "fc6bba76-192a-4252-b4e3-ca41c38cfcd6",
+  "code": "AI303",
+  "name": "Probability Theory & Statistics",
+  "department": "CSE-AI",
+  "semester": 3,
+  "year": 2,
+  "credits": 4,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:37:33.466Z"
+}

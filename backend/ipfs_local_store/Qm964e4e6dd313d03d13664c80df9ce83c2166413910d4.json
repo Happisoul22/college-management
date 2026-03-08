@@ -1,0 +1,14 @@
+{
+  "id": "d5ff70c5-9c8c-4e6d-a8ea-427fe9fe69e2",
+  "code": "CH291",
+  "name": "Engineering Chemistry Lab",
+  "department": "CSE-DS",
+  "semester": 2,
+  "year": 1,
+  "credits": 1,
+  "type": "Lab",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:38:03.866Z"
+}

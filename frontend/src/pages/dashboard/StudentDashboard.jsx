@@ -136,14 +136,14 @@ const StudentDashboard = () => {
                 {classTeacher ? (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
                         <div style={{ width: 52, height: 52, borderRadius: '50%', background: 'linear-gradient(135deg, #e05c1a, #0d2b5e)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 20, fontWeight: 700, flexShrink: 0 }}>
-                            {classTeacher.faculty?.name?.charAt(0)}
+                            {classTeacher.facultyData?.name?.charAt(0) || classTeacher.facultyName?.charAt(0)}
                         </div>
                         <div style={{ flex: 1 }}>
-                            <div style={{ fontWeight: 700, fontSize: '1rem', color: '#1e293b' }}>{classTeacher.faculty?.name}</div>
+                            <div style={{ fontWeight: 700, fontSize: '1rem', color: '#1e293b' }}>{classTeacher.facultyData?.name || classTeacher.facultyName}</div>
                             <div style={{ color: '#64748b', fontSize: '0.85rem', marginTop: 4, display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
-                                <span><FaEnvelope style={{ marginRight: 4 }} />{classTeacher.faculty?.email}</span>
-                                {classTeacher.faculty?.facultyProfile?.phone && (
-                                    <span><FaPhone style={{ marginRight: 4 }} />{classTeacher.faculty.facultyProfile.phone}</span>
+                                <span><FaEnvelope style={{ marginRight: 4 }} />{classTeacher.facultyData?.email}</span>
+                                {classTeacher.facultyData?.facultyProfile?.phone && (
+                                    <span><FaPhone style={{ marginRight: 4 }} />{classTeacher.facultyData.facultyProfile.phone}</span>
                                 )}
                             </div>
                         </div>

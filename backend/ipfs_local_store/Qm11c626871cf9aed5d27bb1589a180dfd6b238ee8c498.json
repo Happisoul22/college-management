@@ -1,0 +1,14 @@
+{
+  "id": "01cde56d-e735-4ea7-a0ba-7859e1ab8b15",
+  "code": "CY504",
+  "name": "Secure Software Development",
+  "department": "CSE-CS",
+  "semester": 5,
+  "year": 3,
+  "credits": 4,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:38:50.283Z"
+}

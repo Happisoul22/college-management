@@ -1,0 +1,14 @@
+{
+  "id": "c0067465-1db2-4a1d-be37-0babaff76ab6",
+  "code": "AI492",
+  "name": "AI Algorithms Lab",
+  "department": "CSE-AI",
+  "semester": 4,
+  "year": 2,
+  "credits": 1,
+  "type": "Lab",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:37:41.531Z"
+}

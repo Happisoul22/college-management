@@ -1,0 +1,14 @@
+{
+  "id": "01a8281c-b7a9-4646-bc82-7ca13d70329f",
+  "code": "EE492",
+  "name": "Control Systems Lab",
+  "department": "EEE",
+  "semester": 4,
+  "year": 2,
+  "credits": 1,
+  "type": "Lab",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:35:18.768Z"
+}

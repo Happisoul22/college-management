@@ -123,7 +123,7 @@ const AssignRoles = () => {
         setSelectAllStudents(checked);
         setCoForm(prev => ({
             ...prev,
-            students: checked ? filteredCoStudents.map(s => s._id) : []
+            students: checked ? filteredCoStudents.map(s => s.id) : []
         }));
     };
 
@@ -172,7 +172,7 @@ const AssignRoles = () => {
                                     <label>Faculty</label>
                                     <select value={ctForm.faculty} onChange={e => setCtForm({ ...ctForm, faculty: e.target.value })} required className="form-control">
                                         <option value="">— Select Faculty —</option>
-                                        {faculty.map(f => <option key={f._id} value={f._id}>{f.name} ({f.role})</option>)}
+                                        {faculty.map(f => <option key={f.id} value={f.id}>{f.name} ({f.role})</option>)}
                                     </select>
                                 </div>
                                 <div className="ar-field">
@@ -231,14 +231,14 @@ const AssignRoles = () => {
                                     </thead>
                                     <tbody>
                                         {classAssignments.map(a => (
-                                            <tr key={a._id}>
-                                                <td><strong>{a.faculty?.name}</strong></td>
+                                            <tr key={a.id}>
+                                                <td><strong>{a.facultyName || 'Unknown Faculty'}</strong></td>
                                                 <td>{a.year}</td>
                                                 <td>{a.semester}</td>
                                                 <td>{a.section}</td>
                                                 <td>{a.academicYear}</td>
                                                 <td>
-                                                    <button className="btn ar-remove-btn" onClick={() => removeCT(a._id)}>
+                                                    <button className="btn ar-remove-btn" onClick={() => removeCT(a.id)}>
                                                         <FaTrash /> Remove
                                                     </button>
                                                 </td>
@@ -263,7 +263,7 @@ const AssignRoles = () => {
                                     <label>Faculty (Counsellor)</label>
                                     <select value={coForm.faculty} onChange={e => setCoForm({ ...coForm, faculty: e.target.value })} required className="form-control">
                                         <option value="">— Select Faculty —</option>
-                                        {faculty.map(f => <option key={f._id} value={f._id}>{f.name} ({f.role})</option>)}
+                                        {faculty.map(f => <option key={f.id} value={f.id}>{f.name} ({f.role})</option>)}
                                     </select>
                                 </div>
                                 <div className="ar-field">
@@ -292,7 +292,7 @@ const AssignRoles = () => {
                                         style={{ fontSize: '0.78rem', whiteSpace: 'nowrap' }}
                                         onClick={() => setCoForm(prev => ({
                                             ...prev,
-                                            students: [...new Set([...prev.students, ...filteredCoStudents.map(s => s._id)])]
+                                            students: [...new Set([...prev.students, ...filteredCoStudents.map(s => s.id)])]
                                         }))}>
                                         ＋ Select Filtered ({filteredCoStudents.length})
                                     </button>
@@ -309,9 +309,9 @@ const AssignRoles = () => {
                                 </div>
                                 <div className="ar-students-grid">
                                     {filteredCoStudents.map(s => (
-                                        <label key={s._id} className={`ar-student-chip ${coForm.students.includes(s._id) ? 'ar-chip--selected' : ''}`}>
-                                            <input type="checkbox" checked={coForm.students.includes(s._id)}
-                                                onChange={() => toggleStudentSelection(s._id)} />
+                                        <label key={s.id} className={`ar-student-chip ${coForm.students.includes(s.id) ? 'ar-chip--selected' : ''}`}>
+                                            <input type="checkbox" checked={coForm.students.includes(s.id)}
+                                                onChange={() => toggleStudentSelection(s.id)} />
                                             <span className="ar-chip-name">{s.name}</span>
                                             <span className="ar-chip-roll">{s.studentProfile?.rollNumber || ''}</span>
                                         </label>
@@ -335,19 +335,19 @@ const AssignRoles = () => {
                             <p style={{ color: '#94a3b8', textAlign: 'center' }}>No counsellor assignments yet.</p>
                         ) : (
                             counsellorAssignments.map(a => (
-                                <div key={a._id} className="ar-counsellor-card">
+                                <div key={a.id} className="ar-counsellor-card">
                                     <div className="ar-co-header">
                                         <div>
-                                            <strong>{a.faculty?.name}</strong>
+                                            <strong>{a.facultyName || 'Unknown Faculty'}</strong>
                                             <span className="ar-co-year">{a.academicYear}</span>
                                         </div>
-                                        <button className="btn ar-remove-btn" onClick={() => removeCounsellor(a._id)}>
+                                        <button className="btn ar-remove-btn" onClick={() => removeCounsellor(a.id)}>
                                             <FaTrash /> Remove
                                         </button>
                                     </div>
                                     <div className="ar-co-students">
                                         {a.students?.map(s => (
-                                            <span key={s._id} className="ar-co-student-chip">{s.name}</span>
+                                            <span key={s.id} className="ar-co-student-chip">{s.name}</span>
                                         ))}
                                     </div>
                                 </div>

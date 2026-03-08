@@ -1,0 +1,14 @@
+{
+  "id": "30041010-b896-438c-81d9-454583e8a8e2",
+  "code": "IT603",
+  "name": "Cyber Security",
+  "department": "IT",
+  "semester": 6,
+  "year": 3,
+  "credits": 4,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:37:14.859Z"
+}

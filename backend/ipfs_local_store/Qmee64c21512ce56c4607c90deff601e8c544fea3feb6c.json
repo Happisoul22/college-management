@@ -1,0 +1,14 @@
+{
+  "id": "7b76625f-c718-4a1c-bf20-063341987cd7",
+  "code": "DS392",
+  "name": "DBMS Lab",
+  "department": "CSE-DS",
+  "semester": 3,
+  "year": 2,
+  "credits": 1,
+  "type": "Lab",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:38:09.220Z"
+}

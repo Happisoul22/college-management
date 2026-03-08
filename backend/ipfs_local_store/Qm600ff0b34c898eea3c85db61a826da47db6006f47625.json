@@ -1,0 +1,14 @@
+{
+  "id": "c228f6a9-fccb-4aa7-b769-5dede5e8fadb",
+  "code": "MA201",
+  "name": "Mathematics – II (Differential Equations & Vector Calculus)",
+  "department": "CSE-DS",
+  "semester": 2,
+  "year": 1,
+  "credits": 4,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:38:00.340Z"
+}

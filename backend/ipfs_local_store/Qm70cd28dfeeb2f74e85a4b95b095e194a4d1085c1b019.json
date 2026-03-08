@@ -1,0 +1,14 @@
+{
+  "id": "87c092c2-b2cd-40fb-a77b-173898b06c15",
+  "code": "CY492",
+  "name": "Ethical Hacking Lab",
+  "department": "CSE-CS",
+  "semester": 4,
+  "year": 2,
+  "credits": 1,
+  "type": "Lab",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:38:47.379Z"
+}

@@ -1,0 +1,14 @@
+{
+  "id": "fcd0e863-48c9-45e1-8009-01865e24b456",
+  "code": "AI301",
+  "name": "Data Structures & Algorithms",
+  "department": "CSE-AI",
+  "semester": 3,
+  "year": 2,
+  "credits": 4,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:37:32.264Z"
+}

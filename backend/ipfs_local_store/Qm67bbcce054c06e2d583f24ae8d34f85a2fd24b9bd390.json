@@ -1,0 +1,14 @@
+{
+  "id": "a329aea3-d473-4f0b-b542-278118b31458",
+  "code": "EE892",
+  "name": "Seminar & Technical Presentation",
+  "department": "EEE",
+  "semester": 8,
+  "year": 4,
+  "credits": 2,
+  "type": "Lab",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:35:31.823Z"
+}

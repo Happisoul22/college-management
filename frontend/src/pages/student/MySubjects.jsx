@@ -100,9 +100,9 @@ const MySubjects = () => {
                     <div className="msub-grid">
                         {subjects.map(subj => (
                             <div
-                                key={subj._id}
+                                key={subj.id || subj._id}
                                 className={`msub-card msub-type--${subj.type?.toLowerCase()}`}
-                                onClick={() => navigate(`/my-subjects/${subj._id}`)}
+                                onClick={() => navigate(`/my-subjects/${subj.id || subj._id}`)}
                             >
                                 <div className="msub-card-top">
                                     <div className="msub-type-icon">{TYPE_ICONS[subj.type] || <FaBook />}</div>

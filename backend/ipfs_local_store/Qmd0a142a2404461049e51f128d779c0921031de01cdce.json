@@ -1,0 +1,14 @@
+{
+  "id": "d001a7c7-ee89-43de-b0f1-de627dbe4984",
+  "code": "CH201",
+  "name": "Engineering Chemistry",
+  "department": "IT",
+  "semester": 2,
+  "year": 1,
+  "credits": 4,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:36:53.590Z"
+}

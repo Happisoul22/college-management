@@ -1,0 +1,14 @@
+{
+  "id": "2a96ffaa-9580-4292-a37c-77d37d33e8f5",
+  "code": "CY691",
+  "name": "CTF & Security Lab",
+  "department": "CSE-CS",
+  "semester": 6,
+  "year": 3,
+  "credits": 1,
+  "type": "Lab",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:38:56.026Z"
+}

@@ -1,0 +1,14 @@
+{
+  "id": "b4d3307e-7e15-45b5-81b1-7c70fa7208ec",
+  "code": "ME301",
+  "name": "Engineering Thermodynamics",
+  "department": "MECH",
+  "semester": 3,
+  "year": 2,
+  "credits": 4,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:35:43.680Z"
+}

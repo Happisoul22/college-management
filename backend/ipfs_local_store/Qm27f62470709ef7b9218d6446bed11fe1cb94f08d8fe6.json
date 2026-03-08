@@ -1,0 +1,14 @@
+{
+  "id": "8a569b3b-d94c-4815-b147-8e5ed48f2324",
+  "code": "CS191",
+  "name": "C Programming Lab",
+  "department": "IT",
+  "semester": 1,
+  "year": 1,
+  "credits": 1,
+  "type": "Lab",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:36:52.324Z"
+}

@@ -1,0 +1,14 @@
+{
+  "id": "ec60ab07-be4e-4055-95d2-663e60c3d6fb",
+  "code": "CH291",
+  "name": "Engineering Chemistry Lab",
+  "department": "CSE-AI",
+  "semester": 2,
+  "year": 1,
+  "credits": 1,
+  "type": "Lab",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:37:30.878Z"
+}

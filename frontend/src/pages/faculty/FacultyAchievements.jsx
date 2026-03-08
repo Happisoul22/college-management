@@ -68,7 +68,7 @@ const FacultyAchievements = () => {
 
     const fetch = async () => {
         try {
-            const res = await api.get('/achievements');
+            const res = await api.get('/achievements?me=true');
             setAchievements(res.data.data);
         } catch (err) { console.error(err); }
     };
@@ -274,7 +274,7 @@ const FacultyAchievements = () => {
                         </thead>
                         <tbody>
                             {achievements.length > 0 ? achievements.map(ach => (
-                                <tr key={ach._id}>
+                                <tr key={ach.id}>
                                     <td>
                                         <div className="ach-title-cell">{ach.title}</div>
                                         {ach.description && (
@@ -304,9 +304,16 @@ const FacultyAchievements = () => {
                                         {!ach.proofUrl && !ach.githubLink && '—'}
                                     </td>
                                     <td>
-                                        <span className={`status-badge status-${ach.status}`}>
-                                            {STATUS_META[ach.status]?.icon} {ach.status}
-                                        </span>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                            <span className={`status-badge status-${ach.status}`}>
+                                                {STATUS_META[ach.status]?.icon} {ach.status}
+                                            </span>
+                                            {ach.reviewer && (
+                                                <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '2px' }}>
+                                                    by {ach.reviewer.name}
+                                                </div>
+                                            )}
+                                        </div>
                                     </td>
                                     <td style={{ color: '#64748b', fontSize: '0.82rem' }}>{ach.remarks || '—'}</td>
                                 </tr>

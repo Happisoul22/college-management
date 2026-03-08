@@ -48,7 +48,7 @@ const AddAssignPanel = ({ faculty, onDone }) => {
 
     const handleSubjectSelect = (id) => {
         setSelected(id);
-        const info = subjectList.find(s => s._id === id);
+        const info = subjectList.find(s => s.id === id || s._id === id);
         setSelectedInfo(info || null);
     };
 
@@ -123,7 +123,7 @@ const AddAssignPanel = ({ faculty, onDone }) => {
                                         onChange={e => handleSubjectSelect(e.target.value)}>
                                         <option value="">— Select Subject —</option>
                                         {subjectList.map(s => (
-                                            <option key={s._id} value={s._id}>
+                                            <option key={s.id || s._id} value={s.id || s._id}>
                                                 {s.name} {s.faculty ? '✅ (assigned)' : ''}
                                             </option>
                                         ))}
@@ -172,7 +172,7 @@ const AddAssignPanel = ({ faculty, onDone }) => {
                             onChange={e => setAssignFaculty(e.target.value)}>
                             <option value="">— Select Faculty —</option>
                             {faculty.map(f => (
-                                <option key={f._id} value={f._id}>
+                                <option key={f.id || f._id} value={f.id || f._id}>
                                     {f.name} ({f.role})
                                 </option>
                             ))}
@@ -319,7 +319,7 @@ const SubjectsPage = () => {
                                     </thead>
                                     <tbody>
                                         {subjects.length > 0 ? subjects.map((s, i) => (
-                                            <tr key={s._id}>
+                                            <tr key={s.id || s._id}>
                                                 <td>{i + 1}</td>
                                                 <td><strong>{s.code}</strong></td>
                                                 <td>{s.name}</td>
@@ -344,13 +344,13 @@ const SubjectsPage = () => {
                                                         {s.faculty && (
                                                             <button className="btn btn-secondary"
                                                                 style={{ padding: '4px 10px', fontSize: '0.78rem' }}
-                                                                onClick={() => handleUnassign(s._id)}
+                                                                onClick={() => handleUnassign(s.id || s._id)}
                                                                 title="Remove faculty assignment">
                                                                 <FaTimes />
                                                             </button>
                                                         )}
                                                         <button className="btn ar-remove-btn"
-                                                            onClick={() => handleDelete(s._id)}>
+                                                            onClick={() => handleDelete(s.id || s._id)}>
                                                             <FaTrash />
                                                         </button>
                                                     </td>

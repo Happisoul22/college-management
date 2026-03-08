@@ -1,0 +1,14 @@
+{
+  "id": "579827e9-ef05-4db7-a533-351345a1db27",
+  "code": "CH291",
+  "name": "Engineering Chemistry Lab",
+  "department": "CIVIL",
+  "semester": 2,
+  "year": 1,
+  "credits": 1,
+  "type": "Lab",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:36:23.960Z"
+}

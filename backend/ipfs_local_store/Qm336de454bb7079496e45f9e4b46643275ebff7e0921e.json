@@ -1,0 +1,14 @@
+{
+  "id": "fc4bf47f-d4fe-46f5-bce0-027602991072",
+  "code": "CS603",
+  "name": "Information Security",
+  "department": "CSE",
+  "semester": 6,
+  "year": 3,
+  "credits": 4,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:34:16.051Z"
+}

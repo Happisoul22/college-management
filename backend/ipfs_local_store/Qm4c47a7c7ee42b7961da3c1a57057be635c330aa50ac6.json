@@ -1,0 +1,14 @@
+{
+  "id": "dd68044e-def1-41da-9314-7d4f7780986e",
+  "code": "CY302",
+  "name": "Computer Networks",
+  "department": "CSE-CS",
+  "semester": 3,
+  "year": 2,
+  "credits": 4,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:38:39.347Z"
+}

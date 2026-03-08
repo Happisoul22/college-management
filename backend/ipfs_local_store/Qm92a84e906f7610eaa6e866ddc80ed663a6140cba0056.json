@@ -1,0 +1,20 @@
+{
+  "id": "3fe29cac-ea1c-43e3-bfaa-26e03e6b1b3b",
+  "name": "venu",
+  "email": "venu148878@gmail.com",
+  "passwordHash": "$2a$10$G9sPmnBhclg824qqwLMPmePrLriX04RHMnlOv0ib2aLNAQ8wKSE1O",
+  "role": "HOD",
+  "createdAt": "2026-03-07T19:28:57.238Z",
+  "updatedAt": "2026-03-07T19:28:57.238Z",
+  "facultyProfile": {
+    "facultyId": "abc002",
+    "phone": "7893754523",
+    "qualification": "",
+    "experience": 5,
+    "pan": "",
+    "aadhaar": "",
+    "dateOfJoining": "2020-10-22",
+    "department": "CSE",
+    "photo": ""
+  }
+}

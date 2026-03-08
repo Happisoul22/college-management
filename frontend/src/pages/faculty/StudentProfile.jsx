@@ -13,6 +13,14 @@ import './StudentProfile.css';
 
 const COLORS = ['#6366f1', '#e05c1a', '#10b981', '#f59e0b', '#0d2b5e', '#ec4899', '#14b8a6', '#8b5cf6'];
 
+const computeYear = (admissionYear) => {
+    if (!admissionYear) return '—';
+    const now = new Date();
+    const month = now.getMonth() + 1;
+    const yearDiff = now.getFullYear() - admissionYear;
+    return Math.max(1, Math.min(4, month >= 7 ? yearDiff + 1 : yearDiff));
+};
+
 const CustomTooltip = ({ active, payload, label }) => {
     if (!active || !payload?.length) return null;
     return (
@@ -41,7 +49,7 @@ const StudentProfile = () => {
         try {
             const [stuRes, marksRes, cgpaRes, attRes, achRes] = await Promise.all([
                 api.get(`/analytics/department-users?type=Student`).then(r =>
-                    r.data.data?.find(u => u._id === id) || null
+                    r.data.data?.find(u => u.id === id) || null
                 ),
                 api.get(`/marks?student=${id}`),
                 api.get(`/marks/cgpa/${id}`),
@@ -123,7 +131,7 @@ const StudentProfile = () => {
                         <span>{student?.email}</span>
                         <span>Roll: {student?.studentProfile?.rollNumber || '—'}</span>
                         <span>Section: {student?.studentProfile?.section || '—'}</span>
-                        <span>Year: {student?.currentYear || '—'}</span>
+                        <span>Year: {computeYear(student?.studentProfile?.admissionYear)}</span>
                     </div>
                 </div>
                 <div className="sp-cgpa-badge">
@@ -285,7 +293,7 @@ const StudentProfile = () => {
                                         </thead>
                                         <tbody>
                                             {semMarks.map(m => (
-                                                <tr key={m._id}>
+                                                <tr key={m.id}>
                                                     <td><strong>{m.subject?.code}</strong> — {m.subject?.name}</td>
                                                     <td>{m.internal?.mid1 || 0}</td>
                                                     <td>{m.internal?.mid2 || 0}</td>
@@ -475,7 +483,7 @@ const StudentProfile = () => {
                                         </thead>
                                         <tbody>
                                             {achievements.map(a => (
-                                                <tr key={a._id}>
+                                                <tr key={a.id}>
                                                     <td><strong>{a.title}</strong></td>
                                                     <td>{a.type}</td>
                                                     <td><span className={`status-badge status-${a.status}`}>{a.status}</span></td>

@@ -33,7 +33,7 @@ const MarksEntry = () => {
         if (!selectedSubject) return toast.warn('Please select a subject');
         setLoading(true);
         try {
-            const subj = subjects.find(s => s._id === selectedSubject);
+            const subj = subjects.find(s => (s.id || s._id) === selectedSubject);
             setSelectedSubjectInfo(subj);
             // Get students filtered by department, section, and year
             let stuUrl = `/analytics/department-users?type=Student`;
@@ -49,7 +49,7 @@ const MarksEntry = () => {
             // Pre-fill marks data
             const data = {};
             existing.forEach(m => {
-                data[m.student?._id || m.student] = {
+                data[m.student?.id || m.student?._id || m.student] = {
                     mid1: m.internal?.mid1 || 0,
                     mid2: m.internal?.mid2 || 0,
                     assignments: m.internal?.assignments || 0,
@@ -123,7 +123,7 @@ const MarksEntry = () => {
                             <option value="">— Select Subject —</option>
                             {subjects.length === 0 && <option disabled>No subjects assigned to you yet</option>}
                             {subjects.map(s => (
-                                <option key={s._id} value={s._id}>{s.code} — {s.name} (Sem {s.semester}{s.section ? `, Sec ${s.section}` : ''})</option>
+                                <option key={s.id || s._id} value={s.id || s._id}>{s.code} — {s.name} (Sem {s.semester}{s.section ? `, Sec ${s.section}` : ''})</option>
                             ))}
                         </select>
                     </div>
@@ -172,39 +172,39 @@ const MarksEntry = () => {
                             </thead>
                             <tbody>
                                 {students.map((stu, i) => {
-                                    const m = marksData[stu._id] || {};
+                                    const m = marksData[stu.id || stu._id] || {};
                                     const total = (m.mid1 || 0) + (m.mid2 || 0) + (m.assignments || 0) + (m.attendance || 0) + (m.examScore || 0);
                                     return (
-                                        <tr key={stu._id}>
+                                        <tr key={stu.id || stu._id}>
                                             <td>{i + 1}</td>
                                             <td><strong>{stu.name}</strong></td>
                                             <td>{stu.studentProfile?.rollNumber || '—'}</td>
                                             <td>
                                                 <input type="number" min="0" max="30" className="me-input"
-                                                    value={m.mid1 || ''} onChange={e => handleMarkChange(stu._id, 'mid1', e.target.value)} />
+                                                    value={m.mid1 || ''} onChange={e => handleMarkChange(stu.id || stu._id, 'mid1', e.target.value)} />
                                             </td>
                                             <td>
                                                 <input type="number" min="0" max="30" className="me-input"
-                                                    value={m.mid2 || ''} onChange={e => handleMarkChange(stu._id, 'mid2', e.target.value)} />
+                                                    value={m.mid2 || ''} onChange={e => handleMarkChange(stu.id || stu._id, 'mid2', e.target.value)} />
                                             </td>
                                             <td>
                                                 <input type="number" min="0" max="20" className="me-input"
-                                                    value={m.assignments || ''} onChange={e => handleMarkChange(stu._id, 'assignments', e.target.value)} />
+                                                    value={m.assignments || ''} onChange={e => handleMarkChange(stu.id || stu._id, 'assignments', e.target.value)} />
                                             </td>
                                             <td>
                                                 <input type="number" min="0" max="10" className="me-input"
-                                                    value={m.attendance || ''} onChange={e => handleMarkChange(stu._id, 'attendance', e.target.value)} />
+                                                    value={m.attendance || ''} onChange={e => handleMarkChange(stu.id || stu._id, 'attendance', e.target.value)} />
                                             </td>
                                             <td>
                                                 <input type="number" min="0" max="100" className="me-input"
-                                                    value={m.examScore || ''} onChange={e => handleMarkChange(stu._id, 'examScore', e.target.value)} />
+                                                    value={m.examScore || ''} onChange={e => handleMarkChange(stu.id || stu._id, 'examScore', e.target.value)} />
                                             </td>
                                             <td className="me-total">{total}</td>
                                             <td>
-                                                {existingMarks.find(m => (m.student?._id || m.student) === stu._id) && (
+                                                {existingMarks.find(m => (m.student?.id || m.student?._id || m.student) === (stu.id || stu._id)) && (
                                                     <BlockchainBadge
                                                         type="marks"
-                                                        recordId={existingMarks.find(m => (m.student?._id || m.student) === stu._id)._id}
+                                                        recordId={existingMarks.find(m => (m.student?.id || m.student?._id || m.student) === (stu.id || stu._id)).id || existingMarks.find(m => (m.student?.id || m.student?._id || m.student) === (stu.id || stu._id))._id}
                                                         compact
                                                         showButton={false}
                                                     />

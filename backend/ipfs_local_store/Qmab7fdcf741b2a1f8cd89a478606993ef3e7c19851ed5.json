@@ -1,0 +1,14 @@
+{
+  "id": "79a86e26-43b2-404d-8113-5d6ead7375b2",
+  "code": "EC601",
+  "name": "Wireless Communications",
+  "department": "ECE",
+  "semester": 6,
+  "year": 3,
+  "credits": 4,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:34:48.134Z"
+}

@@ -1,0 +1,14 @@
+{
+  "id": "9d1ab229-9ae0-4eb1-a6b6-54d2f4ace7b8",
+  "code": "EC592",
+  "name": "Microwave Lab",
+  "department": "ECE",
+  "semester": 5,
+  "year": 3,
+  "credits": 1,
+  "type": "Lab",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:34:47.397Z"
+}

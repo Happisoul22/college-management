@@ -1,0 +1,14 @@
+{
+  "id": "76e4dd57-f828-4fe4-9c28-bc216dbd8451",
+  "code": "CY702",
+  "name": "Incident Response & Threat Intelligence",
+  "department": "CSE-CS",
+  "semester": 7,
+  "year": 4,
+  "credits": 4,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:38:57.615Z"
+}

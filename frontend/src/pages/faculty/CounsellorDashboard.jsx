@@ -46,7 +46,7 @@ const CounsellorDashboard = () => {
             const all = [];
             (res.data.data || []).forEach(assignment => {
                 (assignment.students || []).forEach(s => {
-                    if (!all.find(x => x._id === s._id)) all.push(s);
+                    if (!all.find(x => x.id === s.id)) all.push(s);
                 });
             });
             setStudents(all);
@@ -221,8 +221,8 @@ const CounsellorDashboard = () => {
                             {filtered.length > 0 ? filtered.map(s => {
                                 const yr = computeYear(s.studentProfile?.admissionYear);
                                 return (
-                                    <div key={s._id} className="cd-student-card"
-                                        onClick={() => navigate(`/student-profile/${s._id}`)}>
+                                    <div key={s.id} className="cd-student-card"
+                                        onClick={() => navigate(`/student-profile/${s.id}`)}>
                                         <div className="cd-stu-avatar">
                                             {s.name?.charAt(0)?.toUpperCase()}
                                         </div>

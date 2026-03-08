@@ -1,0 +1,14 @@
+{
+  "id": "c47f9b74-aa5f-42b6-8f4f-ee7a3488b0dc",
+  "code": "AI505",
+  "name": "Big Data Analytics",
+  "department": "CSE-AI",
+  "semester": 5,
+  "year": 3,
+  "credits": 4,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:37:44.784Z"
+}

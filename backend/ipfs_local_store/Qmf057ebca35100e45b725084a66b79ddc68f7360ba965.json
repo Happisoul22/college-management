@@ -1,0 +1,14 @@
+{
+  "id": "77c45c11-ee18-4ebf-9b51-8fb2dd1b40b4",
+  "code": "CH101",
+  "name": "Engineering Chemistry",
+  "department": "CSE",
+  "semester": 1,
+  "year": 1,
+  "credits": 4,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:34:00.700Z"
+}

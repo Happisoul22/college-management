@@ -1,0 +1,14 @@
+{
+  "id": "d697ca71-816b-4173-9dcc-2f95b90ee651",
+  "code": "CY502",
+  "name": "Cloud Security",
+  "department": "CSE-CS",
+  "semester": 5,
+  "year": 3,
+  "credits": 4,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:38:48.914Z"
+}

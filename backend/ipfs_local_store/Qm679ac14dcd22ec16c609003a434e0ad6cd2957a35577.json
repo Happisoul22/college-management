@@ -1,0 +1,14 @@
+{
+  "id": "a32e0b1f-5091-461a-ae6d-d55e0490df22",
+  "code": "ME501",
+  "name": "Refrigeration & Air Conditioning",
+  "department": "MECH",
+  "semester": 5,
+  "year": 3,
+  "credits": 4,
+  "type": "Theory",
+  "faculty": null,
+  "section": "",
+  "createdBy": "seed-script",
+  "createdAt": "2026-03-07T17:35:55.807Z"
+}
