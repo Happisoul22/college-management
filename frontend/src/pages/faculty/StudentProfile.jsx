@@ -42,25 +42,25 @@ const StudentProfile = () => {
     const [achievements, setAchievements] = useState([]);
     const [activeTab, setActiveTab] = useState('overview');
     const [loading, setLoading] = useState(true);
+    const [achievementFilter, setAchievementFilter] = useState('All');
 
     useEffect(() => { fetchAll(); }, [id]);
 
     const fetchAll = async () => {
         try {
-            const [stuRes, marksRes, cgpaRes, attRes, achRes] = await Promise.all([
+            const [stuRes, marksRes, cgpaRes, achRes] = await Promise.all([
                 api.get(`/analytics/department-users?type=Student`).then(r =>
                     r.data.data?.find(u => u.id === id) || null
                 ),
                 api.get(`/marks?student=${id}`),
                 api.get(`/marks/cgpa/${id}`),
-                api.get(`/attendance/summary/${id}`),
                 api.get(`/achievements?student=${id}`)
             ]);
             setStudent(stuRes);
-            setMarks(marksRes.data.data || []);
-            setCgpaData(cgpaRes.data.data || null);
-            setAttendanceSummary(attRes.data.data || null);
-            setAchievements(achRes.data.data || []);
+            setMarks(marksRes?.data?.data || []);
+            setCgpaData(cgpaRes?.data?.data || null);
+            setAttendanceSummary(null);
+            setAchievements(achRes?.data?.data || []);
         } catch (err) {
             console.error(err);
         } finally {
@@ -73,7 +73,6 @@ const StudentProfile = () => {
     const tabs = [
         { id: 'overview', label: 'Overview', icon: <FaChartLine /> },
         { id: 'marks', label: 'Marks', icon: <FaBook /> },
-        { id: 'attendance', label: 'Attendance', icon: <FaCalendarCheck /> },
         { id: 'achievements', label: 'Achievements', icon: <FaTrophy /> },
     ];
 
@@ -111,12 +110,18 @@ const StudentProfile = () => {
     achievements.forEach(a => { achTypeMap[a.type] = (achTypeMap[a.type] || 0) + 1; });
     const achPieData = Object.entries(achTypeMap).map(([name, value]) => ({ name, value }));
 
+    const uniqueAchievementTypes = Object.keys(achTypeMap).sort();
+
     // Achievement status bar
     const achStatusData = [
         { status: 'Approved', count: achievements.filter(a => a.status === 'Approved').length },
         { status: 'Pending', count: achievements.filter(a => a.status === 'Pending').length },
         { status: 'Rejected', count: achievements.filter(a => a.status === 'Rejected').length },
     ];
+
+    const filteredAchievements = achievementFilter === 'All' 
+        ? achievements 
+        : achievements.filter(a => a.type === achievementFilter);
 
     return (
         <Layout>
@@ -156,9 +161,9 @@ const StudentProfile = () => {
                 <div className="sp-tab-content">
                     {/* Stat cards */}
                     <div className="sp-overview-grid">
-                        <div className="sp-o-card sp-o--attendance">
+                        <div className="sp-o-card sp-o--attendance" style={{display: 'none'}}>
                             <div className="sp-o-icon"><FaCalendarCheck /></div>
-                            <div className="sp-o-value">{attendanceSummary?.overall?.percentage || 0}%</div>
+                            <div className="sp-o-value">0%</div>
                             <div className="sp-o-label">Overall Attendance</div>
                         </div>
                         <div className="sp-o-card sp-o--achievements">
@@ -469,7 +474,20 @@ const StudentProfile = () => {
 
                             {/* Achievements Table */}
                             <div className="card">
-                                <div className="card-title">Achievements ({achievements.length})</div>
+                                <div className="card-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <span>Achievements ({filteredAchievements.length})</span>
+                                    <select 
+                                        value={achievementFilter} 
+                                        onChange={(e) => setAchievementFilter(e.target.value)}
+                                        className="form-control"
+                                        style={{ width: 'auto', padding: '4px 12px', fontSize: '0.9rem' }}
+                                    >
+                                        <option value="All">All Types</option>
+                                        {uniqueAchievementTypes.map(type => (
+                                            <option key={type} value={type}>{type}</option>
+                                        ))}
+                                    </select>
+                                </div>
                                 <div className="table-container">
                                     <table className="table sp-ach-table">
                                         <thead>
@@ -482,7 +500,7 @@ const StudentProfile = () => {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {achievements.map(a => (
+                                            {filteredAchievements.map(a => (
                                                 <tr key={a.id}>
                                                     <td><strong>{a.title}</strong></td>
                                                     <td>{a.type}</td>
@@ -497,6 +515,13 @@ const StudentProfile = () => {
                                                     </td>
                                                 </tr>
                                             ))}
+                                            {filteredAchievements.length === 0 && (
+                                                <tr>
+                                                    <td colSpan="5" style={{ textAlign: 'center', color: '#94a3b8' }}>
+                                                        No achievements of this type found.
+                                                    </td>
+                                                </tr>
+                                            )}
                                         </tbody>
                                     </table>
                                 </div>

@@ -590,6 +590,7 @@ const FacultyDashboard = () => {
                                             <th>Student</th>
                                             <th>Title</th>
                                             <th>Type</th>
+                                            <th>Organization</th>
                                             <th>Date</th>
                                             <th>Actions</th>
                                             <th>Proof</th>
@@ -615,6 +616,7 @@ const FacultyDashboard = () => {
                                                 </td>
                                                 <td>{ach.title}</td>
                                                 <td>{ach.type}</td>
+                                                <td>{ach.organization || '—'}</td>
                                                 <td>{new Date(ach.createdAt).toLocaleDateString()}</td>
                                                 <td>
                                                     {ach.status === 'Pending' && (

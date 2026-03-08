@@ -1,0 +1,26 @@
+{
+  "id": "acf8caf3-c83a-402d-b44a-b959b22aef4f",
+  "name": "arfeen",
+  "email": "alluarfeen9911@gmail.com",
+  "passwordHash": "$2a$10$/XgvRzsIoPqgNpMSG/GtbOKMImdWP2PTaSaZIjzO2TWUH.VjyLAP2",
+  "role": "Student",
+  "createdAt": "2026-03-07T19:01:12.086Z",
+  "updatedAt": "2026-03-08T14:11:28.893Z",
+  "studentProfile": {
+    "rollNumber": "23785a0515",
+    "phone": "7532569956",
+    "whatsapp": "",
+    "branch": "CSE",
+    "admissionYear": 2024,
+    "section": "A",
+    "gender": "Male",
+    "dob": "2004-08-12",
+    "fatherName": "manoj",
+    "fatherPhone": "",
+    "motherName": "fvimcdm",
+    "motherPhone": "",
+    "areaOfInterest": "",
+    "cgpa": 5,
+    "attendance": 0
+  }
+}

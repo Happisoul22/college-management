@@ -93,9 +93,6 @@ const Sidebar = () => {
                         <Link to="/marks-entry" className={`menu-item ${isActive('/marks-entry')}`}>
                             <FaPen /> Marks Entry
                         </Link>
-                        <Link to="/attendance-marking" className={`menu-item ${isActive('/attendance-marking')}`}>
-                            <FaCalendarCheck /> Attendance
-                        </Link>
                         <Link to="/subjects" className={`menu-item ${isActive('/subjects')}`}>
                             <FaBook /> Subjects
                         </Link>

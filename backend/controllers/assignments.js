@@ -13,13 +13,13 @@ const blockchain = require('../services/blockchain');
 // Helper: fetch all class assignments from chain
 const getAllClassAssignments = async () => {
     const all = await blockchain.getAllRecordsOfType('classassign');
-    return all.map(r => r.data);
+    return all.map(r => JSON.parse(JSON.stringify(r.data))); // Deep clone to prevent cache mutation
 };
 
 // Helper: fetch all counsellor assignments from chain
 const getAllCounselAssignments = async () => {
     const all = await blockchain.getAllRecordsOfType('counselassign');
-    return all.map(r => r.data);
+    return all.map(r => JSON.parse(JSON.stringify(r.data))); // Deep clone to prevent cache mutation
 };
 
 // ═══════════ CLASS TEACHER ASSIGNMENTS ═══════════════════════════════════════
@@ -166,7 +166,9 @@ exports.getCounsellorAssignments = asyncHandler(async (req, res, next) => {
         if (a.students && a.students.length > 0) {
             const studentObjects = [];
             for (let sId of a.students) {
-                const sRec = await blockchain.getRecord(blockchain.keys.user(sId));
+                const idString = typeof sId === 'object' ? (sId.id || sId._id) : sId;
+                if (!idString) continue;
+                const sRec = await blockchain.getRecord(blockchain.keys.user(idString));
                 if (sRec) {
                     const { passwordHash, ...safeStudent } = sRec.data;
                     studentObjects.push(safeStudent);
@@ -181,18 +183,22 @@ exports.getCounsellorAssignments = asyncHandler(async (req, res, next) => {
 
 // @route   GET /api/assignments/counsellor/my
 exports.getMyCounsellorAssignment = asyncHandler(async (req, res, next) => {
-    const results = (await getAllCounselAssignments())
-        .filter(a => {
-            const facId = typeof a.faculty === 'object' ? (a.faculty?.id || a.faculty?._id) : a.faculty;
-            return facId === req.user.id && a.isActive !== false;
-        });
+    let results = await getAllCounselAssignments();
+
+    // Filter for assignments where the logged-in user is the faculty
+    results = results.filter(a => {
+        const facId = typeof a.faculty === 'object' ? (a.faculty?.id || a.faculty?._id) : a.faculty;
+        return facId === req.user.id && a.isActive !== false;
+    });
 
     // Hydrate students
     for (let a of results) {
         if (a.students && a.students.length > 0) {
             const studentObjects = [];
             for (let sId of a.students) {
-                const sRec = await blockchain.getRecord(blockchain.keys.user(sId));
+                const idString = typeof sId === 'object' ? (sId.id || sId._id) : sId;
+                if (!idString) continue;
+                const sRec = await blockchain.getRecord(blockchain.keys.user(idString));
                 if (sRec) {
                     const { passwordHash, ...safeStudent } = sRec.data;
                     studentObjects.push(safeStudent);
@@ -238,9 +244,13 @@ exports.assignCounsellor = asyncHandler(async (req, res, next) => {
     let key;
     const now = new Date().toISOString();
 
+    // Clean up input students in case they are completely corrupted from prior bugs
+    const cleanNewStudents = students.map(s => typeof s === 'object' ? (s.id || s._id) : s).filter(Boolean);
+
     if (existing) {
         key = blockchain.keys.counselAssign(existing.id);
-        const merged = [...new Set([...(existing.students || []), ...students])];
+        const existingStudents = (existing.students || []).map(s => typeof s === 'object' ? (s.id || s._id) : s).filter(Boolean);
+        const merged = [...new Set([...existingStudents, ...cleanNewStudents])];
         assignmentData = { ...existing, students: merged, updatedAt: now };
     } else {
         const id = uuidv4();

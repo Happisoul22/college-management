@@ -175,10 +175,10 @@ const FacultyAchievements = () => {
                                         min="2000" max={new Date().getFullYear() + 1} required />
                                 </div>
                                 <div className="ach-field ach-field--half">
-                                    <label className="ach-label">Publisher / Issuer / Organization</label>
+                                    <label className="ach-label">Publisher / Issuer / Organization *</label>
                                     <input type="text" name="organization" value={formData.organization}
                                         onChange={handleChange} className="ach-input"
-                                        placeholder="e.g. IEEE, Springer, AICTE" />
+                                        placeholder="e.g. IEEE, Springer, AICTE" required />
                                 </div>
                             </div>
 

@@ -331,12 +331,12 @@ const Achievements = () => {
                             </div>
 
                             {/* ── Organization ── */}
-                            <Field label={isInternship ? 'Organization / Company *' : 'Organization / Issuer'}>
+                            <Field label={isInternship ? 'Organization / Company *' : 'Organization / Issuer *'}>
                                 <input
                                     type="text" name="organization" value={formData.organization}
                                     onChange={handleChange} className="ach-input"
                                     placeholder={isInternship ? 'e.g. Infosys, TCS, Wipro...' : 'Issuing body or institution'}
-                                    required={isInternship}
+                                    required
                                 />
                             </Field>
 

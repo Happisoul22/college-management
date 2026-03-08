@@ -49,12 +49,10 @@ const MarksEntry = () => {
             // Pre-fill marks data
             const data = {};
             existing.forEach(m => {
-                data[m.student?.id || m.student?._id || m.student] = {
-                    mid1: m.internal?.mid1 || 0,
-                    mid2: m.internal?.mid2 || 0,
-                    assignments: m.internal?.assignments || 0,
-                    attendance: m.internal?.attendance || 0,
-                    examScore: m.external?.examScore || 0
+                const sid = m.studentId || m.student?.id || m.student?._id || m.student;
+                data[sid] = {
+                    assignment1: m.internal?.assignment1 || 0,
+                    assignment2: m.internal?.assignment2 || 0
                 };
             });
             setMarksData(data);
@@ -83,14 +81,10 @@ const MarksEntry = () => {
             const entries = Object.entries(marksData).map(([studentId, marks]) => ({
                 student: studentId,
                 internal: {
-                    mid1: marks.mid1 || 0,
-                    mid2: marks.mid2 || 0,
-                    assignments: marks.assignments || 0,
-                    attendance: marks.attendance || 0
+                    assignment1: marks.assignment1 || 0,
+                    assignment2: marks.assignment2 || 0
                 },
-                external: {
-                    examScore: marks.examScore || 0
-                }
+                external: {}
             }));
             await api.post('/marks/bulk', {
                 subject: selectedSubject,
@@ -161,11 +155,8 @@ const MarksEntry = () => {
                                     <th>#</th>
                                     <th>Student Name</th>
                                     <th>Roll No</th>
-                                    <th>Mid-1 (30)</th>
-                                    <th>Mid-2 (30)</th>
-                                    <th>Assignments (20)</th>
-                                    <th>Attendance (10)</th>
-                                    <th>External (100)</th>
+                                    <th>Assignment 1 (50)</th>
+                                    <th>Assignment 2 (50)</th>
                                     <th>Total</th>
                                     <th>🔗</th>
                                 </tr>
@@ -173,38 +164,26 @@ const MarksEntry = () => {
                             <tbody>
                                 {students.map((stu, i) => {
                                     const m = marksData[stu.id || stu._id] || {};
-                                    const total = (m.mid1 || 0) + (m.mid2 || 0) + (m.assignments || 0) + (m.attendance || 0) + (m.examScore || 0);
+                                    const total = (m.assignment1 || 0) + (m.assignment2 || 0);
                                     return (
                                         <tr key={stu.id || stu._id}>
                                             <td>{i + 1}</td>
                                             <td><strong>{stu.name}</strong></td>
                                             <td>{stu.studentProfile?.rollNumber || '—'}</td>
                                             <td>
-                                                <input type="number" min="0" max="30" className="me-input"
-                                                    value={m.mid1 || ''} onChange={e => handleMarkChange(stu.id || stu._id, 'mid1', e.target.value)} />
+                                                <input type="number" min="0" max="50" className="me-input"
+                                                    value={m.assignment1 || ''} onChange={e => handleMarkChange(stu.id || stu._id, 'assignment1', e.target.value)} />
                                             </td>
                                             <td>
-                                                <input type="number" min="0" max="30" className="me-input"
-                                                    value={m.mid2 || ''} onChange={e => handleMarkChange(stu.id || stu._id, 'mid2', e.target.value)} />
-                                            </td>
-                                            <td>
-                                                <input type="number" min="0" max="20" className="me-input"
-                                                    value={m.assignments || ''} onChange={e => handleMarkChange(stu.id || stu._id, 'assignments', e.target.value)} />
-                                            </td>
-                                            <td>
-                                                <input type="number" min="0" max="10" className="me-input"
-                                                    value={m.attendance || ''} onChange={e => handleMarkChange(stu.id || stu._id, 'attendance', e.target.value)} />
-                                            </td>
-                                            <td>
-                                                <input type="number" min="0" max="100" className="me-input"
-                                                    value={m.examScore || ''} onChange={e => handleMarkChange(stu.id || stu._id, 'examScore', e.target.value)} />
+                                                <input type="number" min="0" max="50" className="me-input"
+                                                    value={m.assignment2 || ''} onChange={e => handleMarkChange(stu.id || stu._id, 'assignment2', e.target.value)} />
                                             </td>
                                             <td className="me-total">{total}</td>
                                             <td>
-                                                {existingMarks.find(m => (m.student?.id || m.student?._id || m.student) === (stu.id || stu._id)) && (
+                                                {existingMarks.find(em => (em.studentId || em.student?.id || em.student?._id || em.student) === (stu.id || stu._id)) && (
                                                     <BlockchainBadge
                                                         type="marks"
-                                                        recordId={existingMarks.find(m => (m.student?.id || m.student?._id || m.student) === (stu.id || stu._id)).id || existingMarks.find(m => (m.student?.id || m.student?._id || m.student) === (stu.id || stu._id))._id}
+                                                        recordId={existingMarks.find(em => (em.studentId || em.student?.id || em.student?._id || em.student) === (stu.id || stu._id)).id || existingMarks.find(em => (em.studentId || em.student?.id || em.student?._id || em.student) === (stu.id || stu._id))._id}
                                                         compact
                                                         showButton={false}
                                                     />

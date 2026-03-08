@@ -13,7 +13,6 @@ import MySubjects from './pages/student/MySubjects';
 import SubjectDetail from './pages/student/SubjectDetail';
 // Faculty pages
 import MarksEntry from './pages/faculty/MarksEntry';
-import AttendanceMarking from './pages/faculty/AttendanceMarking';
 import MyStudents from './pages/faculty/MyStudents';
 import StudentProfile from './pages/faculty/StudentProfile';
 import SubjectsPage from './pages/faculty/SubjectsPage';
@@ -120,12 +119,6 @@ function App() {
             <Route path="/marks-entry" element={
                 <ProtectedRoute allowedRoles={FACULTY_ROLES}>
                     <MarksEntry />
-                </ProtectedRoute>
-            } />
-
-            <Route path="/attendance-marking" element={
-                <ProtectedRoute allowedRoles={FACULTY_ROLES}>
-                    <AttendanceMarking />
                 </ProtectedRoute>
             } />
 

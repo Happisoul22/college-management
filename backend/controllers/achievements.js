@@ -44,8 +44,8 @@ exports.createAchievement = asyncHandler(async (req, res, next) => {
         teamMembers: req.body.teamMembers || '',
         proofUrl: req.file ? `/uploads/${req.file.filename}` : (req.body.proofUrl || ''),
         proofFileName: req.file ? req.file.originalname : (req.body.proofFileName || ''),
-        status: 'Pending',
-        reviewedBy: null,
+        status: (req.user.role !== 'Student' && req.user.role === 'HOD') ? 'Approved' : 'Pending',
+        reviewedBy: (req.user.role !== 'Student' && req.user.role === 'HOD') ? req.user.id : null,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
     };

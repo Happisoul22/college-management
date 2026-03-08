@@ -1,0 +1,18 @@
+{
+  "id": "0c0d4c49-3ec8-4dbf-b8ec-c2d1b19f3db2",
+  "user": "acf8caf3-c83a-402d-b44a-b959b22aef4f",
+  "userName": "arfeen",
+  "userEmail": "alluarfeen9911@gmail.com",
+  "applicantRole": "Student",
+  "type": "",
+  "reason": "Going home",
+  "startDate": "2026-03-10",
+  "endDate": "2026-03-12",
+  "status": "Pending",
+  "approvedBy": null,
+  "approverName": null,
+  "createdAt": "2026-03-08T16:05:21.415Z",
+  "updatedAt": "2026-03-08T16:05:21.416Z",
+  "branch": "CSE",
+  "section": "A"
+}

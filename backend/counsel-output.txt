@@ -1,0 +1,93 @@
+[
+  {
+    "key": "counsel_82ea159c-dfa1-40db-ada2-a7d1f3357c70",
+    "data": {
+      "id": "82ea159c-dfa1-40db-ada2-a7d1f3357c70",
+      "faculty": "2175f917-0506-4309-8073-8330626a8f9a",
+      "students": [
+        "acf8caf3-c83a-402d-b44a-b959b22aef4f",
+        "9d9c59d8-d31d-4cc5-b44d-6662a6213996"
+      ],
+      "department": "CSE",
+      "academicYear": "2024-25",
+      "assignedBy": "3fe29cac-ea1c-43e3-bfaa-26e03e6b1b3b",
+      "isActive": false,
+      "createdAt": "2026-03-07T19:57:28.332Z",
+      "updatedAt": "2026-03-08T14:37:26.458Z"
+    },
+    "cid": "Qm1b625497598a22771febba18f74a53def0f5957e3d70",
+    "timestamp": 1772980646,
+    "storedBy": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+  },
+  {
+    "key": "counsel_a7f49e56-343d-46f9-b038-8a551b00746a",
+    "data": {
+      "id": "a7f49e56-343d-46f9-b038-8a551b00746a",
+      "faculty": "2175f917-0506-4309-8073-8330626a8f9a",
+      "facultyName": "sumanth",
+      "students": [
+        {
+          "id": "acf8caf3-c83a-402d-b44a-b959b22aef4f",
+          "name": "arfeen",
+          "email": "alluarfeen9911@gmail.com",
+          "role": "Student",
+          "createdAt": "2026-03-07T19:01:12.086Z",
+          "updatedAt": "2026-03-08T14:25:29.149Z",
+          "studentProfile": {
+            "rollNumber": "23785a0515",
+            "phone": "7532569956",
+            "whatsapp": "",
+            "branch": "CSE",
+            "admissionYear": 2024,
+            "section": "A",
+            "gender": "Male",
+            "dob": "2004-08-12",
+            "fatherName": "manoj",
+            "fatherPhone": "",
+            "motherName": "fvimcdm",
+            "motherPhone": "",
+            "areaOfInterest": "",
+            "cgpa": 0,
+            "attendance": 0
+          }
+        },
+        {
+          "id": "9d9c59d8-d31d-4cc5-b44d-6662a6213996",
+          "name": "Sumanth",
+          "email": "Sumanthsathala10@gmail.com",
+          "role": "Student",
+          "createdAt": "2026-03-07T18:48:54.630Z",
+          "updatedAt": "2026-03-07T18:48:54.630Z",
+          "studentProfile": {
+            "rollNumber": "23785A0515",
+            "phone": "7893754523",
+            "whatsapp": "",
+            "branch": "CSE",
+            "admissionYear": 2024,
+            "section": "A",
+            "gender": "Male",
+            "dob": "2004-01-22",
+            "fatherName": "srk",
+            "fatherPhone": "",
+            "motherName": "srk",
+            "motherPhone": "",
+            "areaOfInterest": "",
+            "cgpa": 0,
+            "attendance": 0
+          }
+        },
+        "acf8caf3-c83a-402d-b44a-b959b22aef4f",
+        "9d9c59d8-d31d-4cc5-b44d-6662a6213996"
+      ],
+      "department": "CSE",
+      "academicYear": "2024-25",
+      "assignedBy": "3fe29cac-ea1c-43e3-bfaa-26e03e6b1b3b",
+      "isActive": true,
+      "createdAt": "2026-03-08T14:37:39.975Z",
+      "updatedAt": "2026-03-08T14:38:43.056Z"
+    },
+    "cid": "Qm2cf1dc5871f7281c2f4afdcefe7769ca3a39628cafe7",
+    "timestamp": 1772980723,
+    "storedBy": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+  }
+]

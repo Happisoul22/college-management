@@ -8,13 +8,13 @@ Write-Host ""
 # Stop any hanging node processes just in case
 Stop-Process -Name node -ErrorAction SilentlyContinue
 
-# 1. Start Hardhat Node
-Write-Host "[1/3] Starting Local Blockchain..." -ForegroundColor Yellow
-$NodeJob = Start-Job {
-    Set-Location -Path "$using:PWD\backend"
-    npx hardhat node
-}
-Start-Sleep -Seconds 5
+# 1. Start Local Blockchain
+Write-Host "[1/3] Waiting for Ganache GUI..." -ForegroundColor Yellow
+# $NodeJob = Start-Job {
+#     Set-Location -Path "$using:PWD\backend"
+#     npx hardhat node
+# }
+Start-Sleep -Seconds 2
 
 # 2. Deploy Contract & Start Backend
 Write-Host "[2/3] Deploying smart contract & starting backend server..." -ForegroundColor Yellow
@@ -43,7 +43,7 @@ Write-Host ""
 Write-Host "All systems are online!" -ForegroundColor Green
 Write-Host "Frontend is at: http://localhost:5173" -ForegroundColor Green
 Write-Host "Backend is at:  http://localhost:5000" -ForegroundColor Green
-Write-Host "Blockchain is:  http://127.0.0.1:8545" -ForegroundColor Green
+Write-Host "Blockchain is:  http://127.0.0.1:7545 (Ganache GUI)" -ForegroundColor Green
 Write-Host ""
 Write-Host "Press Ctrl+C at any time, or close this window to stop everything." -ForegroundColor Cyan
 

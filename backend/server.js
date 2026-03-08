@@ -54,7 +54,6 @@ app.use('/api/reports', require('./routes/reports'));
 app.use('/api/ai', require('./routes/ai'));
 app.use('/api/subjects', require('./routes/subjects'));
 app.use('/api/marks', require('./routes/marks'));
-app.use('/api/attendance', require('./routes/attendance'));
 app.use('/api/assignments', require('./routes/assignments'));
 app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/blockchain', require('./routes/blockchain'));
