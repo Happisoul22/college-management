@@ -33,9 +33,9 @@ exports.applyLeave = asyncHandler(async (req, res, next) => {
         reason: req.body.reason || '',
         startDate: req.body.startDate || null,
         endDate: req.body.endDate || null,
-        status: 'Pending',
-        approvedBy: null,
-        approverName: null,
+        status: ['HOD', 'Principal', 'Admin'].includes(req.user.role) ? 'Approved' : 'Pending',
+        approvedBy: ['HOD', 'Principal', 'Admin'].includes(req.user.role) ? req.user.id : null,
+        approverName: ['HOD', 'Principal', 'Admin'].includes(req.user.role) ? req.user.name : null,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
     };

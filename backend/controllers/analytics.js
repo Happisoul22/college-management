@@ -34,46 +34,64 @@ const getAllAchievements = async () => {
 // @route   GET /api/analytics/overall
 exports.getOverallAnalytics = asyncHandler(async (req, res, next) => {
     let achievements = await getAllAchievements();
+    const allUsers = await blockchain.getAllRecordsOfType('user');
+    
+    let department = 'All';
+    let deptUserIds = new Set();
+    
+    // Create maps to categorise users for filtering
+    const studentUserIds = new Set();
+    const facultyUserIds = new Set();
 
-    // HOD → filter by own department
     if (req.user.role === 'HOD') {
-        const dept = req.user.facultyProfile?.department;
-        const deptStudIds = new Set((await getStudentIds({ branch: dept })).map(u => u.id));
-        achievements = achievements.filter(a => deptStudIds.has(a.user));
+        department = req.user.facultyProfile?.department || 'All';
+        allUsers.map(r => r.data).forEach(u => {
+            if (u.role === 'Student' && u.studentProfile?.branch === department) {
+                studentUserIds.add(u.id);
+            } else if (['Faculty', 'ClassTeacher', 'HOD'].includes(u.role) && u.facultyProfile?.department === department) {
+                facultyUserIds.add(u.id);
+            }
+        });
+        // Restrict all achievements to just this department's users
+        achievements = achievements.filter(a => studentUserIds.has(a.user) || facultyUserIds.has(a.user));
+    } else {
+        // Not HOD
+        allUsers.map(r => r.data).forEach(u => {
+            if (u.role === 'Student') studentUserIds.add(u.id);
+            if (['Faculty', 'ClassTeacher', 'HOD'].includes(u.role)) facultyUserIds.add(u.id);
+        });
     }
 
-    // 1. By type
-    const byTypeMap = {};
-    achievements.forEach(a => { byTypeMap[a.type] = (byTypeMap[a.type] || 0) + 1; });
-    const byType = Object.entries(byTypeMap).map(([_id, count]) => ({ _id, count })).sort((a, b) => b.count - a.count);
+    const studentAchs = achievements.filter(a => studentUserIds.has(a.user));
+    const facultyAchs = achievements.filter(a => facultyUserIds.has(a.user));
 
-    // 2. By status
-    const byStatusMap = {};
-    achievements.forEach(a => { byStatusMap[a.status] = (byStatusMap[a.status] || 0) + 1; });
-    const byStatus = Object.entries(byStatusMap).map(([_id, count]) => ({ _id, count }));
+    const computeStats = (achs) => {
+        const byTypeMap = {};
+        achs.forEach(a => { byTypeMap[a.type] = (byTypeMap[a.type] || 0) + 1; });
+        const byType = Object.entries(byTypeMap).map(([_id, count]) => ({ _id, count })).sort((a, b) => b.count - a.count);
 
-    // 3. Total
-    const total = achievements.length;
+        const byStatusMap = {};
+        achs.forEach(a => { byStatusMap[a.status] = (byStatusMap[a.status] || 0) + 1; });
+        const byStatus = Object.entries(byStatusMap).map(([_id, count]) => ({ _id, count }));
 
-    // 4. Monthly trend (last 6 months)
-    const sixMonthsAgo = new Date();
-    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-    const byMonthMap = {};
-    achievements
-        .filter(a => new Date(a.createdAt) >= sixMonthsAgo)
-        .forEach(a => {
+        const sixMonthsAgo = new Date();
+        sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+        const byMonthMap = {};
+        achs.filter(a => new Date(a.createdAt) >= sixMonthsAgo).forEach(a => {
             const key = a.createdAt?.substring(0, 7) || 'unknown';
             byMonthMap[key] = (byMonthMap[key] || 0) + 1;
         });
-    const byMonth = Object.entries(byMonthMap)
-        .map(([_id, count]) => ({ _id, count }))
-        .sort((a, b) => a._id.localeCompare(b._id));
+        const byMonth = Object.entries(byMonthMap).map(([_id, count]) => ({ _id, count })).sort((a, b) => a._id.localeCompare(b._id));
+
+        return { total: achs.length, byType, byStatus, byMonth };
+    };
 
     res.status(200).json({
         success: true,
         data: {
-            total, byType, byStatus, byMonth,
-            department: req.user.role === 'HOD' ? req.user.facultyProfile?.department : 'All'
+            studentStats: computeStats(studentAchs),
+            facultyStats: computeStats(facultyAchs),
+            department
         }
     });
 });

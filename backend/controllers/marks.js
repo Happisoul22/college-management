@@ -93,6 +93,22 @@ exports.getMarks = asyncHandler(async (req, res, next) => {
     if (req.query.academicYear) results = results.filter(m => m.academicYear === req.query.academicYear);
     if (req.query.student && !req.query.student) results = results.filter(m => m.studentId === req.query.student);
 
+    // Hydrate subjects to ensure charts show actual codes/names
+    const allSubjects = await blockchain.getAllRecordsOfType('subject');
+    const subjectMap = {};
+    for (const s of allSubjects.map(r => r.data)) {
+        subjectMap[s.id] = s;
+    }
+
+    results = results.map(m => ({
+        ...m,
+        subject: subjectMap[m.subjectId] ? { 
+            id: m.subjectId, 
+            code: subjectMap[m.subjectId].code, 
+            name: subjectMap[m.subjectId].name 
+        } : m.subject
+    }));
+
     // Sort by semester
     results.sort((a, b) => (a.semester || 0) - (b.semester || 0));
 

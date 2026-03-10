@@ -26,7 +26,8 @@ const Analytics = () => {
     const barRef = useRef(null);
     const pieRef = useRef(null);
 
-    const [stats, setStats] = useState(null);
+    const [statsData, setStatsData] = useState(null);
+    const [activeTab, setActiveTab] = useState('student');
     const [loading, setLoading] = useState(true);
     const [drillFilter, setDrillFilter] = useState(null);   // { key: 'type'|'status', value: 'NPTEL' }
     const [drillData, setDrillData] = useState([]);
@@ -37,7 +38,7 @@ const Analytics = () => {
     const fetchAnalytics = async () => {
         try {
             const res = await api.get('/analytics/overall');
-            setStats(res.data.data);
+            setStatsData(res.data.data);
         } catch (err) { console.error(err); }
         finally { setLoading(false); }
     };
@@ -49,7 +50,11 @@ const Analytics = () => {
         setDrillFilter({ key, value });
         setDrillLoading(true);
         try {
-            const params = new URLSearchParams({ [key]: value, limit: 100 });
+            const params = new URLSearchParams({ 
+                [key]: value, 
+                limit: 100,
+                ownerRole: activeTab === 'student' ? 'Student' : 'Faculty'
+            });
             const res = await api.get(`/achievements?${params}`);
             setDrillData(res.data.data || []);
         } catch (err) { console.error(err); }
@@ -60,7 +65,8 @@ const Analytics = () => {
         if (!barRef.current) return;
         const els = getElementAtEvent(barRef.current, e);
         if (!els.length) return;
-        const clickedType = stats?.byType?.[els[0].index]?._id;
+        const targetStats = activeTab === 'student' ? statsData?.studentStats : statsData?.facultyStats;
+        const clickedType = targetStats?.byType?.[els[0].index]?._id;
         if (clickedType) drill('type', clickedType);
     };
 
@@ -68,14 +74,17 @@ const Analytics = () => {
         if (!pieRef.current) return;
         const els = getElementAtEvent(pieRef.current, e);
         if (!els.length) return;
-        const clickedStatus = stats?.byStatus?.[els[0].index]?._id;
+        const targetStats = activeTab === 'student' ? statsData?.studentStats : statsData?.facultyStats;
+        const clickedStatus = targetStats?.byStatus?.[els[0].index]?._id;
         if (clickedStatus) drill('status', clickedStatus);
     };
 
     if (loading) return <Layout><div style={{ padding: '40px', textAlign: 'center' }}>Loading Analytics...</div></Layout>;
-    if (!stats) return <Layout><div style={{ padding: '40px', textAlign: 'center' }}>No data available.</div></Layout>;
+    if (!statsData) return <Layout><div style={{ padding: '40px', textAlign: 'center' }}>No data available.</div></Layout>;
 
-    const dept = stats.department || 'All';
+    const dept = statsData.department || 'All';
+    const stats = activeTab === 'student' ? statsData.studentStats : statsData.facultyStats;
+
     const total = stats.total || 0;
     const approved = stats.byStatus?.find(s => s._id === 'Approved')?.count || 0;
     const pending = stats.byStatus?.find(s => s._id === 'Pending')?.count || 0;
@@ -141,6 +150,22 @@ const Analytics = () => {
                 <span style={{ fontSize: '0.85rem', fontWeight: 500, marginLeft: '12px', color: '#f4a820' }}>
                     {dept !== 'All' ? `— ${dept} Dept.` : '— All Departments'}
                 </span>
+            </div>
+
+            {/* ── Tabs ── */}
+            <div className="fd-ach-tabs" style={{ marginBottom: '24px' }}>
+                <button
+                    className={`fd-ach-tab${activeTab === 'student' ? ' fd-ach-tab--active' : ''}`}
+                    onClick={() => { setActiveTab('student'); setDrillFilter(null); setDrillData([]); }}
+                >
+                    🎓 Student Analytics
+                </button>
+                <button
+                    className={`fd-ach-tab${activeTab === 'faculty' ? ' fd-ach-tab--active' : ''}`}
+                    onClick={() => { setActiveTab('faculty'); setDrillFilter(null); setDrillData([]); }}
+                >
+                    👨‍🏫 Faculty Analytics
+                </button>
             </div>
 
             {/* ── Summary stat cards ── */}
@@ -227,21 +252,33 @@ const Analytics = () => {
                                     {drillData.map(ach => (
                                         <tr key={ach._id}>
                                             <td>
-                                                {ach.user ? (
-                                                    <span
-                                                        style={{ color: '#f97316', fontWeight: 700, cursor: 'pointer' }}
-                                                        onClick={() => navigate(`/student-profile/${ach.user.id}`)}
-                                                        title="Click to view student profile"
-                                                    >
-                                                        {ach.user.name}
-                                                    </span>
-                                                ) : (
-                                                    <span style={{ color: '#ef4444', fontStyle: 'italic' }}>⚠ Deleted</span>
-                                                )}
-                                            </td>
-                                            <td style={{ fontSize: '0.8rem', color: '#64748b' }}>
-                                                {ach.user?.studentProfile?.rollNumber || '—'}
-                                            </td>
+                                                    {ach.user ? (
+                                                        activeTab === 'student' ? (
+                                                            <span
+                                                                style={{ color: '#f97316', fontWeight: 700, cursor: 'pointer' }}
+                                                                onClick={() => navigate(`/student-profile/${ach.user.id}`)}
+                                                                title="Click to view student profile"
+                                                            >
+                                                                {ach.user.name}
+                                                            </span>
+                                                        ) : (
+                                                            <span
+                                                                style={{ color: '#0ea5e9', fontWeight: 700, cursor: 'pointer' }}
+                                                                onClick={() => navigate(`/faculty-profile/${ach.user.id}`)}
+                                                                title="Click to view faculty profile"
+                                                            >
+                                                                {ach.user.name}
+                                                            </span>
+                                                        )
+                                                    ) : (
+                                                        <span style={{ color: '#ef4444', fontStyle: 'italic' }}>⚠ Deleted</span>
+                                                    )}
+                                                </td>
+                                                <td style={{ fontSize: '0.8rem', color: '#64748b' }}>
+                                                    {activeTab === 'student' 
+                                                        ? ach.user?.studentProfile?.rollNumber || '—'
+                                                        : ach.user?.facultyProfile?.facultyId || ach.user?.role || '—'}
+                                                </td>
                                             <td style={{ fontWeight: 600 }}>{ach.title}</td>
                                             <td>
                                                 <span style={{ background: '#f1f5f9', padding: '2px 8px', borderRadius: '6px', fontSize: '0.78rem', fontWeight: 600 }}>
