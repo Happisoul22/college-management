@@ -15,3 +15,6 @@ Thumbs.db
 artifacts/
 cache/
 blockchain/deployment.json
+
+# Local IPFS store
+ipfs_local_store/

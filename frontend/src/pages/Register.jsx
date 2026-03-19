@@ -252,7 +252,7 @@ const Register = () => {
                             </svg>
                         </div>
                         <div className="reg-college-name">SRIT</div>
-                        <div className="reg-college-full">Srinivasa Ramanujan<br />Institute of Technology</div>
+                        <div className="reg-college-full">Srinivasa Ramanujan Institute<br />of Technology</div>
                         <div className="reg-college-loc">Ananthapuramu, AP</div>
                         <div className="reg-sep"></div>
                         <p className="reg-portal-lbl">Student Registration Portal</p>
@@ -631,7 +631,7 @@ const Register = () => {
                         </p>
 
                         <div className="reg-foot">
-                            <p>© 2024 SRIT Ananthapuramu &nbsp;|&nbsp;
+                            <p>© 2025 SRIT Ananthapuramu &nbsp;| 
                                 <a href="https://www.srit.ac.in" target="_blank" rel="noreferrer">www.srit.ac.in</a>
                             </p>
                         </div>

@@ -57,6 +57,7 @@ app.use('/api/marks', require('./routes/marks'));
 app.use('/api/assignments', require('./routes/assignments'));
 app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/blockchain', require('./routes/blockchain'));
+app.use('/api/projects', require('./routes/projects'));
 
 app.get('/', (req, res) => res.json({ message: 'Academic System API (Blockchain + IPFS)', version: '2.0.0' }));
 

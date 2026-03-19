@@ -22,6 +22,11 @@ import CounsellorDashboard from './pages/faculty/CounsellorDashboard';
 // HOD pages
 import AssignRoles from './pages/hod/AssignRoles';
 import FacultyProfile from './pages/hod/FacultyProfile';
+// Project pages
+import ProjectManagement from './pages/projects/ProjectManagement';
+import GuideProjects from './pages/projects/GuideProjects';
+import IDCReview from './pages/projects/IDCReview';
+import StudentProject from './pages/projects/StudentProject';
 import { useContext } from 'react';
 import AuthContext from './context/AuthContext';
 
@@ -175,6 +180,31 @@ function App() {
             <Route path="/approvals" element={
                 <ProtectedRoute allowedRoles={FACULTY_ROLES}>
                     <FacultyDashboard />
+                </ProtectedRoute>
+            } />
+
+            {/* Project Routes */}
+            <Route path="/project-management" element={
+                <ProtectedRoute allowedRoles={[...HOD_ROLES, 'Faculty', 'ClassTeacher']}>
+                    <ProjectManagement />
+                </ProtectedRoute>
+            } />
+
+            <Route path="/guide-projects" element={
+                <ProtectedRoute allowedRoles={FACULTY_ROLES}>
+                    <GuideProjects />
+                </ProtectedRoute>
+            } />
+
+            <Route path="/idc-review" element={
+                <ProtectedRoute allowedRoles={FACULTY_ROLES}>
+                    <IDCReview />
+                </ProtectedRoute>
+            } />
+
+            <Route path="/my-project" element={
+                <ProtectedRoute allowedRoles={['Student']}>
+                    <StudentProject />
                 </ProtectedRoute>
             } />
 

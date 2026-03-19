@@ -5,8 +5,8 @@ import api from '../api/axios';
 import { toast } from 'react-toastify';
 import NotificationBell from './NotificationBell';
 
-/* Inline SRIT Logo for the header */
-const SRITHeaderLogo = () => (
+/* Inline SVCET Logo for the header */
+const SVCETHeaderLogo = () => (
     <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" width="28" height="28">
         <circle cx="18" cy="18" r="17" stroke="#f4a820" strokeWidth="1.5" fill="none" />
         <path d="M9 25 L18 7 L27 25 Z" fill="white" opacity="0.9" />
@@ -182,11 +182,11 @@ const Layout = ({ children }) => {
                 {/* ---- Top Header ---- */}
                 <header className="top-header">
                     <div className="header-left">
-                        <SRITHeaderLogo />
+                        <SVCETHeaderLogo />
                         <div>
                             <h3>Welcome, <span>{user?.name}</span></h3>
                         </div>
-                        <span className="header-srit-badge">SRIT Portal</span>
+                        <span className="header-srit-badge">SVCET Portal</span>
                     </div>
 
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>

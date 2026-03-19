@@ -14,13 +14,13 @@
   position: relative;
   overflow: hidden;
 
-  /* Layered SRIT campus background */
+  /* Layered SVCET campus background */
   background:
     linear-gradient(162deg,
-      rgba(5, 18, 41, 0.94) 0%,
-      rgba(13, 43, 94, 0.90) 45%,
-      rgba(15, 48, 104, 0.92) 100%),
-    url('https://www.srit.ac.in/wp-content/uploads/2023/01/DSC_6613-scaled.jpg') center center / cover no-repeat;
+      rgba(5, 18, 41, 0.86) 0%,
+      rgba(13, 43, 94, 0.82) 45%,
+      rgba(15, 48, 104, 0.86) 100%),
+    url('/svcet-campus.jpg') center center / cover no-repeat;
 }
 
 /* ── Animated glowing orbs ── */

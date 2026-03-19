@@ -13,6 +13,7 @@ const axios = require('axios');
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
+const aes = require('./crypto'); // AES-256-GCM layer
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
@@ -50,18 +51,22 @@ const pinataHeaders = () => ({
 
 /**
  * Upload a JSON object to IPFS.
+ * If IPFS_ENCRYPTION_KEY is set, the object is AES-256-GCM encrypted before upload.
  * @param {Object} data - Plain JavaScript object to store
  * @param {string} [name] - Optional pin name (for Pinata dashboard)
  * @returns {Promise<string>} IPFS CID
  */
 const uploadJSON = async (data, name = 'academic-record') => {
+    // ── Encrypt payload if key is configured ─────────────────────────────────
+    const payload = aes.ENCRYPTION_ENABLED ? aes.encrypt(data) : data;
+
     if (USE_PINATA) {
         // ── Pinata path ───────────────────────────────────────────────────────
         const response = await axios.post(
             'https://api.pinata.cloud/pinning/pinJSONToIPFS',
             {
-                pinataContent: data,
-                pinataMetadata: { name, keyvalues: { app: 'academic-system' } }
+                pinataContent: payload,
+                pinataMetadata: { name, keyvalues: { app: 'academic-system', encrypted: String(aes.ENCRYPTION_ENABLED) } }
             },
             { headers: pinataHeaders() }
         );
@@ -69,29 +74,32 @@ const uploadJSON = async (data, name = 'academic-record') => {
     } else {
         // ── Local fallback ────────────────────────────────────────────────────
         ensureLocalStore();
-        const cid = localCid(data);
+        const cid = localCid(payload);          // CID computed over encrypted envelope
         const file = path.join(LOCAL_STORE_PATH, `${cid}.json`);
         if (!fs.existsSync(file)) {
-            fs.writeFileSync(file, JSON.stringify(data, null, 2), 'utf-8');
+            fs.writeFileSync(file, JSON.stringify(payload, null, 2), 'utf-8');
         }
-        console.log(`📦 IPFS [local]: stored ${cid}`);
+        console.log(`📦 IPFS [local]: stored ${cid}${aes.ENCRYPTION_ENABLED ? ' 🔒' : ''}`);
         return cid;
     }
 };
 
 /**
  * Fetch a JSON object from IPFS by CID.
+ * Automatically decrypts AES-256-GCM encrypted envelopes.
+ * Plain (unencrypted) records are returned as-is (backward compatible).
  * @param {string} cid - IPFS Content Identifier
- * @returns {Promise<Object>} Parsed JSON object
+ * @returns {Promise<Object>} Parsed JSON object (decrypted if needed)
  */
 const fetchJSON = async (cid) => {
     if (!cid) throw new Error('IPFS fetchJSON: CID is required');
 
+    let raw;
     if (USE_PINATA) {
         // ── Pinata gateway ────────────────────────────────────────────────────
         const url = `${IPFS_GATEWAY}${cid}`;
         const response = await axios.get(url, { timeout: 15000 });
-        return response.data;
+        raw = response.data;
     } else {
         // ── Local fallback ────────────────────────────────────────────────────
         ensureLocalStore();
@@ -99,8 +107,11 @@ const fetchJSON = async (cid) => {
         if (!fs.existsSync(file)) {
             throw new Error(`IPFS [local]: CID not found: ${cid}`);
         }
-        return JSON.parse(fs.readFileSync(file, 'utf-8'));
+        raw = JSON.parse(fs.readFileSync(file, 'utf-8'));
     }
+
+    // ── Decrypt if this is an encrypted envelope ──────────────────────────────
+    return aes.decrypt(raw); // pass-through if not encrypted
 };
 
 /**

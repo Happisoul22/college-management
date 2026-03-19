@@ -75,6 +75,9 @@ const scanLocalIPFSStore = (recordType) => {
             else if (recordType === 'classassign') typePrefix = 'ca_';
             else if (recordType === 'counselassign') typePrefix = 'counsel_';
             else if (recordType === 'attendance') typePrefix = 'att_';
+            else if (recordType === 'project') typePrefix = 'proj_';
+            else if (recordType === 'projrole') typePrefix = 'projrole_';
+            else if (recordType === 'projsched') typePrefix = 'projsched_';
 
             if (key.startsWith(typePrefix)) {
                 results.push({ key, data, cid, timestamp: 0, storedBy: '' });
@@ -413,6 +416,9 @@ const keys = {
     classAssign: (dept, year, sem, section, ay) => `ca_${dept}_y${year}_s${sem}_${section}_${ay}`,
     counselAssign: (id) => `counsel_${id}`,
     notification: (id) => `notif_${id}`,
+    project: (id) => `proj_${id}`,
+    projRole: (id) => `projrole_${id}`,
+    projSched: (id) => `projsched_${id}`,
 };
 
 module.exports = {

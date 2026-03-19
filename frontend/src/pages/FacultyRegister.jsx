@@ -232,7 +232,7 @@ const FacultyRegister = () => {
                             </svg>
                         </div>
                         <div className="fr-college-name">SRIT</div>
-                        <div className="fr-college-full">Srinivasa Ramanujan<br />Institute of Technology</div>
+                        <div className="fr-college-full">Srinivasa Ramanujan Institute<br />of Technology</div>
                         <div className="fr-college-loc">Ananthapuramu, AP</div>
                         <div className="fr-sep"></div>
                         <p className="fr-portal-lbl">Faculty Registration Portal</p>
@@ -592,7 +592,7 @@ const FacultyRegister = () => {
                         </p>
 
                         <div className="fr-foot">
-                            <p>© 2024 SRIT Ananthapuramu &nbsp;|&nbsp;
+                            <p>© 2025 SRIT Ananthapuramu &nbsp;| 
                                 <a href="https://www.srit.ac.in" target="_blank" rel="noreferrer">www.srit.ac.in</a>
                             </p>
                         </div>

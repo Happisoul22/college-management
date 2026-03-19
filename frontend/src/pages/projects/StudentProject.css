@@ -1,0 +1,90 @@
+.sp-page { display: flex; flex-direction: column; gap: 20px; }
+
+.sp-hero {
+    display: flex; align-items: center; gap: 16px;
+    background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+    border-radius: 16px; padding: 24px 28px; color: white; flex-wrap: wrap;
+}
+.sp-hero-icon { font-size: 2.4rem; opacity: 0.85; }
+.sp-hero-title { font-size: 1.4rem; font-weight: 800; margin: 0 0 4px; }
+.sp-hero-sub { margin: 0; opacity: 0.75; font-size: 0.85rem; }
+.sp-status-hero { display: flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 12px; font-weight: 700; font-size: 0.9rem; margin-left: auto; white-space: nowrap; }
+
+.sp-late-warn { background: #fef2f2; border: 1px solid #fecaca; border-radius: 10px; padding: 12px 16px; color: #dc2626; font-weight: 600; font-size: 0.88rem; }
+
+.sp-layout { display: grid; grid-template-columns: 1.1fr 1fr; gap: 20px; align-items: flex-start; }
+@media (max-width: 900px) { .sp-layout { grid-template-columns: 1fr; } }
+
+.sp-left, .sp-right { display: flex; flex-direction: column; gap: 16px; }
+
+/* Guide card */
+.sp-guide-card { padding: 20px; }
+.sp-guide-info { display: flex; align-items: center; gap: 14px; margin-top: 8px; }
+.sp-guide-avatar { width: 48px; height: 48px; border-radius: 12px; background: linear-gradient(135deg, #059669, #34d399); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; font-weight: 800; flex-shrink: 0; }
+.sp-guide-name { font-weight: 700; font-size: 1rem; color: #0f172a; }
+.sp-guide-email { font-size: 0.8rem; color: #64748b; }
+.sp-guide-id { font-size: 0.75rem; color: #94a3b8; }
+.sp-no-guide { color: #94a3b8; font-size: 0.88rem; padding: 8px 0; }
+
+/* Detail card */
+.sp-detail-card { padding: 20px; }
+.sp-desc { font-size: 0.88rem; color: #64748b; margin: 8px 0 12px; }
+.sp-meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.sp-meta-item { display: flex; flex-direction: column; gap: 2px; }
+.sp-meta-label { font-size: 0.72rem; text-transform: uppercase; font-weight: 600; color: #94a3b8; }
+.sp-meta-val { font-size: 0.88rem; font-weight: 600; color: #0f172a; }
+
+/* Team */
+.sp-team-card { padding: 20px; }
+.sp-team-member { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #f1f5f9; }
+.sp-team-member:last-child { border-bottom: none; }
+.sp-team-avatar { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #6366f1, #818cf8); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem; flex-shrink: 0; }
+.sp-team-name { font-weight: 600; font-size: 0.88rem; }
+.sp-team-roll { font-size: 0.75rem; color: #94a3b8; }
+.sp-you-badge { margin-left: auto; background: #eff6ff; color: #1d4ed8; font-size: 0.7rem; font-weight: 700; padding: 2px 8px; border-radius: 8px; }
+
+/* Links */
+.sp-links-card { padding: 20px; }
+.sp-link-btns { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+.sp-link-btn { display: flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 10px; text-decoration: none; font-size: 0.83rem; font-weight: 600; }
+.sp-link--github { background: #0f172a; color: white; }
+.sp-link--proof { background: #eff6ff; color: #1d4ed8; }
+
+/* Submit */
+.sp-submit-card { padding: 20px; }
+.sp-submit-toggle { width: 100%; margin-top: 8px; background: linear-gradient(135deg, #1e40af, #3b82f6) !important; color: white !important; border: none !important; font-weight: 700 !important; padding: 12px !important; }
+.sp-submit-form { display: flex; flex-direction: column; gap: 12px; margin-top: 14px; padding-top: 14px; border-top: 1px solid #f1f5f9; }
+
+/* Feedback timeline */
+.sp-feedback-card { padding: 20px; }
+.sp-no-feedback { text-align: center; padding: 30px; color: #94a3b8; display: flex; flex-direction: column; align-items: center; gap: 10px; font-size: 0.88rem; }
+.sp-timeline { display: flex; flex-direction: column; gap: 0; }
+.sp-timeline-item { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid #f1f5f9; position: relative; }
+.sp-timeline-item:last-child { border-bottom: none; }
+.sp-tl-dot { width: 10px; height: 10px; border-radius: 50%; background: #6366f1; flex-shrink: 0; margin-top: 5px; }
+.sp-timeline-item--guide .sp-tl-dot { background: #059669; }
+.sp-timeline-item--coordinator .sp-tl-dot { background: #1d4ed8; }
+.sp-timeline-item--idc-member .sp-tl-dot { background: #7c3aed; }
+.sp-tl-content { flex: 1; }
+.sp-tl-header { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 4px; }
+.sp-tl-header strong { font-size: 0.83rem; }
+.sp-tl-role { font-size: 0.7rem; padding: 1px 7px; border-radius: 6px; font-weight: 700; background: #e0e7ff; color: #4338ca; }
+.sp-tl-role--guide { background: #dcfce7; color: #166534; }
+.sp-tl-role--coordinator { background: #dbeafe; color: #1d4ed8; }
+.sp-tl-role--idc-member { background: #f3e8ff; color: #7c3aed; }
+.sp-tl-date { font-size: 0.7rem; color: #94a3b8; margin-left: auto; }
+.sp-tl-comment { font-size: 0.83rem; color: #475569; margin: 0; }
+
+/* IDC Score */
+.sp-score-card { padding: 20px; }
+.sp-score-total-badge { font-size: 2.2rem; font-weight: 900; color: #7c3aed; text-align: center; padding: 16px 0; }
+.sp-score-breakdown { display: flex; flex-direction: column; gap: 10px; }
+.sp-score-row { display: flex; align-items: center; gap: 10px; }
+.sp-score-label { font-size: 0.8rem; font-weight: 600; min-width: 130px; }
+.sp-score-bar { flex: 1; height: 8px; background: #f1f5f9; border-radius: 4px; overflow: hidden; }
+.sp-score-fill { height: 100%; border-radius: 4px; transition: width 0.5s; }
+.sp-score-num { font-size: 0.8rem; font-weight: 700; min-width: 36px; text-align: right; }
+.sp-scorer { font-size: 0.75rem; color: #94a3b8; margin-top: 10px; text-align: right; }
+
+.sp-empty { text-align: center; padding: 60px; color: #94a3b8; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.sp-loading { text-align: center; padding: 80px; font-size: 1rem; color: #64748b; }

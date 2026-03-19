@@ -3,13 +3,13 @@ import {
     FaClipboardList, FaFileAlt, FaChartPie, FaChartBar,
     FaSignOutAlt, FaHome, FaUserGraduate, FaChalkboardTeacher,
     FaPen, FaCalendarCheck, FaUsers, FaUsersCog, FaBook,
-    FaTrophy, FaChartLine, FaUserTie
+    FaTrophy, FaChartLine, FaUserTie, FaProjectDiagram, FaMedal
 } from 'react-icons/fa';
 import { useContext } from 'react';
 import AuthContext from '../context/AuthContext';
 
-/* Inline SRIT Logo SVG */
-const SRITEmblem = () => (
+/* Inline SVCET Logo SVG */
+const SVCETEmblem = () => (
     <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" width="22" height="22">
         <circle cx="20" cy="20" r="19" stroke="white" strokeWidth="1.5" fill="none" />
         <path d="M10 28 L20 8 L30 28 Z" fill="white" opacity="0.9" />
@@ -32,10 +32,10 @@ const Sidebar = () => {
             {/* ---- Logo Header ---- */}
             <div className="sidebar-header">
                 <div className="sidebar-logo-icon">
-                    <SRITEmblem />
+                    <SVCETEmblem />
                 </div>
                 <div className="sidebar-logo-text">
-                    <div className="logo-title">SRIT Portal</div>
+                    <div className="logo-title">SVCET Portal</div>
                     <div className="logo-subtitle">Academic Analytics</div>
                 </div>
             </div>
@@ -83,6 +83,10 @@ const Sidebar = () => {
                         <Link to="/leaves" className={`menu-item ${isActive('/leaves')}`}>
                             <FaFileAlt /> Leave Requests
                         </Link>
+                        <div className="menu-section-label">Projects</div>
+                        <Link to="/my-project" className={`menu-item ${isActive('/my-project')}`}>
+                            <FaProjectDiagram /> My Project
+                        </Link>
                     </>
                 )}
 
@@ -114,6 +118,17 @@ const Sidebar = () => {
                         </Link>
                         <Link to="/counsellor-dashboard" className={`menu-item ${isActive('/counsellor-dashboard')}`}>
                             <FaUserTie /> Counsellor Dashboard
+                        </Link>
+
+                        <div className="menu-section-label">Projects</div>
+                        <Link to="/project-management" className={`menu-item ${isActive('/project-management')}`}>
+                            <FaProjectDiagram /> Project Management
+                        </Link>
+                        <Link to="/guide-projects" className={`menu-item ${isActive('/guide-projects')}`}>
+                            <FaChalkboardTeacher /> Guide Projects
+                        </Link>
+                        <Link to="/idc-review" className={`menu-item ${isActive('/idc-review')}`}>
+                            <FaMedal /> IDC Review
                         </Link>
                     </>
                 )}
@@ -153,7 +168,7 @@ const Sidebar = () => {
             {/* ---- Footer ---- */}
             <div className="sidebar-footer">
                 <div className="sidebar-footer-text">
-                    © 2024 SRIT Ananthapuramu<br />
+                    © 2024 SVCET Chittoor<br />
                     Autonomous | NAAC Accredited
                 </div>
             </div>

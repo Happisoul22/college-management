@@ -50,7 +50,7 @@ const Login = () => {
                         </div>
 
                         <h1 className="srit-short-name">SRIT</h1>
-                        <h2 className="srit-full-name">Srinivasa Ramanujan<br />Institute of Technology</h2>
+                        <h2 className="srit-full-name">Srinivasa Ramanujan Institute<br />of Technology</h2>
                         <p className="srit-location">
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
@@ -73,8 +73,8 @@ const Login = () => {
                         {/* Accreditation */}
                         <div className="srit-badges-row">
                             <span className="s-badge">JNTUA Affiliated</span>
-                            <span className="s-badge">NAAC</span>
-                            <span className="s-badge">NBA</span>
+                            <span className="s-badge">Autonomous</span>
+                            <span className="s-badge">NAAC A+</span>
                         </div>
                     </div>
                 </div>
@@ -245,7 +245,7 @@ const Login = () => {
 
                         {/* Footer */}
                         <div className="srit-form-foot">
-                            <p>© 2024 SRIT Ananthapuramu &nbsp;|&nbsp; <a href="https://www.srit.ac.in" target="_blank" rel="noreferrer">www.srit.ac.in</a></p>
+                            <p>© 2025 SRIT Ananthapuramu &nbsp;|&nbsp; <a href="https://www.srit.ac.in" target="_blank" rel="noreferrer">www.srit.ac.in</a></p>
                         </div>
                     </div>
                 </div>
