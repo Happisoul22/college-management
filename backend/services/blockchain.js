@@ -42,9 +42,8 @@ const getLocalCid = (recordKey) => {
 };
 
 // Scan ALL files in local IPFS store and return records matching a recordType.
-// Each stored JSON file IS the raw data object — we match on the type field
-// OR infer type from the record key prefix in the key index.
-const scanLocalIPFSStore = (recordType) => {
+// Uses ipfs.fetchJSON so that AES-encrypted envelopes are transparently decrypted.
+const scanLocalIPFSStore = async (recordType) => {
     const results = [];
     if (!fs.existsSync(LOCAL_STORE_PATH)) return results;
 
@@ -59,31 +58,34 @@ const scanLocalIPFSStore = (recordType) => {
         } catch (e) { /* non-fatal */ }
     }
 
+    let typePrefix = recordType + '_';
+    if (recordType === 'subject') typePrefix = 'subj_';
+    else if (recordType === 'user') typePrefix = 'user_';
+    else if (recordType === 'leave') typePrefix = 'leave_';
+    else if (recordType === 'achievement') typePrefix = 'ach_';
+    else if (recordType === 'notification') typePrefix = 'notif_';
+    else if (recordType === 'classassign') typePrefix = 'ca_';
+    else if (recordType === 'counselassign') typePrefix = 'counsel_';
+    else if (recordType === 'attendance') typePrefix = 'att_';
+    else if (recordType === 'project') typePrefix = 'proj_';
+    else if (recordType === 'projrole') typePrefix = 'projrole_';
+    else if (recordType === 'projsched') typePrefix = 'projsched_';
+
     const files = fs.readdirSync(LOCAL_STORE_PATH).filter(f => f.endsWith('.json') && !f.startsWith('local_'));
-    for (const file of files) {
+
+    // Only process keys that belong to this record type
+    const relevantEntries = Object.entries(cidToKey).filter(([, key]) => key.startsWith(typePrefix));
+
+    await Promise.all(relevantEntries.map(async ([cid, key]) => {
         try {
-            const cid = file.replace('.json', '');
-            const data = JSON.parse(fs.readFileSync(path.join(LOCAL_STORE_PATH, file), 'utf-8'));
-            const key = cidToKey[cid] || '';
+            // fetchJSON handles decryption of AES-encrypted envelopes automatically
+            const data = await ipfs.fetchJSON(cid);
+            results.push({ key, data, cid, timestamp: 0, storedBy: '' });
+        } catch (e) {
+            console.warn(`scanLocalIPFSStore: skipping ${cid} (${e.message})`);
+        }
+    }));
 
-            let typePrefix = recordType + '_';
-            if (recordType === 'subject') typePrefix = 'subj_';
-            else if (recordType === 'user') typePrefix = 'user_';
-            else if (recordType === 'leave') typePrefix = 'leave_';
-            else if (recordType === 'achievement') typePrefix = 'ach_';
-            else if (recordType === 'notification') typePrefix = 'notif_';
-            else if (recordType === 'classassign') typePrefix = 'ca_';
-            else if (recordType === 'counselassign') typePrefix = 'counsel_';
-            else if (recordType === 'attendance') typePrefix = 'att_';
-            else if (recordType === 'project') typePrefix = 'proj_';
-            else if (recordType === 'projrole') typePrefix = 'projrole_';
-            else if (recordType === 'projsched') typePrefix = 'projsched_';
-
-            if (key.startsWith(typePrefix)) {
-                results.push({ key, data, cid, timestamp: 0, storedBy: '' });
-            }
-        } catch (e) { /* skip corrupt file */ }
-    }
     return results;
 };
 
@@ -309,10 +311,10 @@ const getAllRecordsOfType = async (recordType) => {
         }
     }
 
-    // Fallback: scan local IPFS store files
+    // Fallback: scan local IPFS store files (async — decrypts encrypted envelopes)
     if (results.length === 0) {
         console.log(`📦 getAllRecordsOfType(${recordType}): using local IPFS store fallback`);
-        results = scanLocalIPFSStore(recordType);
+        results = await scanLocalIPFSStore(recordType);
     }
 
     if (results.length > 0) {

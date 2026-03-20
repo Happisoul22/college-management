@@ -40,36 +40,42 @@ const getProjectRole = async (userId) => {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-//  PROJECT ROLE MANAGEMENT (HOD assigns coordinators / IDC; coordinator assigns guides)
+//  PROJECT ROLE MANAGEMENT
+//  HOD  → assigns Coordinator or IDC Member only
+//  Coordinator → assigns Guide only
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// @desc  HOD assigns a faculty member as Coordinator or IDC Member
+// @desc  Assign a faculty project role
 // @route POST /api/projects/roles/assign
-// @access HOD/Principal/Admin
+// @access HOD (coordinator/idc_member only) | Coordinator (guide only)
 exports.assignProjectRole = asyncHandler(async (req, res, next) => {
     const { facultyId, projectRole, department } = req.body;
-    // projectRole: 'coordinator' | 'idc_member' | 'guide'
-    const allowedRoles = ['HOD', 'Principal', 'Admin'];
-    const coordinatorRoles = ['coordinator']; // coordinator can also assign guides
 
-    // Coordinators can assign guides
+    const hodRoles = ['HOD', 'Principal', 'Admin'];
     const myProjectRole = await getProjectRole(req.user.id);
+    const isHOD = hodRoles.includes(req.user.role);
     const isCoordinator = myProjectRole?.projectRole === 'coordinator';
 
-    if (!allowedRoles.includes(req.user.role) && !isCoordinator) {
+    if (!isHOD && !isCoordinator) {
         return next(new ErrorResponse('Not authorized to assign project roles', 403));
     }
 
-    // Coordinators can only assign 'guide' role
-    if (isCoordinator && projectRole !== 'guide') {
-        return next(new ErrorResponse('Coordinators can only assign Guide role', 403));
+    // HOD can only assign coordinator or idc_member
+    if (isHOD && !isCoordinator && projectRole === 'guide') {
+        return next(new ErrorResponse('HOD can only assign Coordinator or IDC Member roles. Assign a Guide via the Coordinator.', 403));
+    }
+
+    // Coordinator no longer assigns general 'guide' role. Guides are assigned dynamically when a project is created.
+    if (isCoordinator) {
+        return next(new ErrorResponse('Coordinators assign guides directly during project creation, not from this menu.', 403));
     }
 
     if (!facultyId || !projectRole) {
         return next(new ErrorResponse('facultyId and projectRole are required', 400));
     }
 
-    const validRoles = ['coordinator', 'idc_member', 'guide'];
+    const hodAllowed  = ['coordinator', 'idc_member'];
+    const validRoles  = ['coordinator', 'idc_member', 'guide'];
     if (!validRoles.includes(projectRole)) {
         return next(new ErrorResponse(`projectRole must be one of: ${validRoles.join(', ')}`, 400));
     }
@@ -130,8 +136,8 @@ exports.removeProjectRole = asyncHandler(async (req, res, next) => {
     const existing = await getAllByPrefix('projrole_', 'projrole');
     for (const r of existing) {
         if (r.facultyId === facultyId && r.active) {
-            if (isCoordinator && r.projectRole !== 'guide') {
-                return next(new ErrorResponse('Coordinators can only remove Guides', 403));
+            if (isCoordinator) {
+                return next(new ErrorResponse('Coordinators cannot remove project roles from this menu.', 403));
             }
             const updated = { ...r, active: false, updatedAt: new Date().toISOString() };
             await blockchain.storeRecord('projrole', k.projRole(r.id), updated, facultyId);
@@ -185,10 +191,9 @@ exports.getMyProjectRole = asyncHandler(async (req, res, next) => {
 exports.createProject = asyncHandler(async (req, res, next) => {
     const myRole = await getProjectRole(req.user.id);
     const isCoordinator = myRole?.projectRole === 'coordinator';
-    const isHOD = ['HOD', 'Principal', 'Admin'].includes(req.user.role);
 
-    if (!isCoordinator && !isHOD) {
-        return next(new ErrorResponse('Only Coordinators or HOD can create projects', 403));
+    if (!isCoordinator) {
+        return next(new ErrorResponse('Only Coordinators can create projects', 403));
     }
 
     const {
@@ -310,8 +315,8 @@ exports.updateProject = asyncHandler(async (req, res, next) => {
     const myRole = await getProjectRole(req.user.id);
     const isHOD = ['HOD', 'Principal', 'Admin'].includes(req.user.role);
     const isCoordinator = myRole?.projectRole === 'coordinator';
-    const isGuide = myRole?.projectRole === 'guide';
-    const canEdit = isHOD || isCoordinator || (isGuide && p.guideId === req.user.id);
+    const isGuide = p.guideId === req.user.id;
+    const canEdit = isHOD || isCoordinator || isGuide;
 
     if (!canEdit) {
         return next(new ErrorResponse('Not authorized to update this project', 403));
@@ -358,7 +363,7 @@ exports.addFeedback = asyncHandler(async (req, res, next) => {
     const p = rec.data;
     const myRole = await getProjectRole(req.user.id);
     const isHOD = ['HOD', 'Principal', 'Admin'].includes(req.user.role);
-    const isGuide = myRole?.projectRole === 'guide';
+    const isGuide = p.guideId === req.user.id;
     const isIDC = myRole?.projectRole === 'idc_member';
     const isCoordinator = myRole?.projectRole === 'coordinator';
 
@@ -454,20 +459,16 @@ exports.reviewProject = asyncHandler(async (req, res, next) => {
     const { action, reviewStatus, comment } = req.body;
     // action: 'approve' | 'reject'
     const myRole = await getProjectRole(req.user.id);
-    const isGuide = myRole?.projectRole === 'guide';
+    const rec = await blockchain.getRecord(k.project(req.params.id));
+    if (!rec) return next(new ErrorResponse('Project not found', 404));
+    
+    const p = rec.data;
+    const isGuide = p.guideId === req.user.id;
     const isCoordinator = myRole?.projectRole === 'coordinator';
     const isHOD = ['HOD', 'Principal', 'Admin'].includes(req.user.role);
 
     if (!isGuide && !isCoordinator && !isHOD) {
         return next(new ErrorResponse('Only guides/coordinators can review', 403));
-    }
-
-    const rec = await blockchain.getRecord(k.project(req.params.id));
-    if (!rec) return next(new ErrorResponse('Project not found', 404));
-
-    const p = rec.data;
-    if (isGuide && p.guideId !== req.user.id) {
-        return next(new ErrorResponse('This project is not assigned to you', 403));
     }
 
     const newStatus = action === 'approve' ? 'Completed' : action === 'reject' ? 'Rejected' : p.status;
@@ -571,15 +572,14 @@ exports.scoreProject = asyncHandler(async (req, res, next) => {
     res.status(200).json({ success: true, data: enrichProject(updated, users) });
 });
 
-// @desc  Set review schedule (Coordinator/HOD)
+// @desc  Set review schedule (Coordinator ONLY)
 // @route POST /api/projects/schedule
 exports.setReviewSchedule = asyncHandler(async (req, res, next) => {
     const myRole = await getProjectRole(req.user.id);
     const isCoordinator = myRole?.projectRole === 'coordinator';
-    const isHOD = ['HOD', 'Principal', 'Admin'].includes(req.user.role);
 
-    if (!isCoordinator && !isHOD) {
-        return next(new ErrorResponse('Only Coordinators or HOD can set schedules', 403));
+    if (!isCoordinator) {
+        return next(new ErrorResponse('Only the Project Coordinator can set review schedules', 403));
     }
 
     const { review0, review1, review2, department } = req.body;
@@ -599,15 +599,14 @@ exports.setReviewSchedule = asyncHandler(async (req, res, next) => {
     res.status(200).json({ success: true, data: schedData });
 });
 
-// @desc  Set submission deadline (Coordinator/HOD)
+// @desc  Set submission deadline (Coordinator ONLY)
 // @route POST /api/projects/deadline
 exports.setDeadline = asyncHandler(async (req, res, next) => {
     const myRole = await getProjectRole(req.user.id);
     const isCoordinator = myRole?.projectRole === 'coordinator';
-    const isHOD = ['HOD', 'Principal', 'Admin'].includes(req.user.role);
 
-    if (!isCoordinator && !isHOD) {
-        return next(new ErrorResponse('Only Coordinators or HOD can set deadlines', 403));
+    if (!isCoordinator) {
+        return next(new ErrorResponse('Only the Project Coordinator can set deadlines', 403));
     }
 
     const { deadline, department, projectId } = req.body;
@@ -671,10 +670,7 @@ exports.getMyProject = asyncHandler(async (req, res, next) => {
 // @desc  Get projects for the logged-in guide
 // @route GET /api/projects/guide
 exports.getGuideProjects = asyncHandler(async (req, res, next) => {
-    const myRole = await getProjectRole(req.user.id);
-    if (myRole?.projectRole !== 'guide') {
-        return next(new ErrorResponse('Only guides can access this endpoint', 403));
-    }
+    // A user is a guide if they are listed as guideId on any project
     const projects = await getAllByPrefix('proj_', 'project');
     const mine = projects.filter(p => p.guideId === req.user.id);
     const users = await getAllUsers();

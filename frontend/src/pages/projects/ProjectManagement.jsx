@@ -37,6 +37,7 @@ const ProjectManagement = () => {
     const [loading, setLoading] = useState(true);
 
     // Forms
+    // HOD defaults to 'coordinator'; will be overridden to 'guide' for Coordinator once role is loaded
     const [roleForm, setRoleForm] = useState({ facultyId: '', projectRole: 'coordinator' });
     const [projectForm, setProjectForm] = useState({
         title: '', description: '', type: 'individual',
@@ -91,7 +92,7 @@ const ProjectManagement = () => {
         try {
             await api.post('/projects/roles/assign', roleForm);
             toast.success(`Faculty assigned as ${roleForm.projectRole.replace('_', ' ')}`);
-            setRoleForm({ facultyId: '', projectRole: isHOD ? 'coordinator' : 'guide' });
+            setRoleForm({ facultyId: '', projectRole: 'coordinator' });
             fetchAll();
         } catch (err) {
             toast.error(err.response?.data?.error || 'Failed to assign role');
@@ -157,7 +158,10 @@ const ProjectManagement = () => {
     };
 
     const isCoordinator = myProjectRole?.projectRole === 'coordinator';
-    const canManage = isHOD || isCoordinator;
+    const canCreateProject = isCoordinator; // ONLY Coordinator can create
+    const canManageRoles = isHOD; // ONLY HOD manages roles
+    const canManage = isHOD || isCoordinator; // For feedback/actions
+    const canSchedule = isCoordinator; // Coordinator ONLY
 
     const filteredProjects = projects.filter(p => {
         const matchStatus = !filterStatus || p.status === filterStatus;
@@ -185,10 +189,10 @@ const ProjectManagement = () => {
 
     const tabs = [
         { id: 'overview', label: '📊 Overview', show: true },
-        { id: 'roles', label: '👥 Manage Roles', show: isHOD || isCoordinator },
+        { id: 'roles', label: '👥 Manage Roles', show: canManageRoles },
         { id: 'projects', label: '📁 Projects', show: true },
-        { id: 'create', label: '➕ New Project', show: canManage },
-        { id: 'schedule', label: '📅 Schedule', show: canManage },
+        { id: 'create', label: '➕ New Project', show: canCreateProject },
+        { id: 'schedule', label: '📅 Schedule', show: canSchedule }, // Coordinator only
     ].filter(t => t.show);
 
     if (loading) return <Layout><div className="pm-loading">Loading Project Management...</div></Layout>;
@@ -201,7 +205,7 @@ const ProjectManagement = () => {
                     <div>
                         <h1 className="pm-hero-title">Project Management</h1>
                         <p className="pm-hero-sub">
-                            {isHOD ? 'HOD Controls' : isCoordinator ? 'Coordinator Panel' : 'Project Overview'}
+                            {isHOD ? 'HOD Controls – Role Assignment' : isCoordinator ? 'Coordinator Panel – Scheduling & Guides' : 'Project Overview'}
                         </p>
                     </div>
                 </div>
@@ -294,12 +298,16 @@ const ProjectManagement = () => {
                 )}
 
                 {/* ── ROLES tab ── */}
-                {activeTab === 'roles' && (isHOD || isCoordinator) && (
+                {activeTab === 'roles' && canManageRoles && (
                     <div className="pm-panel">
                         {/* Assign role form */}
                         <div className="card pm-form-card">
                             <div className="card-title">
-                                {isHOD ? '👑 Assign Coordinator / IDC Member' : '🏫 Assign Project Guide'}
+                                👑 Assign Coordinator / IDC Member
+                            </div>
+                            {/* HOD info banner */}
+                            <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 8, padding: '10px 14px', marginBottom: 14, fontSize: '0.85rem', color: '#1d4ed8' }}>
+                                ℹ️ As HOD you can assign <strong>Coordinators</strong> and <strong>IDC Members</strong>. The Project Coordinator assigns Guides to projects directly from the New Project tab.
                             </div>
                             <form onSubmit={handleAssignRole} className="pm-form">
                                 <div className="pm-form-row">
@@ -325,9 +333,9 @@ const ProjectManagement = () => {
                                             onChange={e => setRoleForm({ ...roleForm, projectRole: e.target.value })}
                                             className="form-control" required
                                         >
-                                            {isHOD && <option value="coordinator">Coordinator</option>}
-                                            {isHOD && <option value="idc_member">IDC Member</option>}
-                                            {(isHOD || isCoordinator) && <option value="guide">Project Guide</option>}
+                                            {/* HOD: Coordinator + IDC only */}
+                                            <option value="coordinator">Coordinator</option>
+                                            <option value="idc_member">IDC Member</option>
                                         </select>
                                     </div>
                                     <button type="submit" className="btn btn-primary pm-form-btn">
@@ -369,7 +377,7 @@ const ProjectManagement = () => {
                                                     </td>
                                                     <td>{r.department || '—'}</td>
                                                     <td>
-                                                        {(isHOD || (isCoordinator && r.projectRole === 'guide')) && (
+                                                        {isHOD && (
                                                             <button
                                                                 className="btn btn-sm pm-remove-btn"
                                                                 onClick={() => handleRemoveRole(r.facultyId)}
@@ -530,7 +538,7 @@ const ProjectManagement = () => {
                 )}
 
                 {/* ── CREATE PROJECT tab ── */}
-                {activeTab === 'create' && canManage && (
+                {activeTab === 'create' && canCreateProject && (
                     <div className="pm-panel">
                         <div className="card pm-form-card">
                             <div className="card-title"><FaPlus /> Create New Project</div>
@@ -568,8 +576,8 @@ const ProjectManagement = () => {
                                         <select className="form-control" value={projectForm.guideId}
                                             onChange={e => setProjectForm({ ...projectForm, guideId: e.target.value })}>
                                             <option value="">— No Guide —</option>
-                                            {roles.filter(r => r.projectRole === 'guide').map(r => (
-                                                <option key={r.facultyId} value={r.facultyId}>{r.faculty?.name}</option>
+                                            {facultyList.map(f => (
+                                                <option key={f.id} value={f.id}>{f.name} ({f.facultyProfile?.facultyId || f.email})</option>
                                             ))}
                                         </select>
                                     </div>
@@ -606,8 +614,8 @@ const ProjectManagement = () => {
                     </div>
                 )}
 
-                {/* ── SCHEDULE tab ── */}
-                {activeTab === 'schedule' && canManage && (
+                {/* ── SCHEDULE tab ── Coordinator ONLY ── */}
+                {activeTab === 'schedule' && canSchedule && (
                     <div className="pm-panel">
                         <div className="pm-sched-grid">
                             {/* Review schedule form */}

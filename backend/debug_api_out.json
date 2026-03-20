@@ -1,0 +1,8 @@
+{
+  "error": "Request failed with status code 401",
+  "status": 401,
+  "data": {
+    "success": false,
+    "error": "User no longer exists on chain"
+  }
+}
