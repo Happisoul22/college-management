@@ -8,8 +8,8 @@ import {
 import { useContext } from 'react';
 import AuthContext from '../context/AuthContext';
 
-/* Inline SVCET Logo SVG */
-const SVCETEmblem = () => (
+/* Inline SRIT Logo SVG */
+const SRITEmblem = () => (
     <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" width="22" height="22">
         <circle cx="20" cy="20" r="19" stroke="white" strokeWidth="1.5" fill="none" />
         <path d="M10 28 L20 8 L30 28 Z" fill="white" opacity="0.9" />
@@ -32,10 +32,10 @@ const Sidebar = () => {
             {/* ---- Logo Header ---- */}
             <div className="sidebar-header">
                 <div className="sidebar-logo-icon">
-                    <SVCETEmblem />
+                    <SRITEmblem />
                 </div>
                 <div className="sidebar-logo-text">
-                    <div className="logo-title">SVCET Portal</div>
+                    <div className="logo-title">SRIT Portal</div>
                     <div className="logo-subtitle">Academic Analytics</div>
                 </div>
             </div>
@@ -168,7 +168,7 @@ const Sidebar = () => {
             {/* ---- Footer ---- */}
             <div className="sidebar-footer">
                 <div className="sidebar-footer-text">
-                    © 2024 SVCET Chittoor<br />
+                    © 2024 SRIT Anantapur<br />
                     Autonomous | NAAC Accredited
                 </div>
             </div>

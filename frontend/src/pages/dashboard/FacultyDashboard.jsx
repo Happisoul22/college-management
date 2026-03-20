@@ -49,6 +49,8 @@ const FacultyDashboard = () => {
     const [filters, setFilters] = useState({
         status: '',
         year: '',
+        type: '',
+        student: '',
     });
     const [achTab, setAchTab] = useState('student'); // 'student' | 'faculty'
 
@@ -587,7 +589,22 @@ const FacultyDashboard = () => {
                         </select>
                     </div>
                     <div className="form-group" style={{ marginBottom: 0, flex: 1 }}>
-                        <select name="year" value={filters.year} onChange={handleFilterChange} className="form-control">
+                        <select name="type" value={filters.type} onChange={handleFilterChange} className="form-control">
+                            <option value="">All Types</option>
+                            <option value="Internship">Internship</option>
+                            <option value="NPTEL">NPTEL</option>
+                            <option value="Certification">Certification</option>
+                            <option value="Mini Project">Mini Project</option>
+                            <option value="Major Project">Major Project</option>
+                            <option value="Research Paper">Research Paper</option>
+                            <option value="Publication">Publication</option>
+                            <option value="Patent">Patent</option>
+                            <option value="NCC/NSS">NCC/NSS</option>
+                            <option value="Placement">Placement</option>
+                        </select>
+                    </div>
+                    <div className="form-group" style={{ marginBottom: 0, flex: 1 }}>
+                        <select name="year" value={filters.year} onChange={handleFilterChange} className="form-control" disabled={achTab === 'faculty'} style={{ opacity: achTab === 'faculty' ? 0.5 : 1 }}>
                             <option value="">All Years</option>
                             <option value="1">1st Year</option>
                             <option value="2">2nd Year</option>
@@ -595,6 +612,18 @@ const FacultyDashboard = () => {
                             <option value="4">4th Year</option>
                         </select>
                     </div>
+                    {achTab === 'student' && (
+                        <div className="form-group" style={{ marginBottom: 0, flex: 1.5 }}>
+                            <input 
+                                type="text" 
+                                name="student" 
+                                value={filters.student} 
+                                onChange={handleFilterChange} 
+                                className="form-control" 
+                                placeholder="🔍 Filter by Student ID"
+                            />
+                        </div>
+                    )}
                     <button className="btn btn-primary" onClick={fetchAchievements}>
                         <FaSearch /> Filter
                     </button>

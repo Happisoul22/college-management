@@ -14,13 +14,13 @@
   position: relative;
   overflow: hidden;
 
-  /* Layered SVCET campus background */
+  /* Layered SRIT campus background */
   background:
     linear-gradient(162deg,
       rgba(5, 18, 41, 0.86) 0%,
       rgba(13, 43, 94, 0.82) 45%,
       rgba(15, 48, 104, 0.86) 100%),
-    url('/svcet-campus.jpg') center center / cover no-repeat;
+    url('/srit-campus.jpg') center center / cover no-repeat;
 }
 
 /* ── Animated glowing orbs ── */

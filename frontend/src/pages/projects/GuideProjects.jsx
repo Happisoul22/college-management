@@ -239,8 +239,11 @@ const GuideProjects = () => {
                                                             className="form-control gp-review-ta"
                                                         />
                                                         <div className="gp-review-actions">
+                                                            <button className="btn btn-primary" onClick={() => handleReview(p.id, 'update')} style={{ background: '#3b82f6', borderColor: '#3b82f6' }}>
+                                                                <FaCheck /> Update Review
+                                                            </button>
                                                             <button className="btn gp-approve-btn" onClick={() => handleReview(p.id, 'approve')}>
-                                                                <FaCheck /> Approve & Complete
+                                                                <FaCheck /> Final Approve
                                                             </button>
                                                             <button className="btn gp-reject-btn" onClick={() => handleReview(p.id, 'reject')}>
                                                                 <FaTimes /> Reject

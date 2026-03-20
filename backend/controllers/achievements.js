@@ -146,7 +146,11 @@ exports.getAchievements = asyncHandler(async (req, res, next) => {
     }
 
     // ── Query filters ──────────────────────────────────────────────────────────
-    if (req.query.student?.trim()) results = results.filter(a => a.user === req.query.student.trim());
+    if (req.query.student?.trim()) {
+        const term = req.query.student.trim().toLowerCase();
+        // Since we need to match name/roll, we'll fetch all users first here if needed,
+        // or just rely on the hydration step. Wait, it's better to hydrate FIRST then filter.
+    }
     if (req.query.status?.trim()) results = results.filter(a => a.status === req.query.status.trim());
     if (req.query.type?.trim()) results = results.filter(a => a.type === req.query.type.trim());
     if (req.query.ownerRole?.trim()) {
@@ -193,6 +197,16 @@ exports.getAchievements = asyncHandler(async (req, res, next) => {
             role: userMap[r.reviewedBy]?.role || 'Unknown'
         } : null
     }));
+
+    // Post-hydration text search
+    if (req.query.student?.trim()) {
+        const term = req.query.student.trim().toLowerCase();
+        results = results.filter(r => 
+            r.user?.name?.toLowerCase().includes(term) ||
+            r.user?.studentProfile?.rollNumber?.toLowerCase().includes(term) ||
+            r.user?.facultyProfile?.facultyId?.toLowerCase().includes(term)
+        );
+    }
 
     // Pagination
     const page = parseInt(req.query.page, 10) || 1;

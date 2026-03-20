@@ -23,6 +23,7 @@ const IDCReview = () => {
     const [submitting, setSubmitting] = useState(false);
     const [activeTab, setActiveTab] = useState('projects');
     const [searchTerm, setSearchTerm] = useState('');
+    const [analyticsProjectId, setAnalyticsProjectId] = useState('all');
 
     useEffect(() => { fetchProjects(); }, []);
 
@@ -64,12 +65,34 @@ const IDCReview = () => {
 
     // Analytics
     const scored = projects.filter(p => p.score);
-    const avgData = scored.length > 0 ? [
-        { name: 'Innovation', avg: (scored.reduce((s, p) => s + p.score.innovation, 0) / scored.length).toFixed(1) },
-        { name: 'Implementation', avg: (scored.reduce((s, p) => s + p.score.implementation, 0) / scored.length).toFixed(1) },
-        { name: 'Documentation', avg: (scored.reduce((s, p) => s + p.score.documentation, 0) / scored.length).toFixed(1) },
-        { name: 'Presentation', avg: (scored.reduce((s, p) => s + p.score.presentation, 0) / scored.length).toFixed(1) },
-    ] : [];
+    
+    let chartData = [];
+    let chartTitle = '';
+
+    if (scored.length > 0) {
+        if (analyticsProjectId === 'all') {
+            chartTitle = `Average Scores Across ${scored.length} Projects`;
+            chartData = [
+                { name: 'Innovation', score: (scored.reduce((s, p) => s + p.score.innovation, 0) / scored.length).toFixed(1) },
+                { name: 'Implementation', score: (scored.reduce((s, p) => s + p.score.implementation, 0) / scored.length).toFixed(1) },
+                { name: 'Documentation', score: (scored.reduce((s, p) => s + p.score.documentation, 0) / scored.length).toFixed(1) },
+                { name: 'Presentation', score: (scored.reduce((s, p) => s + p.score.presentation, 0) / scored.length).toFixed(1) },
+            ];
+        } else {
+            const sp = scored.find(p => p.id === analyticsProjectId);
+            if (sp) {
+                chartTitle = `Scores for: ${sp.title}`;
+                chartData = [
+                    { name: 'Innovation', score: sp.score.innovation },
+                    { name: 'Implementation', score: sp.score.implementation },
+                    { name: 'Documentation', score: sp.score.documentation },
+                    { name: 'Presentation', score: sp.score.presentation },
+                ];
+            } else {
+                setAnalyticsProjectId('all'); // fallback if project deleted
+            }
+        }
+    }
 
     const ScoreSlider = ({ label, field, color }) => (
         <div className="idc-score-field">
@@ -233,27 +256,43 @@ const IDCReview = () => {
                 {/* ── Analytics tab ── */}
                 {activeTab === 'analytics' && (
                     <div className="idc-panel">
-                        {avgData.length === 0 ? (
+                        {scored.length === 0 ? (
                             <div className="idc-empty"><FaChartBar size={40} /><p>No scored projects yet.</p></div>
                         ) : (
                             <div className="card idc-analytics-card">
-                                <div className="card-title">Average Scores Across {scored.length} Projects</div>
+                                <div style={{ display: 'flex', gap: '15px', alignItems: 'center', marginBottom: '20px', background: '#f8faff', padding: '12px 20px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                                    <FaFilter color="#64748b" />
+                                    <label style={{ fontWeight: 600, color: '#1a2744', fontSize: '0.9rem' }}>Filter Project:</label>
+                                    <select 
+                                        className="form-control" 
+                                        style={{ maxWidth: '300px', margin: 0 }}
+                                        value={analyticsProjectId}
+                                        onChange={e => setAnalyticsProjectId(e.target.value)}
+                                    >
+                                        <option value="all">All Projects (Average)</option>
+                                        {scored.map(p => (
+                                            <option key={p.id} value={p.id}>{p.title}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                
+                                <div className="card-title">{chartTitle}</div>
                                 <ResponsiveContainer width="100%" height={280}>
-                                    <BarChart data={avgData} barSize={50} margin={{ left: -10 }}>
+                                    <BarChart data={chartData} barSize={50} margin={{ left: -10 }}>
                                         <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                                         <XAxis dataKey="name" tick={{ fontSize: 12 }} />
                                         <YAxis domain={[0, 10]} allowDecimals={false} tick={{ fontSize: 12 }} />
-                                        <Tooltip formatter={v => [`${v}`, 'Avg Score']} />
-                                        <Bar dataKey="avg" radius={[6,6,0,0]}>
-                                            {avgData.map((_, i) => <Cell key={i} fill={SCORE_COLORS[i]} />)}
+                                        <Tooltip formatter={v => [`${v}`, 'Score']} />
+                                        <Bar dataKey="score" radius={[6,6,0,0]}>
+                                            {chartData.map((_, i) => <Cell key={i} fill={SCORE_COLORS[i]} />)}
                                         </Bar>
                                     </BarChart>
                                 </ResponsiveContainer>
                                 <div className="idc-avg-row">
-                                    {avgData.map((d, i) => (
+                                    {chartData.map((d, i) => (
                                         <div key={d.name} className="idc-avg-item">
                                             <div className="idc-avg-dot" style={{ background: SCORE_COLORS[i] }} />
-                                            <span>{d.name}: <strong>{d.avg}</strong></span>
+                                            <span>{d.name}: <strong>{d.score}</strong></span>
                                         </div>
                                     ))}
                                 </div>
