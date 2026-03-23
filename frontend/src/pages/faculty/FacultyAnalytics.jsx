@@ -1,4 +1,5 @@
 import { useState, useEffect, useContext, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import AuthContext from '../../context/AuthContext';
 import api from '../../api/axios';
@@ -125,18 +126,29 @@ const CustomTooltip = ({ active, payload, label }) => {
 /* ── Main Page ── */
 const FacultyAnalytics = () => {
     const { user } = useContext(AuthContext);
+    const location = useLocation();
+    const queryParams = new URLSearchParams(location.search);
+    const isPersonalMode = queryParams.get('mode') === 'personal';
+    
+    // An HOD sees department analytics UNLESS they explicitly clicked "My Analytics"
     const isHOD = ['HOD', 'Principal', 'Admin'].includes(user?.role);
+    const showDept = isHOD && !isPersonalMode;
+
     const [achievements, setAchievements] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('All');
     const [selectedYear, setSelectedYear] = useState('All');
 
-    useEffect(() => { fetchAchievements(); }, []);
+    // Re-fetch if mode changes
+    useEffect(() => { 
+        setLoading(true);
+        fetchAchievements(); 
+    }, [isPersonalMode]);
 
     const fetchAchievements = async () => {
         try {
-            // Always fetch faculty achievements; HOD gets dept-scoped via backend logic
-            const endpoint = `/achievements?ownerRole=Faculty${!isHOD ? '&me=true' : ''}`;
+            // Include &me=true if we are NOT showing the department view
+            const endpoint = `/achievements?ownerRole=Faculty${!showDept ? '&me=true' : ''}`;
             const res = await api.get(endpoint);
             setAchievements(res.data.data);
         } catch (err) {
@@ -200,10 +212,10 @@ const FacultyAnalytics = () => {
             <div className="sa-page-header">
                 <div>
                     <div className="page-title" style={{ marginBottom: 4 }}>
-                        {isHOD ? 'Department Faculty Analytics' : 'My Analytics'}
+                        {showDept ? 'Department Faculty Analytics' : 'My Analytics'}
                     </div>
                     <p className="sa-page-subtitle">
-                        {isHOD
+                        {showDept
                             ? 'Faculty professional achievements across your department'
                             : 'Track your professional achievements & certifications'
                         }
@@ -220,7 +232,7 @@ const FacultyAnalytics = () => {
                 <div className="sa-empty-state">
                     <FaClipboardList className="sa-empty-icon" />
                     <h3>No Achievements Yet</h3>
-                    <p>{isHOD ? 'No faculty achievements found in your department.' : <span>Go to <a href="/faculty-achievements">My Achievements</a> to add your first one!</span>}</p>
+                    <p>{showDept ? 'No faculty achievements found in your department.' : <span>Go to <a href="/faculty-achievements">My Achievements</a> to add your first one!</span>}</p>
                 </div>
             ) : (
                 <>
@@ -361,7 +373,7 @@ const FacultyAnalytics = () => {
                         <div className="sa-no-results">No achievements found for <strong>{filter}</strong>.</div>
                     ) : (
                         <div className="sa-cards-grid">
-                            {filtered.map(ach => <AchCard key={ach._id} ach={ach} showFaculty={isHOD} />)}
+                            {filtered.map(ach => <AchCard key={ach._id} ach={ach} showFaculty={showDept} />)}
                         </div>
                     )}
                 </>

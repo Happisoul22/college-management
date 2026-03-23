@@ -105,7 +105,7 @@ const Sidebar = () => {
                         <Link to="/faculty-achievements" className={`menu-item ${isActive('/faculty-achievements')}`}>
                             <FaTrophy /> My Achievements
                         </Link>
-                        <Link to="/faculty-analytics" className={`menu-item ${isActive('/faculty-analytics')}`}>
+                        <Link to="/faculty-analytics?mode=personal" className={`menu-item ${location.pathname === '/faculty-analytics' && location.search === '?mode=personal' ? 'active' : ''}`}>
                             <FaChartLine /> My Analytics
                         </Link>
 
@@ -153,7 +153,7 @@ const Sidebar = () => {
                         <Link to="/analytics" className={`menu-item ${isActive('/analytics')}`}>
                             <FaChartPie /> Analytics
                         </Link>
-                        <Link to="/faculty-analytics" className={`menu-item ${isActive('/faculty-analytics')}`}>
+                        <Link to="/faculty-analytics?mode=department" className={`menu-item ${location.pathname === '/faculty-analytics' && location.search !== '?mode=personal' ? 'active' : ''}`}>
                             <FaChartLine /> Faculty Analytics
                         </Link>
                     </>
