@@ -366,16 +366,20 @@ exports.addFeedback = asyncHandler(async (req, res, next) => {
     const isGuide = p.guideId === req.user.id;
     const isIDC = myRole?.projectRole === 'idc_member';
     const isCoordinator = myRole?.projectRole === 'coordinator';
+    const isStudent = (p.students || []).includes(req.user.id);
 
-    if (!isHOD && !isGuide && !isIDC && !isCoordinator) {
+    if (!isHOD && !isGuide && !isIDC && !isCoordinator && !isStudent) {
         return next(new ErrorResponse('Not authorized to add feedback', 403));
     }
+
+    let roleStr = myRole?.projectRole || req.user.role;
+    if (isStudent && req.user.role === 'Student') roleStr = 'student';
 
     const feedbackEntry = {
         id: uuidv4(),
         userId: req.user.id,
         name: req.user.name,
-        role: isGuide && !isCoordinator && !isIDC ? 'guide' : (myRole?.projectRole || req.user.role),
+        role: roleStr,
         comment,
         createdAt: new Date().toISOString(),
     };
@@ -388,18 +392,20 @@ exports.addFeedback = asyncHandler(async (req, res, next) => {
 
     await blockchain.storeRecord('project', k.project(p.id), updated, req.user.id);
 
-    // Notify all students
+    // Notify all students (except sender)
     for (const studentId of (p.students || [])) {
-        await createNotification({
-            recipient: studentId,
-            sender: req.user.id,
-            type: 'project_feedback',
-            message: `New feedback on your project "${p.title}" from ${req.user.name}.`,
-            link: '/my-project',
-        });
+        if (studentId !== req.user.id) {
+            await createNotification({
+                recipient: studentId,
+                sender: req.user.id,
+                type: 'project_feedback',
+                message: `New feedback on your project "${p.title}" from ${req.user.name}.`,
+                link: '/my-project',
+            });
+        }
     }
-    // Notify guide if feedback from coordinator/IDC
-    if ((isCoordinator || isIDC || isHOD) && p.guideId && p.guideId !== req.user.id) {
+    // Notify guide if feedback from coordinator/IDC/student
+    if ((isCoordinator || isIDC || isHOD || isStudent) && p.guideId && p.guideId !== req.user.id) {
         await createNotification({
             recipient: p.guideId,
             sender: req.user.id,
@@ -479,7 +485,7 @@ exports.reviewProject = asyncHandler(async (req, res, next) => {
             id: uuidv4(),
             userId: req.user.id,
             name: req.user.name,
-            role: isGuide && !isCoordinator && !isHOD ? 'guide' : (myRole?.projectRole || req.user.role),
+            role: myRole?.projectRole || req.user.role,
             comment,
             createdAt: new Date().toISOString(),
         });

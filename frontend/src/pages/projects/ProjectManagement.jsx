@@ -471,26 +471,24 @@ const ProjectManagement = () => {
                         )}
 
                         {/* Selected project detail */}
-                        {selectedProject && (() => {
-                            const activeProject = projects.find(p => p.id === selectedProject.id) || selectedProject;
-                            return (
+                        {selectedProject && (
                             <div className="card pm-proj-detail">
                                 <div className="card-title">
-                                    {activeProject.title}
+                                    {selectedProject.title}
                                     <button className="pm-detail-close" onClick={() => setSelectedProject(null)}>✕</button>
                                 </div>
-                                <p className="pm-proj-desc">{activeProject.description || 'No description.'}</p>
+                                <p className="pm-proj-desc">{selectedProject.description || 'No description.'}</p>
                                 <div className="pm-proj-links">
-                                    {activeProject.githubLink && <a href={activeProject.githubLink} target="_blank" rel="noreferrer"><FaGithub /> GitHub</a>}
-                                    {activeProject.proofUrl && <a href={activeProject.proofUrl} target="_blank" rel="noreferrer"><FaFileAlt /> Proof</a>}
+                                    {selectedProject.githubLink && <a href={selectedProject.githubLink} target="_blank" rel="noreferrer"><FaGithub /> GitHub</a>}
+                                    {selectedProject.proofUrl && <a href={selectedProject.proofUrl} target="_blank" rel="noreferrer"><FaFileAlt /> Proof</a>}
                                 </div>
                                 {/* Feedback timeline */}
                                 <div className="pm-feedback-section">
                                     <div className="pm-feedback-title">💬 Feedback</div>
-                                    {(activeProject.feedback || []).length === 0 ? (
+                                    {(selectedProject.feedback || []).length === 0 ? (
                                         <p style={{ color: '#94a3b8', fontSize: '0.85rem' }}>No feedback yet.</p>
                                     ) : (
-                                        activeProject.feedback.map(fb => (
+                                        selectedProject.feedback.map(fb => (
                                             <div key={fb.id} className="pm-fb-item">
                                                 <div className="pm-fb-header">
                                                     <span className="pm-fb-name">{fb.name}</span>
@@ -510,14 +508,14 @@ const ProjectManagement = () => {
                                                 onChange={e => setFeedbackText(e.target.value)}
                                                 className="form-control"
                                             />
-                                            <button className="btn btn-primary" onClick={() => handleAddFeedback(activeProject.id)}>
+                                            <button className="btn btn-primary" onClick={() => handleAddFeedback(selectedProject.id)}>
                                                 <FaBell /> Send
                                             </button>
                                         </div>
                                     )}
                                 </div>
                                 {/* IDC Score */}
-                                {activeProject.score && (
+                                {selectedProject.score && (
                                     <div className="pm-score-section">
                                         <div className="pm-feedback-title">🏅 IDC Score</div>
                                         <div className="pm-score-grid">
@@ -525,18 +523,17 @@ const ProjectManagement = () => {
                                                 <div key={k} className="pm-score-item">
                                                     <div className="pm-score-label">{k.charAt(0).toUpperCase() + k.slice(1)}</div>
                                                     <div className="pm-score-bar">
-                                                        <div className="pm-score-fill" style={{ width: `${activeProject.score[k] * 10}%` }} />
+                                                        <div className="pm-score-fill" style={{ width: `${selectedProject.score[k] * 10}%` }} />
                                                     </div>
-                                                    <div className="pm-score-val">{activeProject.score[k]}/10</div>
+                                                    <div className="pm-score-val">{selectedProject.score[k]}/10</div>
                                                 </div>
                                             ))}
                                         </div>
-                                        <div className="pm-score-total">Total: {activeProject.score.total}/40</div>
+                                        <div className="pm-score-total">Total: {selectedProject.score.total}/40</div>
                                     </div>
                                 )}
                             </div>
-                            );
-                        })()}
+                        )}
                     </div>
                 )}
 
