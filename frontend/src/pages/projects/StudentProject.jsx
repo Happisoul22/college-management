@@ -24,7 +24,6 @@ const StudentProject = () => {
     const [submitForm, setSubmitForm] = useState({ githubLink: '', proofUrl: '', description: '' });
     const [submitting, setSubmitting] = useState(false);
     const [showSubmit, setShowSubmit] = useState(false);
-    const [feedbackText, setFeedbackText] = useState('');
 
     useEffect(() => { fetchMyProject(); }, []);
 
@@ -56,18 +55,6 @@ const StudentProject = () => {
             toast.error(err.response?.data?.error || 'Submission failed');
         } finally {
             setSubmitting(false);
-        }
-    };
-
-    const handleAddFeedback = async (projectId) => {
-        if (!feedbackText.trim()) return;
-        try {
-            await api.post(`/projects/${projectId}/feedback`, { comment: feedbackText });
-            toast.success('Comment added!');
-            setFeedbackText('');
-            fetchMyProject();
-        } catch (err) {
-            toast.error(err.response?.data?.error || 'Failed to add comment');
         }
     };
 
@@ -254,8 +241,7 @@ const StudentProject = () => {
                                                     <span className={`sp-tl-role sp-tl-role--${fb.role?.replace('_','-')}`}>
                                                         {fb.role === 'guide' ? '📚 Guide' :
                                                             fb.role === 'coordinator' ? '🎯 Coordinator' :
-                                                                fb.role === 'idc_member' ? '🏅 IDC' : 
-                                                                    fb.role === 'student' ? '🎓 Student' : fb.role}
+                                                                fb.role === 'idc_member' ? '🏅 IDC' : fb.role}
                                                     </span>
                                                     <span className="sp-tl-date">{new Date(fb.createdAt).toLocaleDateString()}</span>
                                                 </div>
@@ -265,18 +251,6 @@ const StudentProject = () => {
                                     ))}
                                 </div>
                             )}
-                            <div className="sp-fb-input-row" style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
-                                <input
-                                    type="text"
-                                    placeholder="Add your comment..."
-                                    value={feedbackText}
-                                    onChange={e => setFeedbackText(e.target.value)}
-                                    className="form-control"
-                                />
-                                <button className="btn btn-primary" onClick={() => handleAddFeedback(project.id)} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                    <FaCommentAlt /> Send
-                                </button>
-                            </div>
                         </div>
 
                         {/* IDC Score */}
