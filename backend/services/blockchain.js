@@ -175,6 +175,7 @@ const storeRecord = async (recordType, recordKey, data, userId = '') => {
             const cid = await ipfs.uploadJSON(data, `${recordType}-${recordKey}`);
             console.log(`📦 IPFS-only store: ${recordKey} → ${cid}`);
             saveKeyIndex(recordKey, cid);  // persist key→CID to disk
+            typeCache.delete(`type_${recordType}`); // Invalidate cache in fallback mode
             return { cid, txHash: null, recordKey, blockNumber: null };
         } catch (e) {
             console.error('IPFS-only store also failed:', e.message);
@@ -311,10 +312,18 @@ const getAllRecordsOfType = async (recordType) => {
         }
     }
 
-    // Fallback: scan local IPFS store files (async — decrypts encrypted envelopes)
-    if (results.length === 0) {
-        console.log(`📦 getAllRecordsOfType(${recordType}): using local IPFS store fallback`);
-        results = await scanLocalIPFSStore(recordType);
+    // Always scan local IPFS store to serve as persistent fallback and merge missing records
+    // This prevents "vanishing data" when the Hardhat node restarts and resets its in-memory state
+    try {
+        const localResults = await scanLocalIPFSStore(recordType);
+        const existingKeys = new Set(results.map(r => r.key));
+        for (const lr of localResults) {
+            if (!existingKeys.has(lr.key)) {
+                results.push(lr);
+            }
+        }
+    } catch (e) {
+        console.error(`Local store merge failed for ${recordType}:`, e.message);
     }
 
     if (results.length > 0) {
@@ -374,6 +383,18 @@ const deleteRecord = async (recordKey) => {
         const contract = getContract();
         const tx = await contract.deleteRecord(recordKey);
         await tx.wait();
+        
+        // Remove from local fallback persist index to avoid zombies
+        try {
+            if (fs.existsSync(LOCAL_KEY_INDEX_PATH)) {
+                const index = JSON.parse(fs.readFileSync(LOCAL_KEY_INDEX_PATH, 'utf-8'));
+                if (index[recordKey]) {
+                    delete index[recordKey];
+                    fs.writeFileSync(LOCAL_KEY_INDEX_PATH, JSON.stringify(index, null, 2), 'utf-8');
+                }
+            }
+        } catch (e) { /* non-fatal */ }
+
         // Invalidate cache for the record's type
         const recordType = recordKey.split('_')[0]; // Assuming recordKey starts with type_
         typeCache.delete(`type_${recordType}`);

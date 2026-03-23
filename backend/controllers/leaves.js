@@ -108,7 +108,7 @@ exports.getLeaves = asyncHandler(async (req, res, next) => {
         }
 
         results = results.filter(l =>
-            l.applicantRole === 'Student' || deptFacultyIds.has(l.user)
+            l.user === req.user.id || l.applicantRole === 'Student' || deptFacultyIds.has(l.user)
         );
     }
 

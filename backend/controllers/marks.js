@@ -39,9 +39,14 @@ const recalculateCGPA = async (studentId) => {
         const recs = await blockchain.getRecords(keys);
         if (!recs.length) return 0;
 
+        const subjects = await blockchain.getAllRecordsOfType('subject');
+        const subjectMap = {};
+        for (const s of subjects.map(r => r.data)) { subjectMap[s.id] = s; }
+
         let totalWGP = 0, totalCredits = 0;
         for (const r of recs) {
-            const credits = r.data.credits || 3;
+            const subj = subjectMap[r.data.subjectId];
+            const credits = subj && subj.credits ? parseFloat(subj.credits) : (r.data.credits || 3);
             totalWGP += (r.data.gradePoint || 0) * credits;
             totalCredits += credits;
         }
@@ -261,10 +266,15 @@ exports.getStudentCGPA = asyncHandler(async (req, res, next) => {
     const sgpa = {};
     let totalWGP = 0, totalCredits = 0;
 
+    const subjects = await blockchain.getAllRecordsOfType('subject');
+    const subjectMap = {};
+    for (const s of subjects.map(r => r.data)) { subjectMap[s.id] = s; }
+
     Object.keys(bySem).sort().forEach(sem => {
         let sw = 0, sc = 0;
         bySem[sem].forEach(m => {
-            const c = m.credits || 3;
+            const subj = subjectMap[m.subjectId];
+            const c = subj && subj.credits ? parseFloat(subj.credits) : (m.credits || 3);
             sw += (m.gradePoint || 0) * c;
             sc += c;
         });
