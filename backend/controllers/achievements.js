@@ -107,43 +107,52 @@ exports.getAchievements = asyncHandler(async (req, res, next) => {
     const all = await blockchain.getAllRecordsOfType('achievement');
     let results = all.map(r => r.data);
 
-    // ── Role-based filter ──────────────────────────────────────────────────────
-    if (req.query.me === 'true' || req.user.role === 'Student') {
-        results = results.filter(a => a.user === req.user.id);
-    } else if (['Faculty', 'ClassTeacher'].includes(req.user.role)) {
-        // Filter to assigned class's students
-        const myAssigns = (await blockchain.getAllRecordsOfType('classassign'))
-            .map(r => r.data)
-            .filter(a => a.faculty === req.user.id && a.isActive);
+    // ── Direct studentId lookup (used by StudentProfile page) ─────────────────
+    // When a faculty/HOD views a specific student's profile, they pass ?studentId=<uuid>
+    // This bypasses the role-based class filter and does an exact user-id match.
+    if (req.query.studentId?.trim()) {
+        const targetId = req.query.studentId.trim();
+        results = results.filter(a => a.user === targetId);
+    } else {
+        // ── Role-based filter ────────────────────────────────────────────────
+        if (req.query.me === 'true' || req.user.role === 'Student') {
+            results = results.filter(a => a.user === req.user.id);
+        } else if (['Faculty', 'ClassTeacher'].includes(req.user.role)) {
+            // Filter to assigned class's students
+            const myAssigns = (await blockchain.getAllRecordsOfType('classassign'))
+                .map(r => r.data)
+                .filter(a => a.faculty === req.user.id && a.isActive);
 
-        if (myAssigns.length) {
-            const a = myAssigns[0];
+            if (myAssigns.length) {
+                const a = myAssigns[0];
+                const allUsers = await blockchain.getAllRecordsOfType('user');
+                const classStudentIds = new Set(
+                    allUsers
+                        .map(r => r.data)
+                        .filter(u =>
+                            u.role === 'Student' &&
+                            u.studentProfile?.branch === a.department &&
+                            u.studentProfile?.section === a.section
+                        )
+                        .map(u => u.id)
+                );
+                results = results.filter(r => classStudentIds.has(r.user));
+            }
+        } else if (req.user.role === 'HOD') {
+            const dept = req.user.facultyProfile?.department;
             const allUsers = await blockchain.getAllRecordsOfType('user');
-            const classStudentIds = new Set(
-                allUsers
-                    .map(r => r.data)
-                    .filter(u =>
-                        u.role === 'Student' &&
-                        u.studentProfile?.branch === a.department &&
-                        u.studentProfile?.section === a.section
+            const deptUserIds = new Set(
+                allUsers.map(r => r.data)
+                    .filter(u => 
+                        (u.role === 'Student' && u.studentProfile?.branch === dept) ||
+                        (['Faculty', 'ClassTeacher', 'HOD'].includes(u.role) && u.facultyProfile?.department === dept)
                     )
                     .map(u => u.id)
             );
-            results = results.filter(r => classStudentIds.has(r.user));
+            results = results.filter(r => deptUserIds.has(r.user));
         }
-    } else if (req.user.role === 'HOD') {
-        const dept = req.user.facultyProfile?.department;
-        const allUsers = await blockchain.getAllRecordsOfType('user');
-        const deptUserIds = new Set(
-            allUsers.map(r => r.data)
-                .filter(u => 
-                    (u.role === 'Student' && u.studentProfile?.branch === dept) ||
-                    (['Faculty', 'ClassTeacher', 'HOD'].includes(u.role) && u.facultyProfile?.department === dept)
-                )
-                .map(u => u.id)
-        );
-        results = results.filter(r => deptUserIds.has(r.user));
     }
+
 
     // ── Query filters ──────────────────────────────────────────────────────────
     if (req.query.student?.trim()) {

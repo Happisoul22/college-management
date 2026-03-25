@@ -20,6 +20,7 @@ const STATUS_COLOR = { Pending: '#f59e0b', Ongoing: '#3b82f6', Completed: '#22c5
 const StudentProject = () => {
     const { user } = useContext(AuthContext);
     const [projects, setProjects] = useState([]);
+    const [activeIndex, setActiveIndex] = useState(0);
     const [loading, setLoading] = useState(true);
     const [submitForm, setSubmitForm] = useState({ githubLink: '', proofUrl: '', description: '' });
     const [submitting, setSubmitting] = useState(false);
@@ -32,6 +33,7 @@ const StudentProject = () => {
         try {
             const res = await api.get('/projects/my');
             setProjects(res.data.data || []);
+            setActiveIndex(0);
         } catch (err) {
             toast.error('Failed to load project');
         } finally {
@@ -58,7 +60,7 @@ const StudentProject = () => {
         }
     };
 
-    if (loading) return <Layout><div className="sp-loading">Loading your project...</div></Layout>;
+    if (loading) return <Layout><div className="sp-loading">Loading your projects...</div></Layout>;
 
     if (projects.length === 0) {
         return (
@@ -67,7 +69,7 @@ const StudentProject = () => {
                     <div className="sp-hero">
                         <div className="sp-hero-icon"><FaProjectDiagram /></div>
                         <div>
-                            <h1 className="sp-hero-title">My Project</h1>
+                            <h1 className="sp-hero-title">My Projects</h1>
                             <p className="sp-hero-sub">Your project details will appear here</p>
                         </div>
                     </div>
@@ -81,7 +83,7 @@ const StudentProject = () => {
         );
     }
 
-    const project = projects[0]; // student sees their primary project
+    const project = projects[activeIndex] || projects[0];
     const isLate = project.deadline && project.status !== 'Completed' && new Date(project.deadline) < new Date();
 
     return (
@@ -91,13 +93,40 @@ const StudentProject = () => {
                 <div className="sp-hero">
                     <div className="sp-hero-icon"><FaProjectDiagram /></div>
                     <div style={{ flex: 1 }}>
-                        <h1 className="sp-hero-title">{project.title}</h1>
-                        <p className="sp-hero-sub">Track your project progress, feedback, and submission</p>
+                        <h1 className="sp-hero-title">My Projects</h1>
+                        <p className="sp-hero-sub">
+                            {projects.length > 1
+                                ? `You are assigned to ${projects.length} projects`
+                                : 'Track your project progress, feedback, and submission'}
+                        </p>
                     </div>
                     <div className="sp-status-hero" style={{ background: STATUS_COLOR[project.status] + '30', color: STATUS_COLOR[project.status] }}>
                         {STATUS_ICON[project.status]} {project.status}
                     </div>
                 </div>
+
+                {/* Project Tabs — only shown when multiple projects */}
+                {projects.length > 1 && (
+                    <div className="sp-tabs">
+                        {projects.map((p, idx) => (
+                            <button
+                                key={p.id}
+                                className={`sp-tab${activeIndex === idx ? ' sp-tab--active' : ''}`}
+                                onClick={() => {
+                                    setActiveIndex(idx);
+                                    setShowSubmit(false);
+                                    setSubmitForm({ githubLink: '', proofUrl: '', description: '' });
+                                }}
+                            >
+                                <span
+                                    className="sp-tab-dot"
+                                    style={{ background: STATUS_COLOR[p.status] }}
+                                />
+                                {p.title}
+                            </button>
+                        ))}
+                    </div>
+                )}
 
                 {/* Late warning */}
                 {isLate && (
@@ -166,31 +195,33 @@ const StudentProject = () => {
                             </div>
                         )}
 
-                        {/* Links */}
-                        {(project.githubLink || project.proofUrl) && (
-                            <div className="card sp-links-card">
-                                <div className="card-title">🔗 Project Links</div>
-                                <div className="sp-link-btns">
-                                    {project.githubLink && (
-                                        <a href={project.githubLink} target="_blank" rel="noreferrer" className="sp-link-btn sp-link--github">
-                                            <FaGithub /> GitHub Repository
-                                        </a>
-                                    )}
-                                    {project.proofUrl && (
-                                        <a href={project.proofUrl} target="_blank" rel="noreferrer" className="sp-link-btn sp-link--proof">
-                                            <FaFileAlt /> View Proof
-                                        </a>
-                                    )}
-                                </div>
+                        {/* Links — always shown */}
+                        <div className="card sp-links-card">
+                            <div className="card-title">🔗 Project Links</div>
+                            <div className="sp-link-btns">
+                                {project.githubLink ? (
+                                    <a href={project.githubLink} target="_blank" rel="noreferrer" className="sp-link-btn sp-link--github">
+                                        <FaGithub /> GitHub Repository
+                                    </a>
+                                ) : (
+                                    <span className="sp-link-empty">No GitHub link submitted yet.</span>
+                                )}
+                                {project.proofUrl && (
+                                    <a href={project.proofUrl} target="_blank" rel="noreferrer" className="sp-link-btn sp-link--proof">
+                                        <FaFileAlt /> View Proof
+                                    </a>
+                                )}
                             </div>
-                        )}
+                        </div>
 
-                        {/* Submit button */}
-                        {project.status !== 'Completed' && project.status !== 'Rejected' && (
+                        {/* Submit / Update Links — always available */}
+                        {project.status !== 'Rejected' && (
                             <div className="card sp-submit-card">
-                                <div className="card-title">🚀 Submit Your Project</div>
+                                <div className="card-title">
+                                    {project.status === 'Completed' ? '🔗 Update Project Links' : '🚀 Submit Your Project'}
+                                </div>
                                 <button className="btn sp-submit-toggle" onClick={() => setShowSubmit(!showSubmit)}>
-                                    {showSubmit ? '✕ Cancel' : '📤 Submit / Update Submission'}
+                                    {showSubmit ? '✕ Cancel' : project.status === 'Completed' ? '✏️ Update GitHub / Proof Link' : '📤 Submit / Update Submission'}
                                 </button>
                                 {showSubmit && (
                                     <div className="sp-submit-form">
@@ -206,14 +237,16 @@ const StudentProject = () => {
                                                 value={submitForm.proofUrl}
                                                 onChange={e => setSubmitForm({ ...submitForm, proofUrl: e.target.value })} />
                                         </div>
-                                        <div className="form-group">
-                                            <label>Project Description (optional update)</label>
-                                            <textarea rows={3} className="form-control" placeholder="Brief project description..."
-                                                value={submitForm.description}
-                                                onChange={e => setSubmitForm({ ...submitForm, description: e.target.value })} />
-                                        </div>
+                                        {project.status !== 'Completed' && (
+                                            <div className="form-group">
+                                                <label>Project Description (optional update)</label>
+                                                <textarea rows={3} className="form-control" placeholder="Brief project description..."
+                                                    value={submitForm.description}
+                                                    onChange={e => setSubmitForm({ ...submitForm, description: e.target.value })} />
+                                            </div>
+                                        )}
                                         <button className="btn btn-primary" onClick={() => handleSubmit(project.id)} disabled={submitting}>
-                                            {submitting ? 'Submitting…' : '✅ Confirm Submission'}
+                                            {submitting ? 'Saving…' : project.status === 'Completed' ? '💾 Save Links' : '✅ Confirm Submission'}
                                         </button>
                                     </div>
                                 )}
@@ -224,7 +257,7 @@ const StudentProject = () => {
                     {/* Right: Feedback timeline */}
                     <div className="sp-right">
                         <div className="card sp-feedback-card">
-                            <div className="card-title"><FaCommentAlt /> Feedback & Comments</div>
+                            <div className="card-title"><FaCommentAlt /> Feedback &amp; Comments</div>
                             {(project.feedback || []).length === 0 ? (
                                 <div className="sp-no-feedback">
                                     <FaBell size={28} />
@@ -233,12 +266,12 @@ const StudentProject = () => {
                             ) : (
                                 <div className="sp-timeline">
                                     {[...(project.feedback || [])].reverse().map(fb => (
-                                        <div key={fb.id} className={`sp-timeline-item sp-timeline-item--${fb.role?.replace('_','-')}`}>
+                                        <div key={fb.id} className={`sp-timeline-item sp-timeline-item--${fb.role?.replace('_', '-')}`}>
                                             <div className="sp-tl-dot" />
                                             <div className="sp-tl-content">
                                                 <div className="sp-tl-header">
                                                     <strong>{fb.name}</strong>
-                                                    <span className={`sp-tl-role sp-tl-role--${fb.role?.replace('_','-')}`}>
+                                                    <span className={`sp-tl-role sp-tl-role--${fb.role?.replace('_', '-')}`}>
                                                         {fb.role === 'guide' ? '📚 Guide' :
                                                             fb.role === 'coordinator' ? '🎯 Coordinator' :
                                                                 fb.role === 'idc_member' ? '🏅 IDC' : fb.role}
@@ -270,7 +303,7 @@ const StudentProject = () => {
                                         <div key={key} className="sp-score-row">
                                             <span className="sp-score-label">{label}</span>
                                             <div className="sp-score-bar">
-                                                <div className="sp-score-fill" style={{ width: `${project.score[key]*10}%`, background: color }} />
+                                                <div className="sp-score-fill" style={{ width: `${project.score[key] * 10}%`, background: color }} />
                                             </div>
                                             <span className="sp-score-num" style={{ color }}>{project.score[key]}/10</span>
                                         </div>

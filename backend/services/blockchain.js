@@ -254,15 +254,38 @@ const getRecord = async (recordKey) => {
  * Get all record keys for a user, optionally filtered by record type prefix.
  */
 const getUserRecordKeys = async (userId, typePrefix = null) => {
-    if (!rawContract) return [];
-    try {
-        const keys = await rawContract.getUserRecordKeys(userId);
-        if (typePrefix) return keys.filter(k => k.startsWith(typePrefix));
-        return [...keys];
-    } catch (err) {
-        console.error('getUserRecordKeys error:', err.message);
-        return [];
+    let keys = [];
+
+    // Try blockchain first
+    if (rawContract) {
+        try {
+            const chainKeys = await rawContract.getUserRecordKeys(userId);
+            keys = [...chainKeys];
+        } catch (err) {
+            console.error('getUserRecordKeys blockchain error:', err.message);
+        }
     }
+
+    // Fallback / merge: scan local key index for keys belonging to this user
+    // This covers offline mode and the case where the Hardhat node restarted
+    try {
+        if (fs.existsSync(LOCAL_KEY_INDEX_PATH)) {
+            const keyIndex = JSON.parse(fs.readFileSync(LOCAL_KEY_INDEX_PATH, 'utf-8'));
+            const existingSet = new Set(keys);
+            for (const recordKey of Object.keys(keyIndex)) {
+                // Keys are in the format: <type>_<userId>_... so we check if userId appears in the key
+                if (recordKey.includes(userId) && !existingSet.has(recordKey)) {
+                    keys.push(recordKey);
+                    existingSet.add(recordKey);
+                }
+            }
+        }
+    } catch (e) {
+        console.warn('getUserRecordKeys local fallback error:', e.message);
+    }
+
+    if (typePrefix) return keys.filter(k => k.startsWith(typePrefix));
+    return keys;
 };
 
 /**

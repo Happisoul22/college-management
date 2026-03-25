@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import AuthContext from '../../context/AuthContext';
 import api from '../../api/axios';
-import { FaBook, FaChalkboardTeacher, FaFlask, FaProjectDiagram, FaMicrophone } from 'react-icons/fa';
+import { FaBook, FaFlask, FaProjectDiagram, FaMicrophone } from 'react-icons/fa';
 import './MySubjects.css';
 
 const TYPE_ICONS = {
@@ -13,20 +13,14 @@ const TYPE_ICONS = {
     Seminar: <FaMicrophone />,
 };
 
-const MySEMESTER_LABEL = (n) => {
-    const s = ['th', 'st', 'nd', 'rd'];
-    const v = n % 100;
-    return (s[(v - 20) % 10] || s[v] || s[0]);
-};
-
-// Compute current semester from admissionYear (mirrors backend virtual)
+// Compute current semester from admissionYear
 const computeSemester = (admissionYear) => {
     const now = new Date();
     const currentMonth = now.getMonth() + 1;
     const currentYear = now.getFullYear();
     const yearDiff = currentYear - admissionYear;
     const sem = currentMonth >= 7 ? (yearDiff * 2) + 1 : (yearDiff * 2);
-    return sem > 0 ? sem : 1;
+    return Math.max(1, Math.min(sem, 8));
 };
 
 const MySubjects = () => {
@@ -34,17 +28,18 @@ const MySubjects = () => {
     const navigate = useNavigate();
     const [subjects, setSubjects] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [currentSem, setCurrentSem] = useState(null);
+    const [maxSem, setMaxSem] = useState(null);
+    const [selectedSem, setSelectedSem] = useState(null);
     const [branch, setBranch] = useState(null);
 
     useEffect(() => {
-        // Derive branch and semester from the logged-in student profile
         const admYear = user?.studentProfile?.admissionYear;
         const br = user?.studentProfile?.branch;
         setBranch(br);
         if (admYear) {
             const sem = computeSemester(admYear);
-            setCurrentSem(sem);
+            setMaxSem(sem);
+            setSelectedSem(sem);
             fetchSubjects(br, sem);
         } else {
             setLoading(false);
@@ -52,6 +47,7 @@ const MySubjects = () => {
     }, [user]);
 
     const fetchSubjects = async (dept, sem) => {
+        setLoading(true);
         try {
             const params = new URLSearchParams();
             if (dept) params.append('department', dept);
@@ -65,19 +61,39 @@ const MySubjects = () => {
         }
     };
 
+    const handleSemChange = (sem) => {
+        setSelectedSem(sem);
+        fetchSubjects(branch, sem);
+    };
+
     return (
         <Layout>
             <div className="msub-header">
                 <div className="msub-title-block">
                     <div className="page-title">My Subjects</div>
-                    {currentSem && branch && (
+                    {selectedSem && branch && (
                         <div className="msub-meta-badge">
                             <span>{branch}</span>
                             <span className="msub-sep">·</span>
-                            <span>Semester {currentSem}</span>
+                            <span>Semester {selectedSem}</span>
                         </div>
                     )}
                 </div>
+
+                {/* Semester switcher */}
+                {maxSem && (
+                    <div className="msub-sem-selector">
+                        {Array.from({ length: maxSem }, (_, i) => i + 1).map(sem => (
+                            <button
+                                key={sem}
+                                className={`msub-sem-btn ${selectedSem === sem ? 'msub-sem-btn--active' : ''}`}
+                                onClick={() => handleSemChange(sem)}
+                            >
+                                Sem {sem}
+                            </button>
+                        ))}
+                    </div>
+                )}
             </div>
 
             {loading ? (
@@ -90,7 +106,10 @@ const MySubjects = () => {
             ) : subjects.length === 0 ? (
                 <div className="msub-empty">
                     <FaBook className="msub-empty-icon" />
-                    <p>No subjects found for Semester {currentSem} in {branch}.</p>
+                    <p>No subjects found for Semester {selectedSem} in {branch}.</p>
+                    <p style={{ fontSize: '0.82rem', color: '#94a3b8', marginTop: 4 }}>
+                        Try selecting a different semester above, or ask your HOD to add subjects for this semester.
+                    </p>
                 </div>
             ) : (
                 <>

@@ -63,7 +63,7 @@ const StudentProfile = () => {
                 api.get(`/analytics/user/${id}`).then(r => r.data.data).catch(() => null),
                 api.get(`/marks?student=${id}`),
                 api.get(`/marks/cgpa/${id}`),
-                api.get(`/achievements?student=${id}`)
+                api.get(`/achievements?studentId=${id}`)
             ]);
             
             const fetchedStudent = stuRes;
