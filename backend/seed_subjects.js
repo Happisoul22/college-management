@@ -64,6 +64,8 @@ const SUBJECT_TEMPLATE = [
     { code: "CS409", name: "Comprehensive Viva", type: "Seminar", semester: 8 }
 ];
 
+const DEPARTMENTS = ['CSE', 'ECE', 'ME', 'CE', 'EEE'];
+
 const seedSubjects = async () => {
     try {
         console.log('Connecting to blockchain/IPFS...');
@@ -77,38 +79,45 @@ const seedSubjects = async () => {
             console.log('No existing subjects found or error scanning:', e.message);
         }
         
-        const existingCodes = new Set(existingSubjects.map(s => s.data.code));
+        const existingCodes = new Set(existingSubjects.map(s => `${s.data.department}-${s.data.code}`));
         
         console.log(`Found ${existingCodes.size} existing subjects.`);
         
         let count = 0;
-        for (const subj of SUBJECT_TEMPLATE) {
-            if (existingCodes.has(subj.code)) {
-                console.log(`Skipping ${subj.code} (already exists)`);
-                continue;
+
+        for (const dept of DEPARTMENTS) {
+            console.log(`Seeding subjects for department: ${dept}...`);
+            for (const subj of SUBJECT_TEMPLATE) {
+                // Ensure unique code per department
+                const uniqueCode = subj.code.startsWith(dept) ? subj.code : `${dept}-${subj.code}`;
+                const uniqueKey = `${dept}-${uniqueCode}`;
+
+                if (existingCodes.has(uniqueKey)) {
+                    continue; // Skip if already exists
+                }
+                
+                const id = uuidv4();
+                const key = blockchain.keys.subject(id);
+                
+                const subjData = {
+                    id,
+                    code: uniqueCode,
+                    name: subj.name,
+                    department: dept,
+                    semester: subj.semester,
+                    year: Math.ceil(subj.semester / 2),
+                    credits: subj.type === 'Theory' ? 3 : (subj.type === 'Lab' ? 2 : 4),
+                    type: subj.type,
+                    faculty: null,
+                    section: "",
+                    createdBy: "system_seeder",
+                    createdAt: new Date().toISOString()
+                };
+                
+                await blockchain.storeRecord('subject', key, subjData, "system_seeder");
+                console.log(`Created: ${uniqueCode} - ${subj.name} (${dept} Sem ${subj.semester})`);
+                count++;
             }
-            
-            const id = uuidv4();
-            const key = blockchain.keys.subject(id);
-            
-            const subjData = {
-                id,
-                code: subj.code,
-                name: subj.name,
-                department: "CSE",
-                semester: subj.semester,
-                year: Math.ceil(subj.semester / 2),
-                credits: subj.type === 'Theory' ? 3 : (subj.type === 'Lab' ? 2 : 4),
-                type: subj.type,
-                faculty: null,
-                section: "",
-                createdBy: "system_seeder",
-                createdAt: new Date().toISOString()
-            };
-            
-            await blockchain.storeRecord('subject', key, subjData, "system_seeder");
-            console.log(`Created: ${subj.code} - ${subj.name} (Semester ${subj.semester})`);
-            count++;
         }
         
         console.log(`\nSuccessfully seeded ${count} new subjects!`);
