@@ -49,8 +49,16 @@ const MySubjects = () => {
     const fetchSubjects = async (dept, sem) => {
         setLoading(true);
         try {
+            // Map branch names to the short department codes used in subject strings
+            let deptCode = dept;
+            if (dept === 'Computer Science and Engineering') deptCode = 'CSE';
+            else if (dept === 'Electronics and Communication Engineering') deptCode = 'ECE';
+            else if (dept === 'Mechanical Engineering') deptCode = 'ME';
+            else if (dept === 'Civil Engineering') deptCode = 'CE';
+            else if (dept === 'Electrical and Electronics Engineering') deptCode = 'EEE';
+
             const params = new URLSearchParams();
-            if (dept) params.append('department', dept);
+            if (deptCode) params.append('department', deptCode);
             if (sem) params.append('semester', sem);
             const res = await api.get(`/subjects?${params}`);
             setSubjects(res.data.data || []);

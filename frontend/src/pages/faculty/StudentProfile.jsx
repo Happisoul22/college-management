@@ -77,7 +77,14 @@ const StudentProfile = () => {
             if (fetchedStudent?.studentProfile) {
                 const sem = computeSemester(fetchedStudent.studentProfile.admissionYear);
                 const branch = fetchedStudent.studentProfile.branch;
-                const subjectsRes = await api.get(`/subjects?department=${branch}&semester=${sem}`).catch(() => ({ data: { data: [] } }));
+                let deptCode = branch;
+                if (branch === 'Computer Science and Engineering') deptCode = 'CSE';
+                else if (branch === 'Electronics and Communication Engineering') deptCode = 'ECE';
+                else if (branch === 'Mechanical Engineering') deptCode = 'ME';
+                else if (branch === 'Civil Engineering') deptCode = 'CE';
+                else if (branch === 'Electrical and Electronics Engineering') deptCode = 'EEE';
+
+                const subjectsRes = await api.get(`/subjects?department=${deptCode}&semester=${sem}`).catch(() => ({ data: { data: [] } }));
                 setEnrolledSubjects(subjectsRes.data?.data || []);
             }
         } catch (err) {
