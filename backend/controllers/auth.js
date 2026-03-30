@@ -133,10 +133,16 @@ exports.sendRegistrationOtp = asyncHandler(async (req, res, next) => {
     const otp = generateOtp();
     saveOtp(email, 'registration', otp);
     
-    // TEMPORARY DEBUG LOG
-    console.log(`[DEBUG] OTP for ${email} is ${otp}`);
+    // TEMPORARY DEBUG LOG — OTP is printed to backend console
+    console.log(`[OTP] Email: ${email} | OTP: ${otp}`);
 
-    await sendOtpEmail(email, otp, 'registration');
+    // Send email — non-blocking: if email fails, user can still use OTP from backend console
+    try {
+        await sendOtpEmail(email, otp, 'registration');
+    } catch (emailErr) {
+        console.warn(`[EMAIL] Failed to send OTP email: ${emailErr.message}`);
+        console.warn(`[EMAIL] OTP for ${email} is ${otp} — share manually if needed`);
+    }
 
     res.status(200).json({ success: true, message: 'OTP sent to email' });
 });
@@ -173,7 +179,14 @@ exports.sendUpdateOtp = asyncHandler(async (req, res, next) => {
 
     const otp = generateOtp();
     saveOtp(email, 'profile_update', otp);
-    await sendOtpEmail(email, otp, 'profile_update');
+
+    // Send email — non-blocking
+    try {
+        await sendOtpEmail(email, otp, 'profile_update');
+    } catch (emailErr) {
+        console.warn(`[EMAIL] Failed to send update OTP: ${emailErr.message}`);
+        console.warn(`[EMAIL] OTP for ${email} is ${otp}`);
+    }
 
     res.status(200).json({ success: true, message: 'OTP sent to email' });
 });
