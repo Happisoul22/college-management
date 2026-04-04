@@ -6,6 +6,10 @@ module.exports = {
     networks: {
         localhost: {
             url: "http://127.0.0.1:7545"
+        },
+        sepolia: {
+            url: process.env.BLOCKCHAIN_RPC_URL || '',
+            accounts: process.env.BLOCKCHAIN_PRIVATE_KEY ? [`0x${process.env.BLOCKCHAIN_PRIVATE_KEY.replace(/^0x/, '')}`] : []
         }
     },
     paths: {
@@ -15,3 +19,4 @@ module.exports = {
         artifacts: "./artifacts"
     }
 };
+

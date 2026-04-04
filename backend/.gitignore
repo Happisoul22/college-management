@@ -11,10 +11,9 @@ node_modules/
 .DS_Store
 Thumbs.db
 
-# Hardhat / Blockchain
+# Hardhat / Blockchain build artifacts only (keep blockchain/ deployment files)
 artifacts/
 cache/
-blockchain/deployment.json
 
 # Local IPFS store
 ipfs_local_store/
