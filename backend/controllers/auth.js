@@ -136,7 +136,10 @@ exports.sendRegistrationOtp = asyncHandler(async (req, res, next) => {
     // TEMPORARY DEBUG LOG
     console.log(`[DEBUG] OTP for ${email} is ${otp}`);
 
-    await sendOtpEmail(email, otp, 'registration');
+    // Make email sending non-blocking so the frontend doesn't hang
+    sendOtpEmail(email, otp, 'registration').catch(err => {
+        console.warn(`[EMAIL] Failed to send OTP to ${email}:`, err.message);
+    });
 
     res.status(200).json({ success: true, message: 'OTP sent to email' });
 });
@@ -173,7 +176,10 @@ exports.sendUpdateOtp = asyncHandler(async (req, res, next) => {
 
     const otp = generateOtp();
     saveOtp(email, 'profile_update', otp);
-    await sendOtpEmail(email, otp, 'profile_update');
+    // Make email sending non-blocking
+    sendOtpEmail(email, otp, 'profile_update').catch(err => {
+        console.warn(`[EMAIL] Failed to send update OTP to ${email}:`, err.message);
+    });
 
     res.status(200).json({ success: true, message: 'OTP sent to email' });
 });
